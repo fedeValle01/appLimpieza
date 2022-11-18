@@ -1,0 +1,16 @@
+{
+  "expo": {
+    "name": "my-react-app",
+    "slug": "my-react-app",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "3c9a76c3-ce7b-4117-bfc8-5477534c06a6"
+      }
+    }
+  },
+  "name": "my-react-app"
+}
