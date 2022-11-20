@@ -109,7 +109,7 @@ const logInWithCred = async () => {
       <TouchableOpacity onPress={logInWithCred}>
         <Text>logInWithCred</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => {navigation.navigate('Sectors')}}>
+      <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {email: email})}}>
         <Text>Ver sectores</Text>
       </TouchableOpacity>
     </SafeAreaView>

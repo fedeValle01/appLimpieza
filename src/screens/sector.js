@@ -5,13 +5,17 @@ import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSna
 import firebaseConfig from '../../firebase-config';
 import styles from '../screens/stylesScreens';
 
-export default function Sector({navigation})  {
+export default function Sector({navigation, route })  {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const [sectorNames, setSectorName] = useState([]);
     const numbers = [1, 2, 3, 4, 5];
     const [sectors, setSectors ] = useState([]);
     
+
+
+
+
+
 function ListItem(props) {
     return(
       <SafeAreaView>
@@ -59,6 +63,7 @@ function ListItem(props) {
         arregloNombres[i] = sector.sector_name;
         console.log('arregloNombres['+i+'] : ',arregloNombres[i] );
       });
+      
   
       return (
         <Text>
@@ -99,7 +104,7 @@ function ListItem(props) {
         
         
         <TouchableOpacity onPress = {()=> {console.log('sectorNames: ', sectorNames)} } >
-          <Text>Ver sectorNames</Text>
+          <Text>Ver {route.params.email} </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={()=> {navigation.navigate('Tasks')}}>
           <Text>Ir a Tasks</Text>

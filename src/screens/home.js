@@ -31,7 +31,7 @@ export default function HomeScreen({navigation}) {
         <TouchableOpacity onPress={handleCreateSector}>
           <Text>Crear sector</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {navigation.navigate('Sectors')}}>
+        <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {email: email})}}>
           <Text>Ver sectores</Text>
         </TouchableOpacity>
       </SafeAreaView>

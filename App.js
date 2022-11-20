@@ -7,46 +7,53 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from './firebase-config';
-import Sectors from './src/screens/sector';
-import LoginScreen from './src/screens/logIn';
-import HomeScreen from './src/screens/home';
+import { Sectors, LoginScreen, HomeScreen} from "./src/screens"
 
 
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: '#fff',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+  });
 
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const Stack = createNativeStackNavigator();
 
 
-
-
-
-//-----------SCREEN TASKS--------------
-
-function Tasks(navigation){
+function Tareas({navigation}) {
 
   return(
   <SafeAreaView style = {styles.container}>
     <Text>Taks</Text>
   </SafeAreaView>
-  );
+  )
 }
-const Stack = createNativeStackNavigator();
+
+
 
 export default function App() {
-  
+   
 
   return (
+    
     <NavigationContainer>
          <Stack.Navigator>
             <Stack.Screen name = "Login" component = {LoginScreen}/>
             <Stack.Screen name = "Home" component = {HomeScreen}/>
             <Stack.Screen name = "Sectors" component = {Sectors}/>
-            <Stack.Screen name = "Tasks" component = {Tasks}/>
+            <Stack.Screen name = "Tasks" component = {Tareas} />
          </Stack.Navigator>
             
           
     </NavigationContainer>
     
   );
-}
+  }
+
+
+
