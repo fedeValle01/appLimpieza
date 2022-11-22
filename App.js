@@ -6,8 +6,8 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, si
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
-import firebaseConfig from './firebase-config';
-import { Sectors, LoginScreen, HomeScreen} from "./src/screens"
+import firebaseConfig from './src/firebase-config';
+import { Sectors, LoginScreen, HomeScreen, TaskScreen} from "./src/screens"
 
 
 const styles = StyleSheet.create({
@@ -25,19 +25,12 @@ const db = getFirestore(app);
 const Stack = createNativeStackNavigator();
 
 
-function Tareas({navigation}) {
 
-  return(
-  <SafeAreaView style = {styles.container}>
-    <Text>Taks</Text>
-  </SafeAreaView>
-  )
-}
 
 
 
 export default function App() {
-   
+  
 
   return (
     
@@ -46,7 +39,7 @@ export default function App() {
             <Stack.Screen name = "Login" component = {LoginScreen}/>
             <Stack.Screen name = "Home" component = {HomeScreen}/>
             <Stack.Screen name = "Sectors" component = {Sectors}/>
-            <Stack.Screen name = "Tasks" component = {Tareas} />
+            <Stack.Screen name = "Tasks" component = {TaskScreen} />
          </Stack.Navigator>
             
           

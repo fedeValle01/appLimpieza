@@ -2,10 +2,10 @@ import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore'
-import firebaseConfig from '../../firebase-config';
+import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 
-export default function Sector({navigation, route })  {
+export default function Sector({navigation, route})  {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const numbers = [1, 2, 3, 4, 5];
@@ -100,13 +100,11 @@ function ListItem(props) {
       <SafeAreaView style = {styles.container}>
         <Text>Sectores screen</Text>
         <NumberList numbers = {numbers}/>
-        {/* {sectors.map(sector =><SectorComp key={sector.sector_name} {...sector} />)} */}
+
         
+          {/* <Text>uid {route.params.uid} </Text> */}
         
-        <TouchableOpacity onPress = {()=> {console.log('sectorNames: ', sectorNames)} } >
-          <Text>Ver {route.params.email} </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={()=> {navigation.navigate('Tasks')}}>
+        <TouchableOpacity onPress={()=> {navigation.navigate('Tasks', {uid: route.params.uid})}}>
           <Text>Ir a Tasks</Text>
         </TouchableOpacity>
 

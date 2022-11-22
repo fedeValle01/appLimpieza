@@ -1,9 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import { Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, getIdToken} from 'firebase/auth'
+import { initializeApp } from 'firebase/app'
+import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 
-export default function HomeScreen({navigation}) {
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+ 
+export default function HomeScreen({navigation, route}) {
 
     const [sector, setSector] = useState('');
     const [description, setDescription] = useState('');
@@ -18,8 +26,21 @@ export default function HomeScreen({navigation}) {
         sector_name: sector,
         sector_description: description
       });
-    }
+    } 
+    
+    useEffect(() => {
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          user.getIdToken().then(function(idToken) {  // <------ Check this line          
+          // console.log(idToken); 
+          console.log("ya tienes sesión iniciada con:"+route.params.uid);
+          });
+      }
+         
   
+          
+      });
+    }, []);
   
     return (
       <SafeAreaView style = {styles.container}>
@@ -31,9 +52,12 @@ export default function HomeScreen({navigation}) {
         <TouchableOpacity onPress={handleCreateSector}>
           <Text>Crear sector</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {email: email})}}>
+        <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {uid: route.params.uid})}}>
           <Text>Ver sectores</Text>
         </TouchableOpacity>
+        <Text>Ver {route.params.uid} </Text>
+
+        
       </SafeAreaView>
     )
   }

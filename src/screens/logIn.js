@@ -1,9 +1,17 @@
 import React, {useEffect, useState, Component} from 'react';
 import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, signInWithCustomToken, AuthCredential, getIdToken} from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, getIdToken} from 'firebase/auth'
+import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { initializeApp } from 'firebase/app'
-import firebaseConfig from '../../firebase-config';
+import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
+
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+
 
 export default function LoginScreen({navigation}) {
 
@@ -11,33 +19,39 @@ export default function LoginScreen({navigation}) {
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
   const [UserCredential, setUserCredential] = useState('');
-  
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  
-  
+  const [name, setName] = useState('');
 
-  const handeCreateAccount = () => {
-    createUserWithEmailAndPassword(auth, email, password)
+  
+  const createUser = async (uid) =>{
+    await setDoc(doc(db, 'user', uid), {
+      username: name
+    });
+  }
+
+
+  const handeCreateAccount = async () => {
+    await createUserWithEmailAndPassword(auth, email, password)
     .then((UserCredential) =>{
       console.log('Cuenta con email '+email+ 'creada ');
       setUser(user);
       setUserCredential(UserCredential);
+      let uid = UserCredential.user.uid;
+      createUser(uid);
     })
     .catch(error => {
       alert(error);
-      
     })
+    
+    
   }
   const handeSignIn = () => {
     signInWithEmailAndPassword(auth, email, password)
     .then((UserCredential) =>{
       console.log('Ingresado');
-      console.log(user);
-      setUser(user);
       setUserCredential(UserCredential);
-      console.log('UserCredential: '+UserCredential+ ' user: '+user);
-      navigation.navigate("Home");
+      console.log('UserCredential: '+UserCredential.user.uid+ ' user: '+user);
+      let uid = UserCredential.user.uid;
+      navigation.navigate("Home", {uid: uid});
     })
     .catch(error => {
       alert(error);
@@ -46,9 +60,7 @@ export default function LoginScreen({navigation}) {
   const helloAlert = () => {
       alert("Hello World!");
   }
-  const viewCred = () => {
-    alert("Cred: "+ auth);
-  }
+  
 
 const logInWithCred = async () => {
   signInWithEmailAndPassword(auth, email, password)
@@ -58,7 +70,6 @@ const logInWithCred = async () => {
       setUser(user);
       setUserCredential(UserCredential);
       console.log('UserCredential: '+UserCredential+ ' user: '+user);
-      navigation.navigate("Home");
     })
     .catch(error => {
       alert(error);
@@ -69,17 +80,10 @@ const logInWithCred = async () => {
   useEffect(() => {
     auth.onAuthStateChanged((user) => {
       if (user) {
-        user.getIdToken().then(function(idToken) {  
-        });
+        console.log("ya tienes sesión iniciada con: "+name+', UID: '+user.uid);
+        navigation.navigate('Home', {uid: user.uid})
     }
-        console.log("ya tienes sesión iniciada con:", user.email+ ' cred: '+ UserCredential);
-        setEmail(user.email);
-        setPassword(user.password);
-      //   signInWithCustomToken(user.getIdToken()).then(() => {
-      //   console.log('ingreso por token');
-      //   navigation.navigate("Home");
-      // })
-      
+        
     });
   }, []);
 
@@ -87,6 +91,8 @@ const logInWithCred = async () => {
     
     <SafeAreaView style = {styles.container}>
       <Text>Login Screen</Text>
+      <Text style={{color: "red"}}>Nombre</Text>
+      <TextInput placeholder='Nombre' onChangeText = {(text) => setName(text)}></TextInput>
       <Text style={{color: "red"}}>E-mail</Text>
       <TextInput placeholder='emailc' onChangeText = {(text) => setEmail(text)}></TextInput>
       <Text style={{color: "red"}}>Password</Text>
@@ -103,13 +109,10 @@ const logInWithCred = async () => {
       <TouchableOpacity onPress={helloAlert}>
         <Text>Alerta</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={viewCred}>
-        <Text>viewCred</Text>
-      </TouchableOpacity>  
       <TouchableOpacity onPress={logInWithCred}>
         <Text>logInWithCred</Text>
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {email: email})}}>
+      <TouchableOpacity onPress={() => {navigation.navigate('Sectors', {name: name})}}>
         <Text>Ver sectores</Text>
       </TouchableOpacity>
     </SafeAreaView>
