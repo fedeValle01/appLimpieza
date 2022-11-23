@@ -107,6 +107,9 @@ function ListItem(props) {
         <TouchableOpacity onPress={()=> {navigation.navigate('Tasks', {uid: route.params.uid})}}>
           <Text>Ir a Tasks</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={()=> {navigation.navigate('AddTasks', {uid: route.params.uid})}}>
+          <Text>Ir a Crear tareas</Text>
+        </TouchableOpacity>
 
         <SectorList sectors = {sectors}/>
       </SafeAreaView>

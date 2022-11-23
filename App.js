@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from './src/firebase-config';
-import { Sectors, LoginScreen, HomeScreen, TaskScreen} from "./src/screens"
+import { Sectors, LoginScreen, HomeScreen, TaskScreen, AddTasks} from "./src/screens"
 
 
 const styles = StyleSheet.create({
@@ -40,6 +40,7 @@ export default function App() {
             <Stack.Screen name = "Home" component = {HomeScreen}/>
             <Stack.Screen name = "Sectors" component = {Sectors}/>
             <Stack.Screen name = "Tasks" component = {TaskScreen} />
+            <Stack.Screen name = "AddTasks" component = {AddTasks} />
          </Stack.Navigator>
             
           
