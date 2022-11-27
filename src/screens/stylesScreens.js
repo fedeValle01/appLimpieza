@@ -7,5 +7,6 @@ import {StyleSheet} from 'react-native';
           alignItems: 'center',
           justifyContent: 'center',
         },
+        
       });
 export default styles;

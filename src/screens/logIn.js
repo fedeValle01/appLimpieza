@@ -1,6 +1,6 @@
 import React, {useEffect, useState, Component} from 'react';
 import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, getIdToken} from 'firebase/auth'
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setUserCredential, signInWithCredential, getIdToken} from 'firebase/auth'
 import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { initializeApp } from 'firebase/app'
 import firebaseConfig from '../firebase-config';
@@ -18,7 +18,6 @@ export default function LoginScreen({navigation}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [user, setUser] = useState(null);
-  const [UserCredential, setUserCredential] = useState('');
   const [name, setName] = useState('');
 
   
@@ -48,7 +47,6 @@ export default function LoginScreen({navigation}) {
     signInWithEmailAndPassword(auth, email, password)
     .then((UserCredential) =>{
       console.log('Ingresado');
-      setUserCredential(UserCredential);
       console.log('UserCredential: '+UserCredential.user.uid+ ' user: '+user);
       let uid = UserCredential.user.uid;
       navigation.navigate("Home", {uid: uid});

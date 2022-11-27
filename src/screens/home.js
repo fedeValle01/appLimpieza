@@ -6,7 +6,6 @@ import { initializeApp } from 'firebase/app'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
@@ -36,7 +35,8 @@ export default function HomeScreen({navigation, route}) {
           console.log("ya tienes sesión iniciada con:"+route.params.uid);
           });
       }
-         
+      
+      
   
           
       });

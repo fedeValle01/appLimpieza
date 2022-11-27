@@ -10,6 +10,9 @@ import firebaseConfig from './src/firebase-config';
 import { Sectors, LoginScreen, HomeScreen, TaskScreen, AddTasks} from "./src/screens"
 
 
+
+
+
 const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -30,7 +33,8 @@ const Stack = createNativeStackNavigator();
 
 
 export default function App() {
-  
+
+ 
 
   return (
     
