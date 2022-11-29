@@ -12,7 +12,13 @@ export default function Sector({navigation, route})  {
     const [sectors, setSectors ] = useState([]);
     
 
-
+const irACrearSector = () =>{
+  if (route.params.uid == 'UDUaYCyuVJYCTP7Y21DJ7ylD8aO2'){
+    // console.log('Estamos ante el creador');
+    navigation.navigate('AddSector', {uid: route.params.uid});
+  }
+  else alert('solo admin');
+}
 
 
 
@@ -36,24 +42,7 @@ function ListItem(props) {
     );
   }
   
-  
-  
-  //----------consolelogsectors--------
-  // getDocs(collection(db, "sectors")).then(docSnap => {
-  //   docSnap.forEach((doc)=> {
-  //     sectors.push({ ...doc.data(), id:doc.id })
-      
-  //   });
-    
-  //       const listSectors = sectors.map((sector,i) =>{
-  //         console.log("Sector "+i+': ',sector.sector_name);
-  //         console.log("listSectors: ",listSectors);
-  //         console.log("sectors: ",sectors);
-  //       }    
-  // );
-  
-  // });
-  
+ 
   
   const SectorList = (props) => {
     const sectors = props.sectors;
@@ -98,6 +87,7 @@ function ListItem(props) {
     return (
         
       <SafeAreaView style = {styles.container}>
+        
         <Text>Sectores screen</Text>
         <NumberList numbers = {numbers}/>
 
@@ -107,11 +97,15 @@ function ListItem(props) {
         <TouchableOpacity onPress={()=> {navigation.navigate('Tasks', {uid: route.params.uid})}}>
           <Text>Ir a Tasks</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={()=> {navigation.navigate('AddTasks', {uid: route.params.uid})}}>
+        <TouchableOpacity onPress={()=> {navigation.navigate('Agregar Tarea', {uid: route.params.uid})}}>
           <Text>Ir a Crear tareas</Text>
         </TouchableOpacity>
 
         <SectorList sectors = {sectors}/>
+
+        <TouchableOpacity onPress={irACrearSector}>
+          <Text>Ir a Crear Sector</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     )
     

@@ -19,7 +19,7 @@ export default function AddTasks ({navigate, route}){
     const [items, setItems] = useState([]);
     const [task_description, setTask_description] = useState(null);
     const [task_name, setTask_name] = useState(null);
-    
+    const [task_frec, setTask_frec] = useState(1);
 
 
       //Add element to objet
@@ -38,14 +38,16 @@ export default function AddTasks ({navigate, route}){
 
 
     const handleCreateTask = async () => {
-      
-      await setDoc(doc(db, 'tasks', task_name), {
+      if (!task_name){
+        Alert.alert('Falta nombre de la tarea');
+      }else{
+        await setDoc(doc(db, 'tasks', task_name), {
         task_name: task_name,
         task_description: task_description,
-        task_sector: value
+        task_sector: value,
+        task_frec: task_frec,
       }).then(Alert.alert('Tarea Creada'));
-      
-      // console.log('valorPressed:'+ value+ ' task_dsq: '+task_description +' task_name: '+task_name);
+    }  
     } 
     
     
@@ -105,7 +107,6 @@ export default function AddTasks ({navigate, route}){
               onChangeText={(text) => setTask_name(text)}
               placeholder="Nombre Tarea"
               value={task_name}
-              focusable
             />
             
             <Text style = {{textAlign: 'center'}} >Descripción</Text>
@@ -120,12 +121,12 @@ export default function AddTasks ({navigate, route}){
                 maxLength={200}
               />
           
+          <Text style = {{textAlign: 'center'}} >Sector</Text>
 
-
-            <DropDownPicker containerStyle ={{width: 200}}
-                placeholder='Sectores'
+            <DropDownPicker containerStyle ={{width: 200, marginTop: 5}}
+                placeholder='Sector'
                 placeholderStyle={{
-                    textAlign: 'center'
+                    
                   }}
                 max={20}
                 open={open}
@@ -136,9 +137,15 @@ export default function AddTasks ({navigate, route}){
                 setItems={getSector}
                 onPress = {() =>{getSector(sectors)}}
                 />
+                <Text style = {{textAlign: 'center', marginTop:15}} >Frecuencia por semana</Text>
+                <TextInput
+                style={txtInput.input}
+                onChangeText={(text) => setTask_frec(text)}
+                placeholder="(Por defecto 1)"
+                
+              />
           <View style = {{width: 200, marginTop: 25}}>
-            <Button 
-              
+            <Button               
               title="Agregar Tarea"
               color="#43c6ac"
               onPress={handleCreateTask}

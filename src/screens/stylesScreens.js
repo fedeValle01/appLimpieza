@@ -7,6 +7,15 @@ import {StyleSheet} from 'react-native';
           alignItems: 'center',
           justifyContent: 'center',
         },
+        row: {
+          flex: 1,
+          padding: 15,
+        },
+        item: {
+          padding: 10,
+          fontSize: 18,
+          height: 44,
+        },
         
       });
 export default styles;

@@ -7,7 +7,7 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore';
 import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from './src/firebase-config';
-import { Sectors, LoginScreen, HomeScreen, TaskScreen, AddTasks} from "./src/screens"
+import { Sectors, AddSector, LoginScreen, HomeScreen, TaskScreen, AddTasks} from "./src/screens"
 
 
 
@@ -43,8 +43,9 @@ export default function App() {
             <Stack.Screen name = "Login" component = {LoginScreen}/>
             <Stack.Screen name = "Home" component = {HomeScreen}/>
             <Stack.Screen name = "Sectors" component = {Sectors}/>
+            <Stack.Screen name = "AddSector" component = {AddSector} />
             <Stack.Screen name = "Tasks" component = {TaskScreen} />
-            <Stack.Screen name = "AddTasks" component = {AddTasks} />
+            <Stack.Screen name = "Agregar Tarea" component = {AddTasks} />
          </Stack.Navigator>
             
           
