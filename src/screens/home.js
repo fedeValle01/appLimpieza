@@ -7,12 +7,11 @@ import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 import ListGroup from 'react-bootstrap/ListGroup';
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
+  
  
 export default function HomeScreen({navigation, route}) {
 
+    const auth = getAuth(app);
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const [sectors, setSectors ] = useState([]);
@@ -83,14 +82,17 @@ export default function HomeScreen({navigation, route}) {
           <Text>Ir a Crear Sector</Text>
         </TouchableOpacity>
 
-        <FlatList
-        data={sectors}
-        renderItem={({item}) => <View style={styles.container}><TouchableOpacity>
-                                  <Text style={styles.item}>{item.key}</Text>
-                                </TouchableOpacity>
-                                </View>
-                                }>
+        <TouchableOpacity style = {{width: 200, height: 40, marginTop: 50}} onPress={()=> {navigation.navigate('Asignar Tarea', {uid: route.params.uid})}}>
+          <Text>Ir a Asignar Tareas</Text>
+        </TouchableOpacity>
 
+        <FlatList
+          data={sectors}
+          renderItem={({item}) => <View style={styles.container}><TouchableOpacity>
+                                    <Text style={styles.item}>{item.key}</Text>
+                                  </TouchableOpacity>
+                                  </View>
+                                  }>
         </FlatList>
         
       </SafeAreaView>

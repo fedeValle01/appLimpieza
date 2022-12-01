@@ -12,7 +12,6 @@ export default function AddTasks ({navigate, route}){
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const [sectors, setSectors ] = useState([]);
 
     const [open, setOpen] = useState(false);
     const [value, setValue] = useState(null);
@@ -23,18 +22,7 @@ export default function AddTasks ({navigate, route}){
 
 
       //Add element to objet
-    const getSector = (sectors) =>{
-        let arregloNombres = [];
-        if(sectors){
-            sectors.forEach((sector) => {
-                let singleObj = {};
-                singleObj['label'] = sector.sector_name;
-                singleObj['value'] = sector.sector_name;
-                arregloNombres.push(singleObj);
-          });
-          setItems(arregloNombres);
-        }else console.log('No hay sectores');
-    }
+    
 
 
     const handleCreateTask = async () => {
@@ -47,26 +35,13 @@ export default function AddTasks ({navigate, route}){
         task_sector: value,
         task_frec: task_frec,
       }).then(Alert.alert('Tarea Creada'));
-    }  
-    } 
+     }  
+    }
+  
     
     
-    const stylesButton = StyleSheet.create({
-      
-      title: {
-        textAlign: 'center',
-        marginVertical: 8,
-      },
-      fixToText: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-      },
-      separator: {
-        marginVertical: 8,
-        borderBottomColor: '#737373',
-        borderBottomWidth: StyleSheet.hairlineWidth,
-      },
-    });
+    
+    
   
     
 
@@ -87,15 +62,26 @@ export default function AddTasks ({navigate, route}){
         });
         
         const unsuscribe = onSnapshot(q, querySnapshot =>{
-          setSectors(
+          let sectors = [];
+
+          sectors = (
             querySnapshot.docs.map(doc =>({
               sector_name: doc.data().sector_name,
               sector_description: doc.data().sector_description,
             }))
           )
-        })
-        
-        getSector(sectors);
+
+          let arregloNombres = [];
+          if(sectors){
+              sectors.forEach((sector) => {
+                  let singleObj = {};
+                  singleObj['label'] = sector.sector_name;
+                  singleObj['value'] = sector.sector_name;
+                  arregloNombres.push(singleObj);
+            });
+            setItems(arregloNombres);
+          }else console.log('No hay sectores');
+          })
         return unsuscribe;
       }, [])
 
@@ -125,17 +111,12 @@ export default function AddTasks ({navigate, route}){
 
             <DropDownPicker containerStyle ={{width: 200, marginTop: 5}}
                 placeholder='Sector'
-                placeholderStyle={{
-                    
-                  }}
                 max={20}
                 open={open}
                 value={value}
                 items={items}
                 setOpen={setOpen}
                 setValue={setValue}
-                setItems={getSector}
-                onPress = {() =>{getSector(sectors)}}
                 />
                 <Text style = {{textAlign: 'center', marginTop:15}} >Frecuencia por semana</Text>
                 <TextInput
@@ -173,5 +154,23 @@ const txtInputMultiline = StyleSheet.create({
       width: 200,
       alignContent: 'flex-start',
       textAlignVertical: 'top'
+    },
+  });
+
+
+  const stylesButton = StyleSheet.create({
+      
+    title: {
+      textAlign: 'center',
+      marginVertical: 8,
+    },
+    fixToText: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    separator: {
+      marginVertical: 8,
+      borderBottomColor: '#737373',
+      borderBottomWidth: StyleSheet.hairlineWidth,
     },
   });

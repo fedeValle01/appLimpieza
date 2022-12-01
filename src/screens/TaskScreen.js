@@ -10,7 +10,6 @@ export default function TaskScreen({navigation, route}) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const [user, setUser ] = useState([]);
-  const [papa, setPapa ] = useState('coliflor');
 
   function ListItem(props) {
     return(
