@@ -1,17 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import { StyleSheet, Text, SafeAreaView, View, Image, TextInput, Alert, TouchableOpacity, Button, FlatList } from 'react-native';
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where } from 'firebase/firestore'
+import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
-import DropDownPicker from 'react-native-dropdown-picker';
 import * as Notifications from 'expo-notifications';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
+import { Checkbox } from 'react-native-paper';
 
 export default function AssignTaskScreen ({navigate, route}){
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    const [vuelta, setVuelta] = useState(1);
 
     const [value, setValue] = useState(null);
     const [sectors, setSectors] = useState([]);
@@ -20,56 +22,110 @@ export default function AssignTaskScreen ({navigate, route}){
     const [task_frec, setTask_frec] = useState(1);
     const [items, setItems] = useState([]);
     const [user, setUser ] = useState([]);
-    const [dropdown, setDropdown] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
     const [selected, setSelected] = useState([]);
     const [taskSelected, setTaskSelected ] = useState([]);
-    const [bolean, setBolean] = useState(true);
+    const [taskAvaiable, setTaskAvaiable] = useState([]);
 
+    //efect on update checklist
+    const onUpdateCheck = useRef(true);
+
+    const [checkList, setCheckList] = useState([]);
 
     
 
+
+    
+    const [checked, setChecked] = useState('unchecked');
+
+    const [data2, setdata2n] = useState([
+      {key: '1'},
+      {key: '2'},
+      {key: '3'},
+      {key: '4'},
+    ]);
+
+    const setearTask = () =>{
+      setTask_name(data2);
+    }
+
+    const verChecklist = () =>{
+      
+      checkList.forEach((element, i) => {
+        console.log('tarea: '+i+': '+element);
+      });
+    }
   const verTaskSelected = () =>{
-      console.log('taskSelected: '+task_name);
-      console.log('sectorSelected: '+task_name);
+    task_name.forEach(element => {
+      console.log('taskName: '+element.key);
+    });
 
     }
-  const ejecuteQuery = ({item}) => {
 
+
+   const viewTaskAvaiable = () => {
+      setTask_name(taskAvaiable);
+   }
+  const ejecuteQuery = (item) => {
       let collectionRef = collection(db, 'tasks');
-      let q = query(collectionRef, where("task_sector", "==", "cocina"))
-      task_name.forEach(element => {
-        console.log('taskname: '+ element.title);
-       });
-      let unsuscribe = onSnapshot(q, querySnapshot =>{
+      let unsuscribe;
+      let TaskQuery = [];
+      let Tasks = [];
 
-        setTask_name(
-          querySnapshot.docs.map(doc =>({
-            title: doc.data().task_name,
-          }))
-        )
+      if (item){
+      item.forEach(element => {
+        let q = query(collectionRef, where("task_sector", "==", element))
+        unsuscribe = onSnapshot(q, querySnapshot =>{
+
+            TaskQuery = (
+            querySnapshot.docs.map(doc =>({
+              key: doc.data().task_name,
+            }))
+          )
+          if (TaskQuery == ''){
+            console.log('taskquery vacio');
+          }else{
+
+            TaskQuery.forEach((task) => {
+              let singleObj = {};
+              singleObj['key'] = task.key;
+              Tasks.push(singleObj);
+        });
         
-       })
-       if (!item){
-        console.log('No hay item');
-        setTask_name();
-       }
+              setTaskAvaiable(Tasks);
+          }
+           
+         })
+       });
        
+
+      }else{
+        console.log('se setea vacio');
+        setTask_name([]);
+        
+      }
+
+       return unsuscribe;
+      
+      
   }
 
   const renderItem = ({ item }) => {
+    if (selected){
+      console.log('selected: '+selected);
 
-      
-          if (task_name){ 
-            console.log('Que item hay aca'+item.title);
-            console.log('Y en taskname?'+task_name.title);
-
-          return (
+      console.log('item renderItem: '+item.title);
+      return(
+        <Item title={item.title} />
+      );
+    }else{
+      setTask_name([]);
+    }
     
-            <Item title={item.title} />
-            
-          )
-        }
-}
+  } 
+          
+        
+
 
   const Item = ({ title }) => (
     <View style={styles.itemFlatlist}>
@@ -105,40 +161,77 @@ export default function AssignTaskScreen ({navigate, route}){
      
     const handleCreateTask = async () => {
       if (!task_name){
-        Alert.alert('Falta nombre de la tarea');
-      }else{
-        await setDoc(doc(db, 'tasks', task_name), {
-        task_name: task_name,
-        task_description: task_description,
-        task_sector: value,
-        task_frec: task_frec,
-      }).then(Alert.alert('Tarea Creada'));
+        Alert.alert('No hay tareas en ese sector');
+      }else if(selectedUser == null){
+        Alert.alert('No hay usuario seleccionado');
+      }else {
+        let cantChecks = 0;
+        checkList.forEach(element => {
+          if (element=='unchecked'){
+            cantChecks++;
+          }
+        });
+        if (cantChecks == checkList.length){
+          Alert.alert('Por lo menos hay que asignar 1 tarea');
+        }else{
+          
+          //Add AssignTask
+          let data = [];
+          task_name.forEach((element, i) => {
+            if (checkList[i] == 'checked'){
+              data.push(element.key);
+            }
+          });
+          await setDoc(doc(db, 'assigned_tasks', selectedUser), {
+            active_tasks: data,
+          }).then(Alert.alert('Tareas asignadas'));
      }  
     }
+  }
+
+    const handleCheck = (i) => {
+
+      if (checkList.length>0){
+        if (checkList[i]=='unchecked'){
+          checkList[i] = 'checked';
+        }else{
+          checkList[i] = 'unchecked';
+        }
+      }
+        
+    }
   
-    
-    
-    
-  
-    
+    const getI = (task) =>{
+      let check;
+      console.log('entro getI');
+      if (task_name){
+
+        task_name.forEach((element, i) => {
+          if (task==element.key){
+            check = i;
+          }
+        });
+    }else console.log('no hay task_name');
+
+      return check;
+    }
 
 
     useEffect(() =>{
-        
 
+        
+        console.log('entro assignTaskScreen');
         //-----------Notifications------------------
         Notifications.scheduleNotificationAsync({
           content: {
-            title: "TasksAdd!",
-            body: 'Limpia gato!',
+            title: "Ultimo dia para limpiar!",
+            body: 'Tenes tareas en: cocina, patio externo',
           },
           trigger: {
             seconds: 10,
           },
         });
         
-
-
 
         let collectionRef = collection(db, 'sectors');
         let q = query(collectionRef, orderBy('sector_name', 'desc'))
@@ -179,9 +272,18 @@ export default function AssignTaskScreen ({navigate, route}){
                 querySnapshot.docs.map(doc =>({
                   label: doc.data().username,
                   value: doc.data().username,
+                  uid: doc.data().uid,
                 }))
                 )
-                setUser(users)
+                setUser(users);
+
+
+
+                if (onUpdateCheck.current) {
+                  onUpdateCheck.current = false;
+               } else {
+                   console.log('updateCheck');
+               }
         
          
     })
@@ -190,7 +292,6 @@ export default function AssignTaskScreen ({navigate, route}){
 
     return (
         <SafeAreaView style = {styles.container}>
-
                     <Dropdown
                         style={styles.dropdown}
                         containerStyle={styles.shadow}
@@ -199,12 +300,11 @@ export default function AssignTaskScreen ({navigate, route}){
                         searchPlaceholder="Buscar usuario"
                         labelField="label"
                         valueField="value"
-                        label="Dropdown"
+                        label="User"
                         placeholder="Al usuario"
-                        value={dropdown}
+                        value={selectedUser}
                         onChange={item => {
-                        setDropdown(item.value);
-                            console.log('selected', item);
+                        setSelectedUser(item.uid);
                         }}
                         renderLeftIcon={() => (
                             <Image style={styles.icon}  />
@@ -232,32 +332,86 @@ export default function AssignTaskScreen ({navigate, route}){
                         addTaskSelected(item);
                         setSelected(item);
                         ejecuteQuery(item);
-
-                            console.log('item: ', item);
                         }}
                         renderItem={item => _renderItem(item)}
                         
                     />
-                    
-
-                    <FlatList
-        data={task_name}
-        renderItem={renderItem}
-        keyExtractor={task_name => task_name.title}
-      />
-
-        <TouchableOpacity onPress={verTaskSelected}><Text>Ver taskSelected</Text></TouchableOpacity>
-                    
-
-
-            
-          <View style = {{width: 200, marginTop: 25}}>
+          <View style = {{width: 200, marginTop: 15}}>
             <Button               
-              title="Agregar Tarea"
-              color="#43c6ac"
-              onPress={handleCreateTask}
+              title="Ver tareas disponibles"
+              color="#B0C4DE"
+              onPress={viewTaskAvaiable}
             />
           </View>
-        </SafeAreaView>
+
+          
+
+
+          <FlatList
+          
+              checkList={checkList}
+              data={task_name}
+              
+              renderItem={({item}) => {
+
+                console.log('se renderiza con item: '+item.key);
+                let task = item.key;
+                
+                let j = 0;
+                //  si no hay checklist, la setea unchecked
+                if (checkList.length == 0){
+                  for (j=0; j < task_name.length; j++) {
+                    console.log('i: '+i);
+                    checkList[j]='unchecked';
+                  }
+                }
+
+
+                let i;
+                i = getI(task);
+
+                console.log('tarea: '+task+' en la posicion: '+i);
+               return (
+                <View style = {styles.row}>
+                  <View>
+                    <Text style={styles.item}>{task}</Text>
+                  </View>
+                  <View style={{ flex: 1 }} />
+                  <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+                    <Checkbox
+                    onPress={() =>{
+                      handleCheck(i);
+                      setTask_frec(1);
+                    }}
+                      status={checkList[i]}
+                    />
+                  </View>
+
+                </View>
+              ) }
+            }
+            />
+
+        <View style = {{flex:1,}}>
+
+        
+          <TouchableOpacity onPress={verTaskSelected}><Text>Ver taskSelected</Text></TouchableOpacity>
+          <TouchableOpacity onPress={setearTask}><Text>setearTask</Text></TouchableOpacity>
+
+          <TouchableOpacity onPress={verChecklist}><Text>verChecklist</Text></TouchableOpacity>
+          
+          
+  
+              
+            <View style = {{width: 200, marginTop: 25}}>
+              <Button               
+                title="Asignar Tareas"
+                color="#43c6ac"
+                onPress={handleCreateTask}
+              />
+            </View>
+        </View>
+
+      </SafeAreaView>
     )
 }

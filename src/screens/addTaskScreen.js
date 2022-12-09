@@ -1,11 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, Image, TouchableOpacity, Button } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as Notifications from 'expo-notifications';
+import { Dropdown } from 'react-native-element-dropdown';
 
 
 export default function AddTasks ({navigate, route}){
@@ -19,20 +20,34 @@ export default function AddTasks ({navigate, route}){
     const [task_description, setTask_description] = useState(null);
     const [task_name, setTask_name] = useState(null);
     const [task_frec, setTask_frec] = useState(1);
+    const [dropdown, setDropdown] = useState(null);
+    const [sectorSelected, setSectorSelected] = useState(null);
 
+    
 
       //Add element to objet
     
 
+      const _renderItem = item => {
+        return (
+        <View style={styles.item}>
+            <Text style={styles.textItem}>{item.label}</Text>
+            <Image style={styles.icon}  />
+        </View>
+        );
+    }
 
     const handleCreateTask = async () => {
       if (!task_name){
         Alert.alert('Falta nombre de la tarea');
-      }else{
+      }if (!sectorSelected){
+        Alert.alert('Falta seleccionar sector');
+      }
+      else{
         await setDoc(doc(db, 'tasks', task_name), {
         task_name: task_name,
         task_description: task_description,
-        task_sector: value,
+        task_sector: sectorSelected,
         task_frec: task_frec,
       }).then(Alert.alert('Tarea Creada'));
      }  
@@ -94,7 +109,27 @@ export default function AddTasks ({navigate, route}){
               placeholder="Nombre Tarea"
               value={task_name}
             />
-            
+            <Dropdown
+                        style={styles.dropdown}
+                        containerStyle={styles.shadow}
+                        data={items}
+                        search
+                        searchPlaceholder="Buscar sector"
+                        labelField="label"
+                        valueField="value"
+                        label="Dropdown"
+                        placeholder="Sector"
+                        value = {value}
+                        onChange = {item => {                                                                                                                                                                                                                                                                         setDropdown(item.value);
+                            console.log('selected', item.value);
+                            setSectorSelected(item.value)
+                        }}
+                        renderLeftIcon={() => (
+                            <Image style={styles.icon}  />
+                        )}
+                        renderItem={item => _renderItem(item)}
+                        textError="Error"
+                    />
             <Text style = {{textAlign: 'center'}} >Descripción</Text>
             <TextInput
               onChangeText={(text) => setTask_description(text)}
@@ -107,24 +142,9 @@ export default function AddTasks ({navigate, route}){
                 maxLength={200}
               />
           
-          <Text style = {{textAlign: 'center'}} >Sector</Text>
 
-            <DropDownPicker containerStyle ={{width: 200, marginTop: 5}}
-                placeholder='Sector'
-                max={20}
-                open={open}
-                value={value}
-                items={items}
-                setOpen={setOpen}
-                setValue={setValue}
-                />
-                <Text style = {{textAlign: 'center', marginTop:15}} >Frecuencia por semana</Text>
-                <TextInput
-                style={txtInput.input}
-                onChangeText={(text) => setTask_frec(text)}
-                placeholder="(Por defecto 1)"
-                
-              />
+          
+
           <View style = {{width: 200, marginTop: 25}}>
             <Button               
               title="Agregar Tarea"

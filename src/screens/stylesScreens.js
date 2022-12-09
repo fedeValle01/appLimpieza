@@ -6,12 +6,7 @@ import {StyleSheet} from 'react-native';
           backgroundColor: '#fff',
           alignItems: 'center',
           justifyContent: 'center',
-        },
-        row: {
-          flex: 1,
-          padding: 15,
-        },
-        
+        },    
         dropdown: {
           backgroundColor: 'white',
           borderBottomColor: 'gray',
@@ -24,12 +19,27 @@ import {StyleSheet} from 'react-native';
           width: 18,
           height: 18,
       },
+      row: {
+        marginTop: 3,
+        flexDirection: 'row',
+        flex: 1,
+      },
       item: {
-          paddingVertical: 17,
           paddingHorizontal: 4,
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
+          padding: 10,
+          fontSize: 18,
+          height: 44,
+      },
+      
+      check: {
+          paddingHorizontal: 4,
+          flexDirection: 'row',
+          justifyContent: 'center',
+          alignItems: 'flex-end',
+          textAlign: 'right',
       },
       textItem: {
           flex: 1,
@@ -65,6 +75,12 @@ import {StyleSheet} from 'react-native';
       titleFlatlist: {
         fontSize: 24,
       },
+      titleHeader: {
+        fontSize: 30,
+        fontWeight: '200',
+        color: "#553c9a",
+      }
+      
         
       });
 export default styles;
