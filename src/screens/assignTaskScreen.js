@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { StyleSheet, Text, SafeAreaView, View, Image, TextInput, Alert, TouchableOpacity, Button, FlatList } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, Image, TextInput, Alert, TouchableOpacity, Button, FlatList, ScrollView, SectionList } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
@@ -26,6 +26,7 @@ export default function AssignTaskScreen ({navigate, route}){
     const [selected, setSelected] = useState([]);
     const [taskSelected, setTaskSelected ] = useState([]);
     const [taskAvaiable, setTaskAvaiable] = useState([]);
+    const [prevIndex, setPrevIndex] = useState(0);
 
     //efect on update checklist
     const onUpdateCheck = useRef(true);
@@ -38,6 +39,26 @@ export default function AssignTaskScreen ({navigate, route}){
     
     const [checked, setChecked] = useState('unchecked');
 
+
+    const DATA = [
+      {
+        title: "Main dishes",
+        data: ["Pizza", "Burger", "Risotto"]
+      },
+      {
+        title: "Sides",
+        data: ["French Fries", "Onion Rings", "Fried Shrimps"]
+      },
+      {
+        title: "Drinks",
+        data: ["Water", "Coke", "Beer"]
+      },
+      {
+        title: "Desserts",
+        data: ["Cheese Cake", "Ice Cream"]
+      }
+    ];
+
     const [data2, setdata2n] = useState([
       {key: '1'},
       {key: '2'},
@@ -45,9 +66,7 @@ export default function AssignTaskScreen ({navigate, route}){
       {key: '4'},
     ]);
 
-    const setearTask = () =>{
-      setTask_name(data2);
-    }
+    let contador = -1;
 
     const verChecklist = () =>{
       
@@ -56,24 +75,30 @@ export default function AssignTaskScreen ({navigate, route}){
       });
     }
   const verTaskSelected = () =>{
+    let id = [];
+    console.log('paso n veces');
     task_name.forEach(element => {
-      console.log('taskName: '+element.key);
+    console.log('paso b veces');
+
+      id = element.id;
+      id.forEach(d => {
+        console.log('id: '+d);
+      });
     });
 
     }
 
-
-   const viewTaskAvaiable = () => {
-      setTask_name(taskAvaiable);
-   }
   const ejecuteQuery = (item) => {
       let collectionRef = collection(db, 'tasks');
       let unsuscribe;
       let TaskQuery = [];
-      let Tasks = [];
+      let tasksAndSector = [];
+      let nid = 0;
 
       if (item){
       item.forEach(element => {
+
+        
         let q = query(collectionRef, where("task_sector", "==", element))
         unsuscribe = onSnapshot(q, querySnapshot =>{
 
@@ -86,13 +111,31 @@ export default function AssignTaskScreen ({navigate, route}){
             console.log('taskquery vacio');
           }else{
 
+            let Tasks = [];
+            let id = [];
+            
             TaskQuery.forEach((task) => {
-              let singleObj = {};
-              singleObj['key'] = task.key;
-              Tasks.push(singleObj);
+              let a;
+              a = task.key;
+              id.push(nid)
+              Tasks.push(a);
+              nid++;
+              console.log('id each: '+nid);
         });
+
         
-              setTaskAvaiable(Tasks);
+
+            let singleObj = {};
+            singleObj['title'] = element;
+            singleObj['data'] = Tasks;
+            singleObj['id'] = id;
+
+
+            tasksAndSector.push(singleObj);
+        
+              setTaskAvaiable(tasksAndSector);
+
+              console.log('paso una vez por aca');
           }
            
          })
@@ -175,19 +218,110 @@ export default function AssignTaskScreen ({navigate, route}){
           Alert.alert('Por lo menos hay que asignar 1 tarea');
         }else{
           
+
           //Add AssignTask
-          let data = [];
-          task_name.forEach((element, i) => {
-            if (checkList[i] == 'checked'){
-              data.push(element.key);
-            }
+          let addData = [];
+          let search = 0;
+
+          task_name.forEach(s => {
+            let data = s.data;
+            data.forEach((task) => {
+              if (checkList[search] == 'checked'){
+                addData.push(task);
+                console.log('search: '+search);
+                console.log('task: '+task);
+              }
+              search++
+            });
+            
           });
+
           await setDoc(doc(db, 'assigned_tasks', selectedUser), {
-            active_tasks: data,
+            active_tasks: addData,
           }).then(Alert.alert('Tareas asignadas'));
      }  
     }
   }
+
+
+  const renderSectionList = ({item}) =>{
+    
+    contador++;
+    let checkIndex = 0;
+    //  si no hay checklist, la setea unchecked
+    if (checkList.length == 0){
+      task_name.forEach(s => {
+        s.data.forEach(task => {
+        checkList[checkIndex]='unchecked';
+        checkIndex++;
+        });
+      });
+    }
+    let i = contador
+    console.log('se renderiza con item '+item+' index: '+i);
+
+    return (
+      <View style = {styles.row}>
+      <View>
+        <Item title={item} />
+      </View>
+      <View style={{ flex: 1 }} />
+      <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+      <Text>{i}</Text>
+
+        <Checkbox
+        status={checkList[i]}
+        onPress={() =>{
+          handleCheck(i);
+          if (checked=='unchecked'){
+            setChecked('checked');
+          }else{
+            setChecked('unchecked');
+          }
+        }}
+        />
+      </View>
+
+    </View>
+    )
+
+
+  }
+  const renderChecklist = ({item}) => {
+                
+
+    console.log('se renderiza con item: '+item.key);
+    let task = item.key;
+    
+    let j = 0;
+    //  si no hay checklist, la setea unchecked
+    if (checkList.length == 0){
+      for (j=0; j < task_name.length; j++) {
+        console.log('i: '+i);
+        checkList[j]='unchecked';
+      }
+    }
+
+
+
+    console.log('tarea: '+task+' en la posicion: '+i);
+   return (
+    <View style = {styles.row}>
+      <View>
+        <Text style={styles.item}>{task}</Text>
+      </View>
+      <View style={{ flex: 1 }} />
+      <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+        <Checkbox
+        status={checkList[i]}
+        onPress={() =>{
+          handleCheck(i);
+        }}
+        />
+      </View>
+
+    </View>
+  ) }
 
     const handleCheck = (i) => {
 
@@ -201,19 +335,19 @@ export default function AssignTaskScreen ({navigate, route}){
         
     }
   
-    const getI = (task) =>{
-      let check;
-      console.log('entro getI');
-      if (task_name){
+    const getI = (index) =>{
 
-        task_name.forEach((element, i) => {
-          if (task==element.key){
-            check = i;
-          }
-        });
-    }else console.log('no hay task_name');
+      let prevI = prevIndex;
+    if (index==prevI){
+      setPrevIndex(0);
+      prevI = index;
+    }else{
+      prevI++;
+      setPrevIndex(prevI);
+    }
+    let i = prevI;
 
-      return check;
+      return i;
     }
 
 
@@ -340,65 +474,26 @@ export default function AssignTaskScreen ({navigate, route}){
             <Button               
               title="Ver tareas disponibles"
               color="#B0C4DE"
-              onPress={viewTaskAvaiable}
+              onPress={()=> {setTask_name(taskAvaiable)}}
             />
           </View>
 
-          
 
+        <SectionList
+          style = {{height: "40%"}}
+          sections={task_name}
+          renderItem={renderSectionList}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.SectionHeader}>{title}</Text>
+          )}
+        />
 
-          <FlatList
-          
-              checkList={checkList}
-              data={task_name}
-              
-              renderItem={({item}) => {
-
-                console.log('se renderiza con item: '+item.key);
-                let task = item.key;
-                
-                let j = 0;
-                //  si no hay checklist, la setea unchecked
-                if (checkList.length == 0){
-                  for (j=0; j < task_name.length; j++) {
-                    console.log('i: '+i);
-                    checkList[j]='unchecked';
-                  }
-                }
-
-
-                let i;
-                i = getI(task);
-
-                console.log('tarea: '+task+' en la posicion: '+i);
-               return (
-                <View style = {styles.row}>
-                  <View>
-                    <Text style={styles.item}>{task}</Text>
-                  </View>
-                  <View style={{ flex: 1 }} />
-                  <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-                    <Checkbox
-                    onPress={() =>{
-                      handleCheck(i);
-                      setTask_frec(1);
-                    }}
-                      status={checkList[i]}
-                    />
-                  </View>
-
-                </View>
-              ) }
-            }
-            />
+        
 
         <View style = {{flex:1,}}>
 
         
-          <TouchableOpacity onPress={verTaskSelected}><Text>Ver taskSelected</Text></TouchableOpacity>
-          <TouchableOpacity onPress={setearTask}><Text>setearTask</Text></TouchableOpacity>
 
-          <TouchableOpacity onPress={verChecklist}><Text>verChecklist</Text></TouchableOpacity>
           
           
   

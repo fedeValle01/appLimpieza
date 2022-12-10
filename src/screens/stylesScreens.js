@@ -79,7 +79,11 @@ import {StyleSheet} from 'react-native';
         fontSize: 30,
         fontWeight: '200',
         color: "#553c9a",
-      }
+      },
+      SectionHeader: {
+        fontSize: 32,
+        backgroundColor: "#fff"
+      },
       
         
       });
