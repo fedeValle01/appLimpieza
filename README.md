@@ -3,6 +3,7 @@
 (Sujeto a modificacion)
 
 -----------------Requerimientos funcionales-----------------------
+
 La aplicacion debera poder:
 
 1. Crear, mostrar, modificar y eliminar Usuarios.
