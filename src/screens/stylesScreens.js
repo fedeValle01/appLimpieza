@@ -67,13 +67,15 @@ import {StyleSheet} from 'react-native';
       },
       itemFlatlist: {
         width: 250,
-        backgroundColor: '#F9F9F9',
+        backgroundColor: '#e3f7fa',
         padding: 10,
         marginVertical: 4,
         marginHorizontal: 16,
+
       },
       titleFlatlist: {
-        fontSize: 24,
+        fontSize: 19,
+        color: "2b2b2b",
       },
       titleHeader: {
         fontSize: 30,
@@ -81,8 +83,9 @@ import {StyleSheet} from 'react-native';
         color: "#553c9a",
       },
       SectionHeader: {
-        fontSize: 32,
-        backgroundColor: "#fff"
+        fontSize: 25,
+        backgroundColor: "#fff",
+        color: "#1f1f1f",
       },
       
         

@@ -7,14 +7,17 @@ import styles from '../screens/stylesScreens';
 import * as Notifications from 'expo-notifications';
 import { Dropdown, MultiSelect } from 'react-native-element-dropdown';
 import { Checkbox } from 'react-native-paper';
+import DatePicker from 'react-native-date-picker'
+
 
 export default function AssignTaskScreen ({navigate, route}){
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const [vuelta, setVuelta] = useState(1);
-
+//datepicker
+    const [date, setDate] = useState(new Date())
+    const [open, setOpen] = useState(false)
     const [value, setValue] = useState(null);
     const [sectors, setSectors] = useState([]);
     const [task_description, setTask_description] = useState(null);
@@ -28,6 +31,7 @@ export default function AssignTaskScreen ({navigate, route}){
     const [taskAvaiable, setTaskAvaiable] = useState([]);
     const [prevIndex, setPrevIndex] = useState(0);
 
+    
     //efect on update checklist
     const onUpdateCheck = useRef(true);
 
@@ -168,7 +172,50 @@ export default function AssignTaskScreen ({navigate, route}){
   } 
           
         
+const SelectDate = () => {
+  
+  if (task_name.length>0){
 
+    return (
+      <View style = {{width: 200, marginTop: 15}}>
+        <Button title="Plazo hasta" onPress={() => setOpen(true)} />
+              <DatePicker
+                title={'Seleccionar fecha'}
+                confirmText={'Confirmar'}
+                cancelText={'Cancelar'}
+                modal
+                open={open}
+                date={date}
+                onConfirm={(date) => {
+                  setOpen(false)
+                  setDate(date)
+                }}
+                onCancel={() => {
+                  setOpen(false)
+                }}
+          />
+      </View>
+
+    )
+  }
+
+}
+  const AssignTaskButton = () =>{
+
+    if (task_name.length>0){
+      return (
+        <View style = {{width: 200, marginTop: 15}}>
+          <Button               
+            title="Asignar Tareas"
+            color="#43c6ac"
+            onPress={handleCreateTask}
+          />
+        </View>
+      )
+    }
+    
+    
+  }
 
   const Item = ({ title }) => (
     <View style={styles.itemFlatlist}>
@@ -217,6 +264,8 @@ export default function AssignTaskScreen ({navigate, route}){
         if (cantChecks == checkList.length){
           Alert.alert('Por lo menos hay que asignar 1 tarea');
         }else{
+        
+        
           
 
           //Add AssignTask
@@ -238,6 +287,8 @@ export default function AssignTaskScreen ({navigate, route}){
 
           await setDoc(doc(db, 'assigned_tasks', selectedUser), {
             active_tasks: addData,
+            timestamp: serverTimestamp(),
+            time_limit: date,
           }).then(Alert.alert('Tareas asignadas'));
      }  
     }
@@ -267,7 +318,7 @@ export default function AssignTaskScreen ({navigate, route}){
       </View>
       <View style={{ flex: 1 }} />
       <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-      <Text>{i}</Text>
+      {/* <Text>{i}</Text> */}
 
         <Checkbox
         status={checkList[i]}
@@ -478,9 +529,10 @@ export default function AssignTaskScreen ({navigate, route}){
             />
           </View>
 
+          <View style= {{marginTop: 15}}/>
 
         <SectionList
-          style = {{height: "40%"}}
+          style = {{height: "34%"}}
           sections={task_name}
           renderItem={renderSectionList}
           renderSectionHeader={({ section: { title } }) => (
@@ -492,19 +544,14 @@ export default function AssignTaskScreen ({navigate, route}){
 
         <View style = {{flex:1,}}>
 
-        
+        <SelectDate />
+          
 
+          <AssignTaskButton/>
           
-          
-  
+            
               
-            <View style = {{width: 200, marginTop: 25}}>
-              <Button               
-                title="Asignar Tareas"
-                color="#43c6ac"
-                onPress={handleCreateTask}
-              />
-            </View>
+            
         </View>
 
       </SafeAreaView>
