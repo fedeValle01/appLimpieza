@@ -14,6 +14,7 @@ La aplicacion debera poder:
 7. Asignar automaticamente tareas sin injusticias ni errores
 
 
+
 ---------------Requerimientos no funcionales---------------
 
 La aplicacion tiene que ser
