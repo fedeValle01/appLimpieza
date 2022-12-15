@@ -38,7 +38,7 @@ export default function LoginScreen({navigation}) {
       setUser(user);
       let uid = UserCredential.user.uid;
       createUser(uid);
-      navigation.navigate("Home", {uid: uid});
+      navigation.navigate("appLimpieza", {uid: uid});
     })
     .catch(error => {
       alert(error);
@@ -52,7 +52,7 @@ export default function LoginScreen({navigation}) {
       console.log('Ingresado');
       console.log('UserCredential: '+UserCredential.user.uid+ ' user: '+user);
       let uid = UserCredential.user.uid;
-      navigation.navigate("Home", {uid: uid});
+      navigation.navigate("appLimpieza", {uid: uid});
     })
     .catch(error => {
       alert(error);
@@ -88,7 +88,7 @@ const viewName = () => {
           )
           
         })
-        navigation.navigate('Home', {uid: user.uid})
+        navigation.navigate('appLimpieza', {uid: user.uid})
         
         return unsuscribe;
     }

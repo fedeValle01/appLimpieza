@@ -3,9 +3,10 @@ import {StyleSheet} from 'react-native';
     const styles = StyleSheet.create({
         container: {
           flex: 1,
-          backgroundColor: '#fff',
+          backgroundColor: '#cdcdcd',
           alignItems: 'center',
           justifyContent: 'center',
+
         },    
         dropdown: {
           backgroundColor: 'white',
@@ -67,7 +68,7 @@ import {StyleSheet} from 'react-native';
       },
       itemFlatlist: {
         width: 250,
-        backgroundColor: '#e3f7fa',
+        backgroundColor: '#ffa500',
         padding: 10,
         marginVertical: 4,
         marginHorizontal: 16,
@@ -78,16 +79,22 @@ import {StyleSheet} from 'react-native';
         color: "2b2b2b",
       },
       titleHeader: {
-        fontSize: 30,
-        fontWeight: '200',
-        color: "#553c9a",
+        fontSize: 40,
+        fontWeight: '40',
+        color : "#27a4f2",
+
+      },
+      subtitleSection: {
+        fontSize: 25,
+        fontWeight: '45',
+        color: "#4b0081",
       },
       SectionHeader: {
         fontSize: 25,
-        backgroundColor: "#fff",
+        backgroundColor: "#cdcdcd",
         color: "#1f1f1f",
+        marginTop: 25,
       },
       
-        
       });
 export default styles;

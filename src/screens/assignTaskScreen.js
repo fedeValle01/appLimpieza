@@ -20,16 +20,13 @@ export default function AssignTaskScreen ({navigate, route}){
     const [open, setOpen] = useState(false)
     const [value, setValue] = useState(null);
     const [sectors, setSectors] = useState([]);
-    const [task_description, setTask_description] = useState(null);
     const [task_name, setTask_name] = useState([]);
     const [task_frec, setTask_frec] = useState(1);
-    const [items, setItems] = useState([]);
     const [user, setUser ] = useState([]);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selected, setSelected] = useState([]);
     const [taskSelected, setTaskSelected ] = useState([]);
     const [taskAvaiable, setTaskAvaiable] = useState([]);
-    const [prevIndex, setPrevIndex] = useState(0);
 
     
     //efect on update checklist
@@ -136,7 +133,7 @@ export default function AssignTaskScreen ({navigate, route}){
 
 
             tasksAndSector.push(singleObj);
-        
+
               setTaskAvaiable(tasksAndSector);
 
               console.log('paso una vez por aca');
@@ -269,25 +266,33 @@ const SelectDate = () => {
           
 
           //Add AssignTask
-          let addData = [];
           let search = 0;
+          let assigned_tasks = [];
 
           task_name.forEach(s => {
+            let objAssigned_tasks = {};
+            let addData = [];
             let data = s.data;
+            let title = s.title;
             data.forEach((task) => {
               if (checkList[search] == 'checked'){
                 addData.push(task);
-                console.log('search: '+search);
-                console.log('task: '+task);
               }
               search++
             });
+            objAssigned_tasks.data = addData;
+            objAssigned_tasks.sector = title;
+            assigned_tasks.push(objAssigned_tasks)
+
+
             
           });
 
+          
           await setDoc(doc(db, 'assigned_tasks', selectedUser), {
-            active_tasks: addData,
+            active_tasks: assigned_tasks,
             timestamp: serverTimestamp(),
+            uid: selectedUser,
             time_limit: date,
           }).then(Alert.alert('Tareas asignadas'));
      }  
@@ -298,6 +303,9 @@ const SelectDate = () => {
   const renderSectionList = ({item}) =>{
     
     contador++;
+      if (contador>=checkList.length){
+        contador = 0;
+      }
     let checkIndex = 0;
     //  si no hay checklist, la setea unchecked
     if (checkList.length == 0){
@@ -313,10 +321,10 @@ const SelectDate = () => {
 
     return (
       <View style = {styles.row}>
-      <View>
-        <Item title={item} />
-      </View>
-      <View style={{ flex: 1 }} />
+        <View>
+          <Item title={item} />
+        </View>
+        <View style={{ flex: 1 }} />
       <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
       {/* <Text>{i}</Text> */}
 
@@ -376,31 +384,18 @@ const SelectDate = () => {
 
     const handleCheck = (i) => {
 
-      if (checkList.length>0){
-        if (checkList[i]=='unchecked'){
-          checkList[i] = 'checked';
+      let check = checkList;
+      if (check.length>0){
+        if (check[i]=='unchecked'){
+          check[i] = 'checked';
         }else{
-          checkList[i] = 'unchecked';
+          check[i] = 'unchecked';
         }
       }
+      setCheckList(check);
         
     }
   
-    const getI = (index) =>{
-
-      let prevI = prevIndex;
-    if (index==prevI){
-      setPrevIndex(0);
-      prevI = index;
-    }else{
-      prevI++;
-      setPrevIndex(prevI);
-    }
-    let i = prevI;
-
-      return i;
-    }
-
 
     useEffect(() =>{
 
@@ -544,6 +539,7 @@ const SelectDate = () => {
 
         <View style = {{flex:1,}}>
 
+     {/* doesn't work on android emulator */}
         <SelectDate />
           
 
