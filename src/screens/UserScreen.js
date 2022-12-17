@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
@@ -11,43 +11,52 @@ export default function TaskScreen({navigation, route}) {
   const db = getFirestore(app);
   const [user, setUser ] = useState([]);
 
+
   function ListItem(props) {
     return(
       <SafeAreaView>
-        <TouchableOpacity onPress = { () =>{navigation.navigate('Home', {value: props.value})}} >
-          <Text>{props.value}</Text>
+        <TouchableOpacity onPress = { () =>{navigation.navigate('appLimpieza', {uid: route.params.uid, uidTask: props.uid})}} 
+        style = {styles.btnUsuario}>
+          <Text style = {styles.txtUser}>{props.value} </Text>
         </TouchableOpacity>
-      
       </SafeAreaView>
     );
   }
   
- 
-
   const SectorList = (props) => {
-    const users = props.users;
+    let users = props.users;
     let arregloNombres = [];
+    let arregloUid = [];
+  
     if(users!=""){
       users.forEach((user, i) => {
         arregloNombres[i] = user.username;
-        // console.log('arregloNombres['+i+'] : ',arregloNombres[i] );
+        arregloUid[i] = user.uid;
       });
-      
   
       return (
         <Text>
-          {arregloNombres.map((nombre) =>
+          {arregloNombres.map((nombre, i) =>
             <ListItem key={nombre.toString()}
-                      value={nombre} />
+                      value={nombre}
+                      uid={arregloUid[i]} />
           )}
         </Text>
       );
     }else{
       console.log('no hay usuarios');
     }
-    
   }
 
+  const logOut = () =>{
+    signOut(auth).then(() => {
+      alert('Session cerrada');
+      navigation.navigate('Iniciar Sesion');
+    }).catch((error) => {
+      alert(error);
+    });
+  }
+  
 
   useEffect(() =>{
     const collectionRef = collection(db, 'user');
@@ -57,10 +66,10 @@ export default function TaskScreen({navigation, route}) {
       setUser(
         querySnapshot.docs.map(doc =>({
           username: doc.data().username,
-          
+          uid: doc.data().uid,
         }))
-        
       )
+      
     })
     
     return unsuscribe;
@@ -69,9 +78,23 @@ export default function TaskScreen({navigation, route}) {
 
     return(
     <SafeAreaView style = {styles.container}>
-      <Text>Tasks</Text>
-      <Text>Usuarios</Text>
-      <SectorList users = {user}/>
+      <View style = {{
+          flex: 1,
+          backgroundColor: '#cdcdcd',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80%',
+          }}>
+
+            <TouchableOpacity onPress={logOut}>
+                <Text>logOut</Text>
+            </TouchableOpacity>
+                <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 10}}>
+                    <Text style = {styles.subtitleSection}> Ver las tareas asignadas de los usuarios:</Text>
+                  </View>
+              <SectorList users = {user} />
+          </View>
+      
     </SafeAreaView>
     )
   }

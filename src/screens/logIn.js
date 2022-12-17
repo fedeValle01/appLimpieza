@@ -46,6 +46,8 @@ export default function LoginScreen({navigation}) {
     
     
   }
+
+  
   const handeSignIn = () => {
     signInWithEmailAndPassword(auth, email, password)
     .then((UserCredential) =>{

@@ -1,27 +1,37 @@
 import React, {useEffect, useState} from 'react';
 import { Text, SafeAreaView, TextInput, TouchableOpacity, Alert, View, ScrollView, SectionList } from 'react-native';
 import { doc, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, updateDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithCredential, getIdToken, signOut} from 'firebase/auth'
+import { getAuth, signOut} from 'firebase/auth'
 import { initializeApp } from 'firebase/app'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 import { Checkbox, Colors } from 'react-native-paper';
+import Button from '../components/Button';
+import IconLogOut from '../components/IconLogOut'
 
-  
+console.log('setea contador -1');
+let contador = -1;
  
 export default function HomeScreen({navigation, route}) {
 
+    console.log('render HomeScreen');
+    contador =-1;
     const auth = getAuth(app);
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const [sectors, setSectors ] = useState([]);
     const [user, setUser ] = useState([]);
     const [activeTasks, setActiveTasks ] = useState([]);
+    const [markedTasks, setMarkedTasks ] = useState([]);
     const [checkList, setCheckList] = useState([]);
+    const [controlCheckList, setControlCheckList] = useState([]);
+    const [canCheckTask, setCanCheckTask ] = useState(false);
+    const [canCheckControlTask, setCanCheckControlTask ] = useState(false);
+
+
     const [checked, setChecked] = useState([]);
+    
 
-
-    let contador = -1;
     const DATA = [
       {
         title: "Main dishes",
@@ -60,6 +70,13 @@ const logActiveTasks = () => {
     });
   });
 }
+
+
+const handleControlCheck = async (i) => {
+
+  
+}
+
 const handleCheck = async (i) => {
 
   let check = checkList;
@@ -73,7 +90,7 @@ const handleCheck = async (i) => {
   setCheckList(check);
 
           //Add markedTask
-          await updateDoc(doc(db, 'assigned_tasks', route.params.uid), {
+          await updateDoc(doc(db, 'assigned_tasks', route.params.uidTask), {
             markedTask: check,
             timeStampMarkedTask: serverTimestamp(),
           });
@@ -84,6 +101,7 @@ const renderAssignedTasks = ({ item }) =>{
   
   contador++;
   if (contador>=checkList.length){
+    console.log('contador: '+contador+'>= ntareas: '+checkList.length);
     contador = 0;
   }
   let checkIndex = 0;
@@ -97,21 +115,50 @@ const renderAssignedTasks = ({ item }) =>{
       checkIndex++;
       });
     });
+    checkIndex = 0;
+  }
+  if (controlCheckList.length == 0){
+    console.log('controlCheckList vacio, set unchecked');
+    activeTasks.forEach(s => {
+      s.data.forEach(task => {
+        controlCheckList[checkIndex]='unchecked';
+      checkIndex++;
+      });
+    });
   }
   let i = contador
-  console.log('se renderiza con item '+item+' index: '+i);
+  console.log('render: '+item+' index: '+i);
 
   return (
-    <View style = {styles.row}>
+    <View style = {styles.viewSeccion}>
       <View>
         <Item title={item} />
       </View>
       <View style={{ flex: 1 }} />
       <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
+        <Text>{i+1}</Text>
+
+        {/* user checkbox */}
         <Checkbox
-        status={checkList[i]}
+        disabled = {!canCheckTask}
+        status = {checkList[i]}
         onPress={() =>{
           handleCheck(i);
+          if (checked=='unchecked'){
+            setChecked('checked');
+          }else{
+            setChecked('unchecked');
+          }
+        }}
+        />
+
+{/* control checkbox */}
+<Checkbox
+        color='#39ff14'
+        status={controlCheckList[i]}
+        disabled = {!canCheckControlTask}
+        onPress={() =>{
+          handleControlCheck(i);
           if (checked=='unchecked'){
             setChecked('checked');
           }else{
@@ -125,29 +172,29 @@ const renderAssignedTasks = ({ item }) =>{
   )
 }
     const logOut = () =>{
-      const auth = getAuth();
       signOut(auth).then(() => {
         alert('Session cerrada');
-        navigation.navigate('Login');
+        navigation.navigate('Iniciar Sesion');
       }).catch((error) => {
         alert(error);
       });
     }
     
     const Item = ({ title }) => (
-      <View style={styles.itemFlatlist}>
-        <Text style={styles.titleFlatlist}>{title}</Text>
+      <View style={styles.itemSectionlist}>
+        <Text style={styles.titleSectionlist}>{title}</Text>
       </View>
     );
 
-    const renderSectionList = (item) =>{
-      return (
-        <Item title={item} />
-      )
-    }
 
     useEffect(() => {
 
+      if (route.params.uid == route.params.uidTask){
+        //Es el usuario viendo sus tareas
+        setCanCheckTask(true);
+      }else{
+        setCanCheckTask(false);
+      }
       let q;
       let unsuscribe;
       let collectionRef = collection(db, 'sectors');
@@ -183,7 +230,7 @@ const renderAssignedTasks = ({ item }) =>{
 
     collectionRef = collection(db, 'assigned_tasks');
   
-    q = query(collectionRef, where("uid", "==", route.params.uid))
+    q = query(collectionRef, where("uid", "==", route.params.uidTask))
 
     unsuscribe = onSnapshot(q, querySnapshot =>{
       let qAssigned_tasks = (
@@ -191,16 +238,24 @@ const renderAssignedTasks = ({ item }) =>{
           timestamp: doc.data().timestamp,
           uid: doc.data().uid,
           active_tasks: doc.data().active_tasks,
+          markedTask: doc.data().markedTask,
         }))
       )
 
       let activeTasks = [];
+      let markedTask = [];
       qAssigned_tasks.forEach(element => {
         activeTasks = element.active_tasks;
+        markedTask = element.markedTask
+        if (markedTask){
+          console.log('se encontraron tareas marcadas');
+          setCheckList(markedTask);
+        }
       });
       setActiveTasks(activeTasks);
 
     })
+
   
 
       auth.onAuthStateChanged((user) => {
@@ -209,21 +264,65 @@ const renderAssignedTasks = ({ item }) =>{
       }
       return unsuscribe;
       });
-    }, []);
+    }, [route], [checkList]);
   
 
 
     // Return HomeScreen
     return (
+      
       <SafeAreaView style = {styles.container}>
-        <View style = {styles.container}>
-          
-              <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
-              <Text style = {styles.titleHeader}>Hola {user} !</Text>
-              
-            </View>
+        <View style = {{flexDirection: 'row'}}>
+        
+
+        <View style={styles.viewHeader}>
+              <View style = {styles.btnHeader}>
+                <Text style = {styles.textHeader}>Sesión: {user} </Text>
+              </View>
+        </View>
+
+
+          <View style={styles.viewHeader}>
 
             
+            <TouchableOpacity onPress={() => navigation.navigate('Usuarios', {uid: route.params.uid})}
+            style = {styles.btnHeader}>
+                <Text style = {styles.textHeader}>USUARIOS</Text>
+            </TouchableOpacity>
+            
+          </View>
+          
+          <View style={styles.viewHeader}>
+            <TouchableOpacity onPress={() => navigation.navigate('Asignar Tarea', {uid: route.params.uid})}
+            style = {styles.btnHeader}>
+              <Text style = {styles.textHeader} >ASIGNAR TAREAS</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.viewLogOut}>
+            <TouchableOpacity onPress={logOut}>
+              <IconLogOut/>
+            </TouchableOpacity>  
+          </View>
+          
+        </View>
+        
+        <View style = {{
+          flex: 1,
+          backgroundColor: '#cdcdcd',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: '80%',
+          }}>
+          
+        
+
+            <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
+              <Text style = {styles.titleHeader}>Hola {user} !</Text>
+            </View>
+
+          
+          
           <TouchableOpacity onPress={()=> {navigation.navigate('Tasks', {uid: route.params.uid})}}>
             <Text>Ir a Tasks</Text>
           </TouchableOpacity>
@@ -235,18 +334,18 @@ const renderAssignedTasks = ({ item }) =>{
             <Text>Ir a Crear Sector</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity onPress={()=> {navigation.navigate('Usuarios', {uid: route.params.uid})}}>
+            <Text>Ir a Usuarios</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity onPress={logActiveTasks}>
             <Text>Ver tareas activas</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style = {{width: 200, height: 40, marginTop: 50}} onPress={()=> {navigation.navigate('Asignar Tarea', {uid: route.params.uid})}}>
-            <Text>Ir a Asignar Tareas</Text>
-          </TouchableOpacity>
-
-          <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
-              <Text style = {styles.subtitleSection}>Tareas asignadas de esta semana:</Text>
+            <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
+              <Text style = {styles.subtitleSection}>Tareas asignadas esta semana: {checkList.length} </Text>
             </View>
-      <View style = {{height: "50%"}}>
+      <View style = {{height: "60%"}}>
 
           <SectionList
           sections={activeTasks}

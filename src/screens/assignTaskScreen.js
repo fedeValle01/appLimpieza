@@ -1,5 +1,5 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { StyleSheet, Text, SafeAreaView, View, Image, TextInput, Alert, TouchableOpacity, Button, FlatList, ScrollView, SectionList } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
@@ -215,8 +215,8 @@ const SelectDate = () => {
   }
 
   const Item = ({ title }) => (
-    <View style={styles.itemFlatlist}>
-      <Text style={styles.titleFlatlist}>{title}</Text>
+    <View style={styles.itemSectionlist}>
+      <Text style={styles.titleSectionlist}>{title}</Text>
     </View>
   );
 
@@ -283,14 +283,24 @@ const SelectDate = () => {
             objAssigned_tasks.data = addData;
             objAssigned_tasks.sector = title;
             assigned_tasks.push(objAssigned_tasks)
-
-
             
           });
 
+          let marked = [];
+          let checkIndex = 0;
+
+          
+            assigned_tasks.forEach(s => {
+              s.data.forEach(task => {
+                marked[checkIndex]='unchecked';
+              checkIndex++;
+              });
+            });
+            checkIndex = 0;
           
           await setDoc(doc(db, 'assigned_tasks', selectedUser), {
             active_tasks: assigned_tasks,
+            marked_tasks: marked,
             timestamp: serverTimestamp(),
             uid: selectedUser,
             time_limit: date,
@@ -320,13 +330,13 @@ const SelectDate = () => {
     console.log('se renderiza con item '+item+' index: '+i);
 
     return (
-      <View style = {styles.row}>
+      <View style = {styles.viewSeccion}>
         <View>
           <Item title={item} />
         </View>
         <View style={{ flex: 1 }} />
       <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-      {/* <Text>{i}</Text> */}
+      <Text>{i}</Text>
 
         <Checkbox
         status={checkList[i]}
