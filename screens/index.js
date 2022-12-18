@@ -8,3 +8,5 @@ export { default as AddSector } from './addSector'
 export { default as AssignTaskScreen } from './assignTaskScreen'
 export { default as StartScreen } from './StartScreen'
 export { default as RegisterScreen } from './RegisterScreen'
+export { default as UserScreen } from './UserScreen'
+

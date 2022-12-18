@@ -49,7 +49,7 @@ export default function RegisterScreen({ navigation }) {
       setUser(user);
       let uid = UserCredential.user.uid;
       createUser(uid);
-      navigation.navigate("appLimpieza", {uid: uid});
+      navigation.navigate('appLimpieza', {uid: uid, uidTask: uid})
     })
     .catch(error => {
       alert(error);

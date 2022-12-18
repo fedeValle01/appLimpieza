@@ -6,8 +6,39 @@ import {StyleSheet} from 'react-native';
           backgroundColor: '#cdcdcd',
           alignItems: 'center',
           justifyContent: 'center',
-
-        },    
+          paddingLeft: 15,
+          paddingRight: 15,
+        },
+        viewHeader: {
+          backgroundColor: "#3c3c3c", 
+          height:40,
+        },
+        viewLogOut: {
+          backgroundColor: "#3c3c3c", 
+          height:40,
+        },
+        btnHeader: {
+          marginLeft:10, 
+          marginRight:10,
+          marginTop: 5,
+        },
+        btnUsuario: {
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingVertical: 12,
+          paddingHorizontal: 32,
+          borderRadius: 4,
+          elevation: 3,
+          backgroundColor: '#252850',  
+          margin:3,   
+        },
+        txtUser: {
+          fontSize: 16,
+          lineHeight: 21,
+          fontWeight: 'bold',
+          letterSpacing: 0.25,
+          color: 'white',  
+        },
         dropdown: {
           backgroundColor: 'white',
           borderBottomColor: 'gray',
@@ -24,6 +55,16 @@ import {StyleSheet} from 'react-native';
         marginTop: 3,
         flexDirection: 'row',
         flex: 1,
+      },
+      viewSeccion : {
+        marginTop: 3,
+        flexDirection: 'row',
+        flex: 1,
+        borderWidth: 2, 
+        borderRadius: 5, 
+        borderColor: '#00fff6', 
+        marginBottom: 5, 
+        backgroundColor: '#9b9b9b',
       },
       item: {
           paddingHorizontal: 4,
@@ -42,9 +83,28 @@ import {StyleSheet} from 'react-native';
           alignItems: 'flex-end',
           textAlign: 'right',
       },
+      textHeader: {
+        color: "#fff",
+        fontSize: 20,
+        fontWeight: '440',
+        alignContent: 'center',
+        alignItems: 'center',
+        textAlignVertical: 'center',
+        
+      },
+      textLogOut: {
+        color: "#c81d11",
+        fontSize: 30,
+        fontWeight: '600',
+        alignContent: 'center',
+        alignItems: 'center',
+        textAlignVertical: 'center',
+        marginRight: 5,
+      },
       textItem: {
           flex: 1,
-          fontSize: 16,
+          fontSize: 15,
+
       },
       shadow: {
           shadowColor: '#000',
@@ -66,15 +126,12 @@ import {StyleSheet} from 'react-native';
         fontSize: 42,
         textAlign: 'center',
       },
-      itemFlatlist: {
-        width: 250,
-        backgroundColor: '#ffa500',
-        padding: 10,
+      itemSectionlist: {
+        padding: 5,
         marginVertical: 4,
         marginHorizontal: 16,
-
       },
-      titleFlatlist: {
+      titleSectionlist: {
         fontSize: 19,
         color: "2b2b2b",
       },

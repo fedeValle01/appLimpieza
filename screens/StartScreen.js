@@ -37,7 +37,7 @@ export default function StartScreen({ navigation }) {
           )
           
         })
-        navigation.navigate('appLimpieza', {uid: user.uid})
+        navigation.navigate('appLimpieza', {uid: user.uid, uidTask: user.uid})
         
         return unsuscribe;
     }
