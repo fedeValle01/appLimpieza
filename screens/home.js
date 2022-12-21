@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   Alert,
   View,
-  ScrollView,
   SectionList,
   Image,
 } from "react-native";
@@ -26,9 +25,7 @@ import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import { Checkbox, Colors } from "react-native-paper";
-import Button from "../components/Button";
-import IconLogOut from "../components/IconLogOut";
+import { Checkbox } from "react-native-paper";
 
 console.log("setea contador -1");
 let contador = -1;
@@ -41,12 +38,15 @@ export default function HomeScreen({ navigation, route }) {
   const db = getFirestore(app);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);
+
+  //can mark check controlCheckList
+  const [canControl, setCanControl] = useState(false);
+
   const [activeTasks, setActiveTasks] = useState([]);
   const [markedTasks, setMarkedTasks] = useState([]);
   const [checkList, setCheckList] = useState([]);
   const [controlCheckList, setControlCheckList] = useState([]);
   const [canCheckTask, setCanCheckTask] = useState(false);
-  const [canCheckControlTask, setCanCheckControlTask] = useState(false);
 
   const [checked, setChecked] = useState([]);
 
@@ -88,7 +88,23 @@ export default function HomeScreen({ navigation, route }) {
     });
   };
 
-  const handleControlCheck = async (i) => {};
+  const handleControlCheck = async (i) => {
+    let check = controlCheckList;
+    if (check.length > 0) {
+      if (check[i] == "unchecked") {
+        check[i] = "checked";
+      } else {
+        check[i] = "unchecked";
+      }
+    }
+    setControlCheckList(check);
+
+    //Add markedTask
+    await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      control_marked_tasks: check,
+      timestamp_control_marked_tasks: serverTimestamp(),
+    });
+  };
 
   const handleCheck = async (i) => {
     let check = checkList;
@@ -103,8 +119,8 @@ export default function HomeScreen({ navigation, route }) {
 
     //Add markedTask
     await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
-      markedTask: check,
-      timeStampMarkedTask: serverTimestamp(),
+      marked_tasks: check,
+      timestamp_marked_task: serverTimestamp(),
     });
   };
   const renderAssignedTasks = ({ item }) => {
@@ -136,7 +152,7 @@ export default function HomeScreen({ navigation, route }) {
       });
     }
     let i = contador;
-    console.log("render: " + item + " index: " + i);
+    // console.log("render: " + item + " index: " + i);
 
     return (
       <View style={styles.viewSeccion}>
@@ -169,7 +185,7 @@ export default function HomeScreen({ navigation, route }) {
               <Checkbox
                 color="#39ff14"
                 status={controlCheckList[i]}
-                disabled={!canCheckControlTask}
+                disabled={!canControl}
                 onPress={() => {
                   handleControlCheck(i);
                   if (checked == "unchecked") {
@@ -295,7 +311,7 @@ export default function HomeScreen({ navigation, route }) {
 
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Asignar Tarea", { uid: route.params.uid })
+                navigation.navigate("Asignar Tareas", { uid: route.params.uid })
               }
             >
               <View>
@@ -350,11 +366,13 @@ export default function HomeScreen({ navigation, route }) {
       unsuscribe = onSnapshot(q, (querySnapshot) => {
         u = querySnapshot.docs.map((doc) => ({
           name: doc.data().username,
+          canControl: doc.data().can_control,
         }));
 
         u.forEach((element) => {
           console.log("u: " + element.name);
           setUser(element.name);
+          setCanControl(element.canControl);
         });
       });
 
@@ -367,20 +385,28 @@ export default function HomeScreen({ navigation, route }) {
           timestamp: doc.data().timestamp,
           uid: doc.data().uid,
           active_tasks: doc.data().active_tasks,
-          markedTask: doc.data().markedTask,
+          markedTasks: doc.data().marked_tasks,
+          controlMarkedTasks: doc.data().control_marked_tasks,
         }));
-
+        let controlMarkedTasks = [];
         let activeTasks = [];
-        let markedTask = [];
+        let markedTasks = [];
         qAssigned_tasks.forEach((element) => {
           activeTasks = element.active_tasks;
-          markedTask = element.markedTask;
-          if (markedTask) {
+          markedTasks = element.markedTasks;
+          controlMarkedTasks = element.controlMarkedTasks;
+          if (markedTasks) {
             console.log("se encontraron tareas marcadas");
-            setCheckList(markedTask);
+            setCheckList(markedTasks);
+          }
+          if (controlMarkedTasks) {
+            console.log("se encontraron tareas de control marcadas");
+            setControlCheckList(controlMarkedTasks);
           }
         });
-        setActiveTasks(activeTasks);
+        if (activeTasks) {
+          setActiveTasks(activeTasks);
+        }
       });
 
       auth.onAuthStateChanged((user) => {
@@ -391,7 +417,8 @@ export default function HomeScreen({ navigation, route }) {
       });
     },
     [route],
-    [checkList]
+    [checkList],
+    [activeTasks]
   );
 
   // Return HomeScreen
@@ -458,6 +485,15 @@ export default function HomeScreen({ navigation, route }) {
               <Text style={styles.SectionHeader}>{sector}</Text>
             )}
           />
+          <TouchableOpacity
+            onPress={() => {
+              navigation.navigate("AutoAssignTaskScreen", {
+                uid: route.params.uid,
+              });
+            }}
+          >
+            <Text>Asignar tareas automaticamente</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
