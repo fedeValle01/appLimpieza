@@ -10,3 +10,4 @@ export { default as StartScreen } from "./StartScreen";
 export { default as RegisterScreen } from "./RegisterScreen";
 export { default as UserScreen } from "./UserScreen";
 export { default as AutoAssignTaskScreen } from "./AutoAssignTaskScreen";
+export { default as HistorialScreen } from "./HistorialScreen";

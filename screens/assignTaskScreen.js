@@ -24,6 +24,8 @@ import {
   doc,
   where,
   serverTimestamp,
+  updateDoc,
+  getDoc,
 } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
@@ -275,14 +277,31 @@ export default function AssignTaskScreen({ navigate, route }) {
         });
         checkIndex = 0;
 
-        await setDoc(doc(db, "assigned_tasks", selectedUser), {
-          active_tasks: assigned_tasks,
-          marked_tasks: marked,
-          control_marked_tasks: marked,
-          timestamp: serverTimestamp(),
-          uid: selectedUser,
-          time_limit: date,
-        }).then(Alert.alert("Tareas asignadas"));
+        // check if already exist assigned task for selectedUser
+
+        const docRef = doc(db, "assigned_tasks", selectedUser);
+        const docSnap = await getDoc(docRef);
+
+        // if exist update
+        if (docSnap.exists()) {
+          await updateDoc(doc(db, "assigned_tasks", selectedUser), {
+            active_tasks: assigned_tasks,
+            marked_tasks: marked,
+            control_marked_tasks: marked,
+            timestamp: serverTimestamp(),
+            uid: selectedUser,
+            time_limit: date,
+          }).then(Alert.alert("Tareas asignadas"));
+        } else {
+          await setDoc(doc(db, "assigned_tasks", selectedUser), {
+            active_tasks: assigned_tasks,
+            marked_tasks: marked,
+            control_marked_tasks: marked,
+            timestamp: serverTimestamp(),
+            uid: selectedUser,
+            time_limit: date,
+          }).then(Alert.alert("Tareas asignadas"));
+        }
       }
     }
   };

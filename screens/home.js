@@ -38,6 +38,7 @@ export default function HomeScreen({ navigation, route }) {
   const db = getFirestore(app);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);
+  const [taskUser, setTaskUser] = useState([]);
 
   //can mark check controlCheckList
   const [canControl, setCanControl] = useState(false);
@@ -51,6 +52,7 @@ export default function HomeScreen({ navigation, route }) {
   const [checked, setChecked] = useState([]);
 
   const DATA = [
+    //data example sectionList
     {
       title: "Main dishes",
       data: ["Pizza", "Burger", "Risotto"],
@@ -71,7 +73,7 @@ export default function HomeScreen({ navigation, route }) {
 
   const irACrearSector = () => {
     if (route.params.uid == "UDUaYCyuVJYCTP7Y21DJ7ylD8aO2") {
-      console.log("Estamos ante el creador");
+      console.log("Es Fedev");
       navigation.navigate("AddSector", { uid: route.params.uid });
     } else alert("solo admin");
   };
@@ -230,6 +232,14 @@ export default function HomeScreen({ navigation, route }) {
       />
     );
   }
+  function HistorialImg() {
+    return (
+      <Image
+        style={{ width: 45, height: 45 }}
+        source={require("../assets/historial.png")}
+      />
+    );
+  }
 
   function LogOutImg() {
     return (
@@ -257,6 +267,16 @@ export default function HomeScreen({ navigation, route }) {
       />
     );
   }
+
+  function HomeImg() {
+    return (
+      <Image
+        style={{ width: 45, height: 45 }}
+        source={require("../assets/home.png")}
+      />
+    );
+  }
+
   function UsersImg() {
     return (
       <Image
@@ -286,7 +306,7 @@ export default function HomeScreen({ navigation, route }) {
 
   useEffect(
     () => {
-      //-----------NAVBAR--------------
+      //-----------NAVBAR------------------
       navigation.setOptions({
         headerRight: () => (
           <View style={{ flexDirection: "row" }}>
@@ -318,6 +338,7 @@ export default function HomeScreen({ navigation, route }) {
                 <AsigImg />
               </View>
             </TouchableOpacity>
+            
             <TouchableOpacity onPress={AreYouSureAlert}>
               <View style={{ marginLeft: 10 }}>
                 <LogOutImg />
@@ -325,20 +346,9 @@ export default function HomeScreen({ navigation, route }) {
             </TouchableOpacity>
           </View>
         ),
-        headerLeft: () => (
-          <View>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid })
-              }
-            >
-              <View>
-                <UsersImg />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ),
+        headerLeft: () => <View></View>,
       });
+      //-----------NAVBAR------------------
 
       if (route.params.uid == route.params.uidTask) {
         //Es el usuario viendo sus tareas
@@ -370,9 +380,22 @@ export default function HomeScreen({ navigation, route }) {
         }));
 
         u.forEach((element) => {
-          console.log("u: " + element.name);
+          console.log("u: " + element.name); //username active session
           setUser(element.name);
           setCanControl(element.canControl);
+        });
+      });
+
+      collectionRef = collection(db, "user");
+      q = query(collectionRef, where("uid", "==", route.params.uidTask));
+      unsuscribe = onSnapshot(q, (querySnapshot) => {
+        u = querySnapshot.docs.map((doc) => ({
+          name: doc.data().username,
+        }));
+
+        u.forEach((element) => {
+          console.log("u: " + element.name); //username that will show his tasks
+          setTaskUser(element.name);
         });
       });
 
@@ -427,13 +450,14 @@ export default function HomeScreen({ navigation, route }) {
       <View
         style={{
           flex: 1,
-          backgroundColor: "#cdcdcd",
           alignItems: "center",
           justifyContent: "center",
         }}
       >
         <View
           style={{
+            marginTop: 30,
+            marginBottom: 30,
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
@@ -450,13 +474,6 @@ export default function HomeScreen({ navigation, route }) {
           <Text>Ir a Tasks</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("Agregar Tarea", { uid: route.params.uid });
-          }}
-        >
-          <Text>Ir a Crear tareas</Text>
-        </TouchableOpacity>
 
         <TouchableOpacity onPress={irACrearSector}>
           <Text>Ir a Crear Sector</Text>
@@ -474,7 +491,7 @@ export default function HomeScreen({ navigation, route }) {
           }}
         >
           <Text style={styles.subtitleSection}>
-            Tareas asignadas esta semana: {checkList.length}{" "}
+            Tareas de {taskUser} asignadas esta semana: {checkList.length}{" "}
           </Text>
         </View>
         <View style={{ height: "60%", flex: 1 }}>
@@ -487,12 +504,36 @@ export default function HomeScreen({ navigation, route }) {
           />
           <TouchableOpacity
             onPress={() => {
-              navigation.navigate("AutoAssignTaskScreen", {
-                uid: route.params.uid,
-              });
+              if (route.params.uid == "UDUaYCyuVJYCTP7Y21DJ7ylD8aO2") {
+                navigation.navigate("AutoAssignTaskScreen", {
+                  uid: route.params.uid,
+                });
+              }else{
+                alert('solo admin');
+              }
+              
             }}
           >
             <Text>Asignar tareas automaticamente</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={{
+              marginBottom: 30,
+              backgroundColor: "#2d7ac0",
+              alignItems: "center",
+              alignSelf: "center",
+              width: 70,
+            }}
+            onPress={() => {
+              navigation.navigate("HistorialScreen", {
+                uid: route.params.uid,
+                uidTask: route.params.uidTask,
+                taskUser: taskUser,
+              });
+            }}
+          >
+            <HistorialImg />
           </TouchableOpacity>
         </View>
       </View>
