@@ -117,16 +117,10 @@ export default function AutoAssignTask({ navigation, route }) {
               tasks[i] = task.task_name;
             });
             
-            let marked = [];
+            let markedd = [];
             let checkIndex = 0;
 
-            active_tasks.forEach((s) => {
-              s.data.forEach((task) => {
-                marked[checkIndex] = "unchecked";
-                checkIndex++;
-              });
-            });
-            checkIndex = 0;
+            
             console.log('Tareas del sector '+ sector.sector_name+': ');
             console.log(' ');
             tasks.forEach((element, i) => {
@@ -135,17 +129,27 @@ export default function AutoAssignTask({ navigation, route }) {
 
             objTask.data = tasks;
             objTask.sector = sector.sector_name;
-            active_tasks.push(objTask)
-            let docRef = doc(db, "assigned_tasks", uidUser);
-            let docSnap = await getDoc(docRef);
+            active_tasks.push(objTask);
+
+            active_tasks.forEach((s) => {
+              s.data.forEach((task) => {
+                markedd[checkIndex] = "unchecked";
+                checkIndex++;
+              });
+            });
+            
+            console.log('tareas marcadas unchecked');
+            checkIndex = 0;
+            const docRef = doc(db, "assigned_tasks", uidUser);
+            const docSnap = await getDoc(docRef);
 
         // if exist update
         if (docSnap.exists()) {
           console.log('doc exist, asignar tareas de '+ uidUser);
           await updateDoc(doc(db, "assigned_tasks", uidUser), {
             active_tasks: active_tasks,
-            marked_tasks: marked,
-            control_marked_tasks: marked,
+            marked_tasks: markedd,
+            control_marked_tasks: markedd,
             timestamp: serverTimestamp(),
             uid: uidUser,
             // time_limit: date,
@@ -154,8 +158,8 @@ export default function AutoAssignTask({ navigation, route }) {
           console.log('doc no existe, asignar tareas de '+ uidUser);
           await setDoc(doc(db, "assigned_tasks", uidUser), {
             active_tasks: active_tasks,
-            marked_tasks: marked,
-            control_marked_tasks: marked,
+            marked_tasks: markedd,
+            control_marked_tasks: markedd,
             timestamp: serverTimestamp(),
             uid: uidUser,
 

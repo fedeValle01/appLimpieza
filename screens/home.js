@@ -44,6 +44,8 @@ export default function HomeScreen({ navigation, route }) {
   const [canControl, setCanControl] = useState(false);
 
   const [activeTasks, setActiveTasks] = useState([]);
+  const [nTasks, setNTasks] = useState([]);
+
   const [markedTasks, setMarkedTasks] = useState([]);
   const [checkList, setCheckList] = useState([]);
   const [controlCheckList, setControlCheckList] = useState([]);
@@ -127,23 +129,14 @@ export default function HomeScreen({ navigation, route }) {
   };
   const renderAssignedTasks = ({ item }) => {
     contador++;
-    if (contador >= checkList.length) {
-      console.log("contador: " + contador + ">= ntareas: " + checkList.length);
+    if (contador >= nTasks) {
+      console.log("contador: " + contador + ">= ntareas: " + nTasks);
       contador = 0;
     }
     let checkIndex = 0;
 
     //  si no hay checklist, la setea unchecked
-    if (checkList.length == 0) {
-      console.log("check vacio, set unchecked");
-      activeTasks.forEach((s) => {
-        s.data.forEach((task) => {
-          checkList[checkIndex] = "unchecked";
-          checkIndex++;
-        });
-      });
-      checkIndex = 0;
-    }
+    
     if (controlCheckList.length == 0) {
       console.log("controlCheckList vacio, set unchecked");
       activeTasks.forEach((s) => {
@@ -361,6 +354,7 @@ export default function HomeScreen({ navigation, route }) {
       let collectionRef = collection(db, "sectors");
       q = query(collectionRef, orderBy("sector_name", "asc"));
 
+      console.log('entra useEfect');
       unsuscribe = onSnapshot(q, (querySnapshot) => {
         setSectors(
           querySnapshot.docs.map((doc) => ({
@@ -414,21 +408,34 @@ export default function HomeScreen({ navigation, route }) {
         let controlMarkedTasks = [];
         let activeTasks = [];
         let markedTasks = [];
+        
+
         qAssigned_tasks.forEach((element) => {
           activeTasks = element.active_tasks;
           markedTasks = element.markedTasks;
           controlMarkedTasks = element.controlMarkedTasks;
           if (markedTasks) {
-            console.log("se encontraron tareas marcadas");
+            // console.log("se encontraron tareas marcadas");
             setCheckList(markedTasks);
           }
           if (controlMarkedTasks) {
-            console.log("se encontraron tareas de control marcadas");
+            // console.log("se encontraron tareas de control marcadas");
             setControlCheckList(controlMarkedTasks);
           }
         });
         if (activeTasks) {
           setActiveTasks(activeTasks);
+          
+
+          //set nTasks
+          let nTasks = 0;
+          let d = 0;
+          activeTasks.forEach(element => {
+            d = element.data;
+            nTasks = nTasks + d.length;
+          });
+          console.log('nTasks: '+ nTasks);
+          setNTasks(nTasks);
         }
       });
 
@@ -440,8 +447,6 @@ export default function HomeScreen({ navigation, route }) {
       });
     },
     [route],
-    [checkList],
-    [activeTasks]
   );
 
   // Return HomeScreen
@@ -491,7 +496,7 @@ export default function HomeScreen({ navigation, route }) {
           }}
         >
           <Text style={styles.subtitleSection}>
-            Tareas de {taskUser} asignadas esta semana: {checkList.length}{" "}
+            Tareas de {taskUser} asignadas esta semana: {nTasks}{" "}
           </Text>
         </View>
         <View style={{ height: "60%", flex: 1 }}>
@@ -502,6 +507,8 @@ export default function HomeScreen({ navigation, route }) {
               <Text style={styles.SectionHeader}>{sector}</Text>
             )}
           />
+          
+
           <TouchableOpacity
             onPress={() => {
               if (route.params.uid == "UDUaYCyuVJYCTP7Y21DJ7ylD8aO2") {
