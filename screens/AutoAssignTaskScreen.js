@@ -172,6 +172,16 @@ export default function AutoAssignTask({ navigation, route }) {
       }
     });
   };
+  const AreYouSureDelete = () => {
+    return Alert.alert("Va a eliminar Historial y Tareas asignadas", "Esta seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+      { text: "OK", onPress: deleteAllHistory },
+    ]);
+  }
 
   const deleteAllHistory = () => {
     colAssignedTasks.forEach(async (element) => {
@@ -313,7 +323,7 @@ export default function AutoAssignTask({ navigation, route }) {
           <Text style={styles.txtUser}>Guardar en el historial</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={deleteAllHistory}
+          onPress={AreYouSureDelete}
           style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
         >
           <Text style={styles.txtUser}>

@@ -128,9 +128,20 @@ const styles = StyleSheet.create({
     marginVertical: 4,
     marginHorizontal: 16,
   },
+  viewTitleDate: {
+    padding: 5,
+    marginVertical: 4,
+    marginHorizontal: 16,
+    marginTop: 17,
+  },
+  titleDate: {
+    fontSize: 25,
+    color: "#111111",
+    marginBottom: -15,
+    textDecorationLine: "underline",
+  },
   titleSectionlist: {
     fontSize: 19,
-    color: "2b2b2b",
   },
   titleHeader: {
     fontSize: 40,

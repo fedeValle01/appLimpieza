@@ -16,58 +16,18 @@ export default function HomeScreen({ navigation, route }) {
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);
   const [taskUser, setTaskUser] = useState([]);
-  let contador = -1
-  let reload = false;
+
   //can mark check controlCheckList
   const [canControl, setCanControl] = useState(false);
-  
-  const [firsTask, setFirsTask] = useState('');
-  const [activeTasks, setActiveTasks] = useState([]);
-  const [nTasks, setNTasks] = useState(0);
 
+  const [activeTasks, setActiveTasks] = useState([]);
+  const [nTasks, setNTasks] = useState([]);
   const [checkList, setCheckList] = useState([]);
   const [controlCheckList, setControlCheckList] = useState([]);
   const [canCheckTask, setCanCheckTask] = useState(false);
 
   const [checked, setChecked] = useState([]);
-
-  const DATA = [
-    //data example sectionList
-    {
-      title: "Main dishes",
-      data: ["Pizza", "Burger", "Risotto"],
-    },
-    {
-      title: "Sides",
-      data: ["French Fries", "Onion Rings", "Fried Shrimps"],
-    },
-    {
-      title: "Drinks",
-      data: ["Water", "Coke", "Beer"],
-    },
-    {
-      title: "Desserts",
-      data: ["Cheese Cake", "Ice Cream"],
-    },
-  ];
-
-  const irACrearSector = () => {
-    if (canControl) {
-      navigation.navigate("AddSector", { uid: route.params.uid });
-    } else alert("solo admin");
-  };
-
-  const logActiveTasks = () => {
-    activeTasks.forEach((element) => {
-      let active_tasks = element.active_tasks;
-      active_tasks.forEach((task) => {
-        console.log("sector: " + task.sector);
-        task.data.forEach((task) => {
-          console.log("tarea: " + task);
-        });
-      });
-    });
-  };
+  const [taskIndex, setTaskIndex] = useState(0);
 
   const handleControlCheck = async (i) => {
     let check = controlCheckList;
@@ -104,20 +64,16 @@ export default function HomeScreen({ navigation, route }) {
       timestamp_marked_task: serverTimestamp(),
     });
   };
-
-
   
-  const renderAssignedTasks = ({ item, index }, checkList, controlCheckList, firsTask) => {
-
-  if (nTasks!=0){
-      contador++;
-    if (firsTask == item){
+  const renderAssignedTasks = ({ item }) => {
+    contador++;
+    if (contador >= nTasks) {
+      console.log("contador: " + contador + ">= ntareas: " + nTasks);
       contador = 0;
     }
     
     let i = contador;
-    // console.log("render: " + item + " index: " + i);
-
+ 
     return (
       <View style={styles.viewSeccion}>
         <View>
@@ -126,7 +82,7 @@ export default function HomeScreen({ navigation, route }) {
         <View style={{ flex: 1 }} />
 
         <View style={{ flexDirection: "row", alignItems: "center" }}>
-          <Text>{i+1}</Text>
+          <Text>{i + 1}</Text>
 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View>
@@ -164,8 +120,6 @@ export default function HomeScreen({ navigation, route }) {
         </View>
       </View>
     );
-    }
-    
   };
 
   const AreYouSureAlert = () => {
@@ -196,71 +150,8 @@ export default function HomeScreen({ navigation, route }) {
     />
   ));
 
-  const MezclaImg = memo(() => (
-    <Image
-      style={{ width: 38, height: 38 }}
-      source={require("../assets/mezcla.png")}
-    />
-  )); 
-
-  const HistorialImg = memo(() => (
-    <Image
-      style={{ width: 45, height: 45 }}
-      source={require("../assets/historial.png")}
-    />
-  ));
-
-  const LogOutImg = memo(() =>(
-      <Image
-        style={{ width: 38, height: 38 }}
-        source={require("../assets/cerrar-sesion.png")}
-      />
-  ))
 
 
-  function LogoTitle() {
-    return (
-      <Image
-        style={{ width: 50, height: 50 }}
-        source={require("../assets/logo.png")}
-      />
-    );
-  }
-
-  const HomeImg = memo(() => (
-    
-      <Image
-        style={{ width: 45, height: 45 }}
-        source={require("../assets/home.png")}
-      />
-    
-    )
-  );
-  const AsigImg = React.memo(() => (
-    <Image
-      style={{
-        width: 40,
-        height: 40,
-      }}
-      source={require("../assets/asig.png")}
-    />
-  ));
-
-  const UsersImg = memo(() => (
-      <Image
-        style={{ width: 40, height: 40 }}
-        source={require("../assets/usuarios.png")}
-      />
-    )
-  );
-
-  // memo optimiza carga de imagenes
-  const AgregarTareaImg = memo(() => (
-    <Image
-      style={{ width: 50, height: 50 }}
-      source={require("../assets/agregarTarea.png")}
-    />
-  ));
 
   const Item = ({ title }) => (
     <View style={styles.itemSectionlist}>
@@ -271,71 +162,7 @@ export default function HomeScreen({ navigation, route }) {
 
   useEffect(
     () => {
-      //-----------NAVBAR------------------
-      navigation.setOptions({
-        headerRight: () => (
-          <View style={{ flexDirection: "row" }}>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid })
-              }
-            >
-              <View style={{ alignContent: "center", marginTop: 3 }}>
-                <UsersImg />
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Agregar Tarea", { uid: route.params.uid })
-              }
-            >
-              <View style={{ alignContent: "center", marginTop: 3 }}>
-                <AgregarTareaImg />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() =>{
-                if (canControl) {
-                  navigation.navigate("Asignar Tareas", { uid: route.params.uid });
-                }else{
-                  alert('solo admin');
-                }
-              }
-              }
-            >
-              <View style={{ marginLeft: 10, marginTop:3 }}>
-                <AsigImg />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                if (canControl) {
-                  navigation.navigate("AutoAssignTaskScreen", {
-                    uid: route.params.uid,
-                  });
-                }else{
-                  alert('solo admin');
-                }
-                
-              }}
-            >
-              <View style={{ marginLeft: 10, marginTop:3 }}>
-                <MezclaImg />
-              </View>
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={AreYouSureAlert}>
-              <View style={{ marginLeft: 10, marginTop:3 }}>
-                <LogOutImg />
-              </View>
-            </TouchableOpacity>
-          </View>
-        ),
-        headerLeft: () => <View></View>,
-      });
-      //-----------NAVBAR------------------
+      
 
       if (route.params.uid == route.params.uidTask) {
         //Es el usuario viendo sus tareas
@@ -343,8 +170,7 @@ export default function HomeScreen({ navigation, route }) {
       } else {
         setCanCheckTask(false);
       }
-      contador = -1
-
+      let contador = -1
       let q;
       let unsuscribe;
       let collectionRef = collection(db, "sectors");
@@ -425,14 +251,11 @@ export default function HomeScreen({ navigation, route }) {
 
           //set nTasks
           let nTasks = 0;
-          let firsTask = 0;
+          let d = 0;
           activeTasks.forEach(element => {
-            let d = element.data
+            d = element.data;
             nTasks = nTasks + d.length;
           });
-          firsTask = activeTasks[0]
-          firsTask = firsTask.data[0]
-          setFirsTask(firsTask)
           // console.log('nTasks: '+ nTasks);
           setNTasks(nTasks);
         }
@@ -446,7 +269,7 @@ export default function HomeScreen({ navigation, route }) {
       });
     },
     [route.params.uidTask],
-    [reload]
+    [nTasks]
   );
 
   // Return HomeScreen
@@ -471,23 +294,6 @@ export default function HomeScreen({ navigation, route }) {
           <CasaImg />
         </View>
 
-        {/* <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("Tasks", { uid: route.params.uid });
-          }}
-        >
-          <Text>Ir a Tasks</Text>
-        </TouchableOpacity>
-
-
-        <TouchableOpacity onPress={irACrearSector}>
-          <Text>Ir a Crear Sector</Text>
-        </TouchableOpacity>
-
-        {/* <TouchableOpacity onPress={logActiveTasks}>
-            <Text>Ver tareas activas</Text>
-          </TouchableOpacity> */}
-
         <View
           style={{
             flexDirection: "row",
@@ -502,33 +308,12 @@ export default function HomeScreen({ navigation, route }) {
         <View style={{ height: "60%", flex: 1 }}>
           <SectionList
             sections={activeTasks}
-            renderItem={(props) => renderAssignedTasks(props, checkList, controlCheckList, firsTask)}
+            renderItem={renderAssignedTasks}
+            keyExtractor={(item, index) => item + index}
             renderSectionHeader={({ section: { sector } }) => (
               <Text style={styles.SectionHeader}>{sector}</Text>
             )}
           />
-
-            <TouchableOpacity
-              style={{
-                marginBottom: 30,
-                marginTop: 10,
-                backgroundColor: "#2d7ac0",
-                alignItems: "center",
-                alignSelf: "center",
-                width: 70,
-                borderWidth: 1,
-                borderColor: "#000"
-              }}
-              onPress={() => {
-                navigation.navigate("HistorialScreen", {
-                  uid: route.params.uid,
-                  uidTask: route.params.uidTask,
-                  taskUser: taskUser,
-                });
-              }}
-            >
-              <HistorialImg />
-            </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>
