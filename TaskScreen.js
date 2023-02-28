@@ -15,12 +15,12 @@ export default function TaskScreen({navigation, route}) {
     return(
       <SafeAreaView>
         <TouchableOpacity onPress = { () =>{navigation.navigate('Home', {value: props.value})}} >
-        <Text>{props.value}</Text>
+          <Text>{props.value}</Text>
         </TouchableOpacity>
       
       </SafeAreaView>
     );
-  } 
+  }
   
  
 
