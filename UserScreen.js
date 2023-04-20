@@ -1,27 +1,7 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  TextInput,
-  TouchableOpacity,
-  View,
-  Alert,
-} from "react-native";
+import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert } from "react-native";
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  collection,
-  query,
-  querySnapshot,
-  getDocs,
-  orderBy,
-  onSnapshot,
-  QuerySnapshot,
-  where,
-  updateDoc,
-  doc,
-} from "firebase/firestore";
+import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 

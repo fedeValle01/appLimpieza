@@ -1,5 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
-import {Text,SafeAreaView,TextInput,TouchableOpacity,Alert,View,SectionList,Image,Dimensions } from "react-native";
+import Separator from '../components/Separator'
+import { Text, SafeAreaView, TextInput, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button } from "react-native";
 import {doc,setDoc,getFirestore,collection,orderBy,onSnapshot,query,where,serverTimestamp,updateDoc, getDoc,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
@@ -7,6 +8,8 @@ import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { Checkbox } from "react-native-paper";
 import { Tooltip, lightColors } from '@rneui/themed';
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
 
 const { height } = Dimensions.get('window');
 
@@ -53,6 +56,7 @@ export default function HomeScreen({ navigation, route }) {
   const [canCheckTask, setCanCheckTask] = useState(false);
 
   const [checked, setChecked] = useState([]);
+  const [markAll, setMarkAll] = useState(false);
 
   const DATA = [
     //data example sectionList
@@ -74,6 +78,15 @@ export default function HomeScreen({ navigation, route }) {
     },
   ];
 
+
+  const getToken = async () => {
+    const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+
+    if (status !== "granted"){
+      return
+    }
+    const token = await Notifications.getExpoPushTokenAsync();
+  }
   const irACrearSector = () => {
     if (canControl) {
       navigation.navigate("AddSector", { uid: route.params.uid });
@@ -128,7 +141,21 @@ export default function HomeScreen({ navigation, route }) {
     });
   };
 
-
+  const setAllChecked = () => {
+    let checkList = controlCheckList;
+    if (!markAll){
+      checkList.forEach((task, i) => {
+        checkList[i] = 'checked';
+      });
+      setMarkAll(true)
+    }else{
+      checkList.forEach((task, i) => {
+        checkList[i] = 'unchecked';
+      });
+      setMarkAll(false)
+    }
+    
+  }
   
   const renderAssignedTasks = ({ item, index }, checkList, controlCheckList) => {
 
@@ -286,7 +313,6 @@ export default function HomeScreen({ navigation, route }) {
     if(desc!=null){
       haveDesc = true;
       let descLength = desc.length;
-      console.log('descLength: '+descLength);
       if(descLength<=28){ // one line
         h = 40
       }else if(descLength>28 &&descLength<45){// two lines
@@ -301,6 +327,7 @@ export default function HomeScreen({ navigation, route }) {
         h = 180;
       }
     }
+
     return(
       <View style={styles.itemSectionlist}>
         {haveDesc&&
@@ -320,10 +347,9 @@ export default function HomeScreen({ navigation, route }) {
     );
   }
 
-  useEffect(
-    () => {
-      
-
+  useEffect(() => {
+      console.log('entra useEfect');
+      setNTasks(0);
       if (route.params.uid == route.params.uidTask) {
         //Es el usuario viendo sus tareas
         setCanCheckTask(true);
@@ -337,7 +363,6 @@ export default function HomeScreen({ navigation, route }) {
       let collectionRef = collection(db, "sectors");
       q = query(collectionRef, orderBy("sector_name", "asc"));
 
-      console.log('entra useEfect');
       setAllDescTasks([]);
       unsuscribe = onSnapshot(q, (querySnapshot) => {
         setSectors(
@@ -434,6 +459,8 @@ export default function HomeScreen({ navigation, route }) {
             setFirsTask(firsTask)
             // console.log('nTasks: '+ nTasks);
             setNTasks(nTasks);
+          }else{
+            setNTasks(0);
           }
           
           collectionRef = collection(db, "tasks");
@@ -543,6 +570,25 @@ export default function HomeScreen({ navigation, route }) {
     [nTasks],
   );
 
+const BtnSelectAll = () => {
+  if (firsTask && canControl){
+    return(
+      <View>
+        <Separator/>
+          <View style={styles.btnRight}>
+            <Button onPress={setAllChecked}
+              title='Marcar controladas'
+              color='#E3682C'
+              >
+            </Button>
+          </View>
+      </View>
+    )
+  }
+}
+
+  
+
 const loadAllOrderedTasks = () => {
   if(!chargedOrderedTasks){
     
@@ -634,6 +680,9 @@ const loadAllOrderedTasks = () => {
               <Text style={styles.SectionHeader}>{sector}</Text>
             )}
           />
+
+          <BtnSelectAll/>
+          
           
           {/* <TouchableOpacity onPress={()=>{
               allDescTasks.forEach(element => {
@@ -642,6 +691,17 @@ const loadAllOrderedTasks = () => {
               }}>
             <Text>Ver Desc</Text>
           </TouchableOpacity> */}
+
+          {/* <TouchableOpacity onPress={() => {
+                navigation.navigate("TestScreen", {
+                  uid: route.params.uid,
+                  uidTask: route.params.uidTask,
+                  taskUser: taskUser,
+                });
+              }}>
+            <Text>Ver Desc</Text>
+          </TouchableOpacity> */}
+          
 
             <TouchableOpacity
               style={{

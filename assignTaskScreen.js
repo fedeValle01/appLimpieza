@@ -1,35 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  StyleSheet,
-  Text,
-  SafeAreaView,
-  View,
-  Image,
-  Alert,
-  TouchableOpacity,
-  Button,
-  SectionList,
-} from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList } from "react-native";
 import { initializeApp } from "firebase/app";
-import {
-  getFirestore,
-  collection,
-  query,
-  querySnapshot,
-  getDocs,
-  orderBy,
-  onSnapshot,
-  QuerySnapshot,
-  setDoc,
-  doc,
-  where,
-  serverTimestamp,
-  updateDoc,
-  getDoc,
-} from "firebase/firestore";
+import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp,
+ updateDoc, getDoc } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
+
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
 import DatePicker from "react-native-date-picker";
@@ -55,6 +33,8 @@ export default function AssignTaskScreen({ navigate, route }) {
   const onUpdateCheck = useRef(true);
 
   const [checkList, setCheckList] = useState([]);
+  
+  const [markAll, setMarkAll] = useState(false);
 
   const [checked, setChecked] = useState("unchecked");
 
@@ -104,6 +84,23 @@ export default function AssignTaskScreen({ navigate, route }) {
     });
   };
 
+  const setAllChecked = () => {
+    let c = checkList;
+    console.log('marcar todas');
+      if (!markAll){
+        c.forEach((task, i) => {
+          c[i] = 'checked';
+        });
+        setMarkAll(true)
+      }else{
+        c.forEach((task, i) => {
+          c[i] = 'unchecked';
+        });
+        setMarkAll(false)
+      }
+    setCheckList(c)
+  }
+  
   const ejecuteQuery = (item) => {
     let collectionRef = collection(db, "tasks");
     let unsuscribe;
@@ -164,7 +161,19 @@ export default function AssignTaskScreen({ navigate, route }) {
       setTask_name([]);
     }
   };
-
+const BtnSelectAll = () => {
+  if (task_name.length > 0) {
+  return(
+    <View style={{ width: 200, marginTop: 15 }}>
+      <Button onPress={setAllChecked}
+        title='Seleccionar todas'
+        color='#E3682C'
+        >
+      </Button>
+    </View>
+  )
+}
+}
   const SelectDate = () => {
     if (task_name.length > 0) {
       return (
@@ -407,15 +416,15 @@ export default function AssignTaskScreen({ navigate, route }) {
   useEffect(() => {
     console.log("entro assignTaskScreen");
     //-----------Notifications------------------
-    Notifications.scheduleNotificationAsync({
-      content: {
-        title: "Ultimo dia para limpiar!",
-        body: "Tenes tareas en: cocina, patio externo",
-      },
-      trigger: {
-        seconds: 10,
-      },
-    });
+    // Notifications.scheduleNotificationAsync({
+    //   content: {
+    //     title: "Ultimo dia para limpiar!",
+    //     body: "Tenes tareas en: cocina, patio externo",
+    //   },
+    //   trigger: {
+    //     seconds: 10,
+    //   },
+    // });
 
     let collectionRef = collection(db, "sectors");
     let q = query(collectionRef, orderBy("sector_name", "desc"));
@@ -521,11 +530,14 @@ export default function AssignTaskScreen({ navigate, route }) {
           <Text style={styles.SectionHeader}>{title}</Text>
         )}
       />
-
+        <BtnSelectAll/>
+        
       <View style={{ flex: 1 }}>
-        {/* doesn't work on android emulator */}
-        <SelectDate />
 
+        {/* doesn't work on android emulator */}
+        
+        <SelectDate />
+          
         <AssignTaskButton />
       </View>
     </SafeAreaView>
