@@ -1,364 +1,781 @@
-import React, {useEffect, useState} from 'react';
-import { Text, SafeAreaView, TextInput, TouchableOpacity, Alert, View, ScrollView, SectionList } from 'react-native';
-import { doc, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, updateDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
-import { getAuth, signOut} from 'firebase/auth'
-import { initializeApp } from 'firebase/app'
-import firebaseConfig from '../firebase-config';
-import styles from '../screens/stylesScreens';
-import { Checkbox, Colors } from 'react-native-paper';
-import Button from '../components/Button';
-import IconLogOut from '../components/IconLogOut'
+import React, { memo, useEffect, useState } from "react";
+import Separator from '../components/Separator'
+import LoadingGif from '../components/Loading'
 
-console.log('setea contador -1');
-let contador = -1;
- 
-export default function HomeScreen({navigation, route}) {
+import { Text, SafeAreaView, TextInput, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button } from "react-native";
+import {doc,setDoc,getFirestore,collection,orderBy,onSnapshot,query,where,serverTimestamp,updateDoc, getDoc,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { getAuth, signOut } from "firebase/auth";
+import { initializeApp } from "firebase/app";
+import firebaseConfig from "../firebase-config";
+import styles from "../screens/stylesScreens";
+import { Checkbox } from "react-native-paper";
+import { Tooltip, lightColors } from '@rneui/themed';
+import * as Notifications from "expo-notifications";
+import * as Permissions from "expo-permissions";
 
-    console.log('render HomeScreen');
-    contador =-1;
-    const auth = getAuth(app);
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const [sectors, setSectors ] = useState([]);
-    const [user, setUser ] = useState([]);
-    const [activeTasks, setActiveTasks ] = useState([]);
-    const [markedTasks, setMarkedTasks ] = useState([]);
-    const [checkList, setCheckList] = useState([]);
-    const [controlCheckList, setControlCheckList] = useState([]);
-    const [canCheckTask, setCanCheckTask ] = useState(false);
-    const [canCheckControlTask, setCanCheckControlTask ] = useState(false);
+const { height } = Dimensions.get('window');
 
-
-    const [checked, setChecked] = useState([]);
-    
-
-    const DATA = [
-      {
-        title: "Main dishes",
-        data: ["Pizza", "Burger", "Risotto"]
-      },
-      {
-        title: "Sides",
-        data: ["French Fries", "Onion Rings", "Fried Shrimps"]
-      },
-      {
-        title: "Drinks",
-        data: ["Water", "Coke", "Beer"]
-      },
-      {
-        title: "Desserts",
-        data: ["Cheese Cake", "Ice Cream"]
-      }
-    ];
-
-  const irACrearSector = () =>{
-    if (route.params.uid == 'UDUaYCyuVJYCTP7Y21DJ7ylD8aO2'){
-      console.log('Estamos ante el creador');
-      navigation.navigate('AddSector', {uid: route.params.uid});
-    }
-    else alert('solo admin');
-  }
-
-const logActiveTasks = () => {
-  activeTasks.forEach(element => {
-    let active_tasks = element.active_tasks;
-    active_tasks.forEach(task => {
-      console.log('sector: '+task.sector);
-      task.data.forEach(task => {
-      console.log('tarea: '+task);
-      });
-    });
-  });
-}
-
-
-const handleControlCheck = async (i) => {
-
-  
-}
-
-const handleCheck = async (i) => {
-
-  let check = checkList;
-  if (check.length>0){
-    if (check[i]=='unchecked'){
-      check[i] = 'checked';
-    }else{
-      check[i] = 'unchecked';
-    }
-  }
-  setCheckList(check);
-
-          //Add markedTask
-          await updateDoc(doc(db, 'assigned_tasks', route.params.uidTask), {
-            markedTask: check,
-            timeStampMarkedTask: serverTimestamp(),
-          });
-  
-}
-const renderAssignedTasks = ({ item }) =>{
-  
-  
-  contador++;
-  if (contador>=checkList.length){
-    console.log('contador: '+contador+'>= ntareas: '+checkList.length);
-    contador = 0;
-  }
-  let checkIndex = 0;
-
-  //  si no hay checklist, la setea unchecked
-  if (checkList.length == 0){
-    console.log('check vacio, set unchecked');
-    activeTasks.forEach(s => {
-      s.data.forEach(task => {
-      checkList[checkIndex]='unchecked';
-      checkIndex++;
-      });
-    });
-    checkIndex = 0;
-  }
-  if (controlCheckList.length == 0){
-    console.log('controlCheckList vacio, set unchecked');
-    activeTasks.forEach(s => {
-      s.data.forEach(task => {
-        controlCheckList[checkIndex]='unchecked';
-      checkIndex++;
-      });
-    });
-  }
-  let i = contador
-  console.log('render: '+item+' index: '+i);
-
+const ControlledTooltip = (props) => {
+  const [open, setOpen] = React.useState(false);
   return (
-    <View style = {styles.viewSeccion}>
-      <View>
-        <Item title={item} />
-      </View>
-      <View style={{ flex: 1 }} />
-      <View style = {{flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center'}}>
-        <Text>{i+1}</Text>
-
-        {/* user checkbox */}
-        <Checkbox
-        disabled = {!canCheckTask}
-        status = {checkList[i]}
-        onPress={() =>{
-          handleCheck(i);
-          if (checked=='unchecked'){
-            setChecked('checked');
-          }else{
-            setChecked('unchecked');
-          }
-        }}
-        />
-
-{/* control checkbox */}
-<Checkbox
-        color='#39ff14'
-        status={controlCheckList[i]}
-        disabled = {!canCheckControlTask}
-        onPress={() =>{
-          handleControlCheck(i);
-          if (checked=='unchecked'){
-            setChecked('checked');
-          }else{
-            setChecked('unchecked');
-          }
-        }}
-        />
-      </View>
-
-    </View>
-  )
+    <Tooltip
+      visible={open}
+      onOpen={() => {
+        setOpen(true);
+      }}
+      onClose={() => {
+        setOpen(false);
+      }}
+      {...props}
+    />
+  );
 }
-    const logOut = () =>{
-      signOut(auth).then(() => {
-        alert('Session cerrada');
-        navigation.navigate('Iniciar Sesion');
-      }).catch((error) => {
-        alert(error);
-      });
+
+export default function HomeScreen({ navigation, route }) {
+  const auth = getAuth(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const [chargedOrderedTasks, setChargedOrderedTasks] = useState(false);
+  const [allOrderedTasks, setAllOrderedTasks] = useState([]);//contains all objets from tasks assigned
+  const [allDescTasks, setAllDescTasks] = useState([]);//contains all descriptions from tasks assigned
+  const [orderedTasks, setOrderedTasks] = useState([]);//contains only tasks names of tasks assigned
+  const [tasksInSectors, setTasksInSectors] = useState([]);//all tasks in assigned sector
+  const [sectors, setSectors] = useState([]);
+  const [user, setUser] = useState([]);
+  const [taskUser, setTaskUser] = useState(null);
+
+  
+  let contador = -1
+  //can mark check controlCheckList
+  const [canControl, setCanControl] = useState(false);
+  
+  const [firsTask, setFirsTask] = useState('');
+  const [activeTasks, setActiveTasks] = useState([]);
+  const [nTasks, setNTasks] = useState(0);
+
+  const [checkList, setCheckList] = useState([]);
+  const [controlCheckList, setControlCheckList] = useState([]);
+  const [canCheckTask, setCanCheckTask] = useState(false);
+
+  const [checked, setChecked] = useState([]);
+  const [markAll, setMarkAll] = useState(false);
+
+  const DATA = [
+    //data example sectionList
+    {
+      title: "Main dishes",
+      data: ["Pizza", "Burger", "Risotto"],
+    },
+    {
+      title: "Sides",
+      data: ["French Fries", "Onion Rings", "Fried Shrimps"],
+    },
+    {
+      title: "Drinks",
+      data: ["Water", "Coke", "Beer"],
+    },
+    {
+      title: "Desserts",
+      data: ["Cheese Cake", "Ice Cream"],
+    },
+  ];
+
+
+  const getToken = async () => {
+    const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+
+    if (status !== "granted"){
+      return
     }
+    const token = await Notifications.getExpoPushTokenAsync();
+  }
+  const irACrearSector = () => {
+    if (canControl) {
+      navigation.navigate("AddSector", { uid: route.params.uid });
+    } else alert("solo admin");
+  };
+
+  const logActiveTasks = () => {
+    activeTasks.forEach((element) => {
+      let active_tasks = element.active_tasks;
+      active_tasks.forEach((task) => {
+        console.log("sector: " + task.sector);
+        task.data.forEach((task) => {
+          console.log("tarea: " + task);
+        });
+      });
+    });
+  };
+
+  const handleControlCheck = async (i) => {
+    let check = controlCheckList;
+    if (check.length > 0) {
+      if (check[i] == "unchecked") {
+        check[i] = "checked";
+      } else {
+        check[i] = "unchecked";
+      }
+    }
+    setControlCheckList(check);
+
+    //Add markedTask
+    await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      control_marked_tasks: check,
+      timestamp_control_marked_tasks: serverTimestamp(),
+    });
+  };
+
+  const handleCheck = async (i) => {
+    let check = checkList;
+    if (check.length > 0) {
+      if (check[i] == "unchecked") {
+        check[i] = "checked";
+      } else {
+        check[i] = "unchecked";
+      }
+    }
+    setCheckList(check);
+
+    //Add markedTask
+    await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      marked_tasks: check,
+      timestamp_marked_tasks: serverTimestamp(),
+    });
+  };
+
+  const setAllMarked = async () => {
+    let checks = checkList;
+    if (!markAll){
+      checks.forEach((task, i) => {
+        checks[i] = 'checked';
+      });
+      setMarkAll(true)
+    }else{
+      checks.forEach((task, i) => {
+        checks[i] = 'unchecked';
+      });
+      setMarkAll(false)
+    }
+    await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      marked_tasks: checks,
+      timestamp_control_marked_tasks: serverTimestamp(),
+    });
     
-    const Item = ({ title }) => (
-      <View style={styles.itemSectionlist}>
-        <Text style={styles.titleSectionlist}>{title}</Text>
+  }
+
+  const setAllChecked = async () => {
+    let checkList = controlCheckList;
+    if (!markAll){
+      checkList.forEach((task, i) => {
+        checkList[i] = 'checked';
+      });
+      setMarkAll(true)
+    }else{
+      checkList.forEach((task, i) => {
+        checkList[i] = 'unchecked';
+      });
+      setMarkAll(false)
+    }
+    await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      control_marked_tasks: checkList,
+      timestamp_control_marked_tasks: serverTimestamp(),
+    });
+    
+  }
+  
+  const renderAssignedTasks = ({ item, index }, checkList, controlCheckList) => {
+
+      contador++;
+    if (firsTask == item){
+      contador = 0;
+    }
+    let i = contador; 
+    return (
+      <View style={styles.viewSeccion}>
+        <View>
+          <Item title={item} i = {i}/>
+        </View>
+        <View style={{ flex: 1 }} />
+
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
+          <Text>{i+1}</Text>
+
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View>
+              {/* user checkbox */}
+              <Checkbox
+                disabled={!canCheckTask}
+                status={checkList[i]}
+                onPress={() => {
+                  handleCheck(i);
+                  if (checked == "unchecked") {
+                    setChecked("checked");
+                  } else {
+                    setChecked("unchecked");
+                  }
+                }}
+              />
+            </View>
+            <View>
+              {/* control checkbox */}
+              <Checkbox
+                color="#39ff14"
+                status={controlCheckList[i]}
+                disabled={!canControl}
+                onPress={() => {
+                  handleControlCheck(i);
+                  if (checked == "unchecked") {
+                    setChecked("checked");
+                  } else {
+                    setChecked("unchecked");
+                  }
+                }}
+              />
+            </View>
+          </View>
+        </View>
       </View>
     );
+    
+    
+  };
+
+  const AreYouSureAlert = () => {
+    return Alert.alert("Va a cerrar sesion", "Esta seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+      { text: "OK", onPress: logOut },
+    ]);
+  }
+
+  const logOut = () => {
+    signOut(auth)
+      .then(() => {
+        navigation.navigate("Iniciar Sesion");
+      })
+      .catch((error) => {
+        alert(error);
+      });
+  };
+
+  const CasaImg = memo(() => (
+    <Image
+      style={{ width: 170, height: 170 }}
+      source={require("../assets/casaLaCosta.png")}
+    />
+  ));
+
+  const ConfigImg = memo(() => (
+    <Image
+      style={{ width: 25, height: 25 }}
+      source={require("../assets/config.png")}
+    />
+  )); 
+
+  const HistorialImg = memo(() => (
+    <Image
+      style={{ width: 30, height: 30 }}
+      source={require("../assets/historial.png")}
+    />
+  ));
+
+  const LogOutImg = memo(() =>(
+      <Image
+        style={{ width: 27, height: 27 }}
+        source={require("../assets/cerrar-sesion.png")}
+      />
+  ))
+
+  
 
 
-    useEffect(() => {
 
-      if (route.params.uid == route.params.uidTask){
+
+const SectionComponent = () =>(
+<View style={{ height: "58%"}}>
+
+<SectionList
+  sections={activeTasks}
+  renderItem={(props) =>
+    renderAssignedTasks(props, checkList, controlCheckList)
+  }
+  renderSectionHeader={({ section: { sector } }) => (
+    <Text style={styles.SectionHeader}>{sector}</Text>
+  )}
+/>
+
+<View style={{ flexDirection: "row-reverse", marginTop:20, marginBottom: 10 }}>
+  <BtnControlAll/>
+  <View style = {{marginLeft: 5}} />
+  <BtnSelectAll/>
+</View>
+
+{/* <TouchableOpacity onPress={()=>{
+    allDescTasks.forEach(element => {
+      console.log(element);
+    });
+    }}>
+  <Text>Ver Desc</Text>
+</TouchableOpacity> */}
+
+{/* <TouchableOpacity onPress={() => {
+      navigation.navigate("TestScreen", {
+        uid: route.params.uid,
+        uidTask: route.params.uidTask,
+        taskUser: taskUser,
+      });
+    }}>
+  <Text>Ver Desc</Text>
+</TouchableOpacity> */}
+
+</View>
+
+)
+
+  function LogoTitle() {
+    return (
+      <Image
+        style={{ width: 50, height: 50 }}
+        source={require("../assets/logo.png")}
+      />
+    );
+  }
+
+  const HomeImg = memo(() => (
+    
+      <Image
+        style={{ width: 45, height: 45 }}
+        source={require("../assets/home.png")}
+      />
+    
+    )
+  );
+  const AsigImg = React.memo(() => (
+    <Image
+      style={{ width: 30, height: 30 }}
+      source={require("../assets/asig.png")}
+    />
+  ));
+
+  const UsersImg = memo(() => (
+      <Image
+        style={{ width: 33, height: 33 }}
+        source={require("../assets/usuarios.png")}
+      />
+    )
+  );
+
+  // memo optimiza carga de imagenes
+  const AgregarTareaImg = memo(() => (
+    <Image
+      style={{ width: 25, height: 25 }}
+      source={require("../assets/c.png")}
+    />
+  ));
+
+
+  const Item = ({ title, i }) => {
+  let haveDesc = false;
+  let h = 100;
+  let desc = allDescTasks[i]
+    if(desc!=null){
+      haveDesc = true;
+      let descLength = desc.length;
+      if(descLength<=28){ // one line
+        h = 40
+      }else if(descLength>28 &&descLength<45){// two lines
+        h = 60
+      }else if(descLength>=45 && descLength<65){// three lines
+        h = 80
+      }else if(descLength>=65 && descLength<100){ //four lines
+        h = 100
+      }else if(descLength>=100 && descLength<120){ //five lines
+        h = 130;
+      }else{
+        h = 180;
+      }
+    }
+
+    return(
+      <View style={styles.itemSectionlist}>
+        {haveDesc&&
+          <ControlledTooltip
+                popover={<Text>{desc}</Text>}
+                containerStyle={{ width: 200, height: h }}
+                backgroundColor={lightColors.primary}
+              >
+                <Text style={styles.titleSectionlist}>{title}</Text>
+
+          </ControlledTooltip>
+        }
+        {!haveDesc&&
+                <Text style={styles.titleSectionlist}>{title}</Text>
+        }
+      </View>
+    );
+  }
+
+  useEffect(() => {
+      console.log('entra useEfect');
+      let cControl = false;
+      setNTasks(0);
+      if (route.params.uid == route.params.uidTask) {
         //Es el usuario viendo sus tareas
         setCanCheckTask(true);
-      }else{
+      } else {
         setCanCheckTask(false);
       }
+      contador = -1
+
+      let taskUser
       let q;
       let unsuscribe;
-      let collectionRef = collection(db, 'sectors');
-      q = query(collectionRef, orderBy('sector_name', 'asc'))
+      let collectionRef = collection(db, "sectors");
+      q = query(collectionRef, orderBy("sector_name", "asc"));
 
-      unsuscribe = onSnapshot(q, querySnapshot =>{
+      setAllDescTasks([]);
+      unsuscribe = onSnapshot(q, (querySnapshot) => {
         setSectors(
-          querySnapshot.docs.map(doc =>({
+          querySnapshot.docs.map((doc) => ({
             key: doc.data().sector_name,
             sector_description: doc.data().sector_description,
           }))
-        )
-      })
-
+        );
+      });
 
       let u;
-      collectionRef = collection(db, 'user');
-      q = query(collectionRef, where("uid", "==", route.params.uid))
-      unsuscribe = onSnapshot(q, querySnapshot =>{
-      u = (
-        querySnapshot.docs.map(doc =>({
+      collectionRef = collection(db, "user");
+      q = query(collectionRef, where("uid", "==", route.params.uid));
+      unsuscribe = onSnapshot(q, (querySnapshot) => {
+        u = querySnapshot.docs.map((doc) => ({
           name: doc.data().username,
-        }))
-      )
+          canControl: doc.data().can_control,
+        }));
 
-      u.forEach(element => {
-        console.log('u: '+element.name);
-        setUser(element.name)
+        u.forEach((element) => {
+          console.log("u: " + element.name); //username active session
+          setUser(element.name);
+          setCanControl(element.canControl);
+          cControl = true;
+        });
       });
+
+      collectionRef = collection(db, "user");
+      q = query(collectionRef, where("uid", "==", route.params.uidTask));
+      unsuscribe = onSnapshot(q, (querySnapshot) => {
+        u = querySnapshot.docs.map((doc) => ({
+          name: doc.data().username,
+        }));
+
+        u.forEach((element) => {
+          taskUser = element.name
+          console.log("u: " + taskUser); //username that will show his tasks
+          setTaskUser(taskUser);
+        });
+      });
+
       
-    })
+      collectionRef = collection(db, "assigned_tasks");
+      q = query(collectionRef, where("uid", "==", route.params.uidTask));
 
-
-    collectionRef = collection(db, 'assigned_tasks');
-  
-    q = query(collectionRef, where("uid", "==", route.params.uidTask))
-
-    unsuscribe = onSnapshot(q, querySnapshot =>{
-      let qAssigned_tasks = (
-        querySnapshot.docs.map(doc =>({
+      let tasks = []
+      let sectorTasks = []
+      unsuscribe = onSnapshot(q, (querySnapshot) => {
+        let qAssigned_tasks = querySnapshot.docs.map((doc) => ({
           timestamp: doc.data().timestamp,
           uid: doc.data().uid,
           active_tasks: doc.data().active_tasks,
-          markedTask: doc.data().markedTask,
-        }))
-      )
+          markedTasks: doc.data().marked_tasks,
+          controlMarkedTasks: doc.data().control_marked_tasks,
+        }));
+        let controlMarkedTasks = [];
+        let activeTasks = [];
+        let markedTasks = [];
+        
 
-      let activeTasks = [];
-      let markedTask = [];
-      qAssigned_tasks.forEach(element => {
-        activeTasks = element.active_tasks;
-        markedTask = element.markedTask
-        if (markedTask){
-          console.log('se encontraron tareas marcadas');
-          setCheckList(markedTask);
+        qAssigned_tasks.forEach((element) => {
+          activeTasks = element.active_tasks;
+          markedTasks = element.markedTasks;
+          controlMarkedTasks = element.controlMarkedTasks;
+          if (markedTasks) {
+            // console.log("se encontraron tareas marcadas");
+            setCheckList(markedTasks);
+          }
+          if (controlMarkedTasks) {
+            // console.log("se encontraron tareas de control marcadas");
+            setControlCheckList(controlMarkedTasks);
+          }
+        });
+        if (activeTasks) {
+          setActiveTasks(activeTasks);
+          
+
+          //set nTasks
+          let nTasks = 0
+          let firsTask = 0
+          let indexT = 0;
+          activeTasks.forEach((element, i) => {
+            let d = element.data;
+            nTasks = nTasks + d.length;
+            sectorTasks[i] = element.sector;
+            d.forEach(task => {
+              tasks[indexT] = task;
+              indexT++;
+            });
+            setOrderedTasks(tasks);
+          });
+          
+          firsTask = activeTasks[0]
+          if(firsTask){
+            firsTask = firsTask.data[0]
+            setFirsTask(firsTask)
+            // console.log('nTasks: '+ nTasks);
+            setNTasks(nTasks);
+          }else{
+            setNTasks(0);
+          }
+          
+          collectionRef = collection(db, "tasks");
+      let tasksInSectors = []
+      let taskInSector = []
+      //get tasks of the assigned sectors
+        
+      sectorTasks.forEach((sector, i) => {
+        q = query(collectionRef, where("task_sector", "==", sector));
+        
+        unsuscribe = onSnapshot(q, (querySnapshot) => {
+          taskInSector = querySnapshot.docs.map((doc) => ({
+            task_name: doc.data().task_name,
+            task_description: doc.data().task_description,
+            task_sector: doc.data().task_sector,
+          }));
+          
+          tasksInSectors.push(taskInSector);
+          if (i == sectorTasks.length-1){
+            setTasksInSectors(tasksInSectors)
+            setChargedOrderedTasks(false);
+          }
+        });
+
+      
+      });
+      
         }
       });
-      setActiveTasks(activeTasks);
-
-    })
-
-  
-
+      
       auth.onAuthStateChanged((user) => {
         if (user) {
-          console.log("ya tienes sesión iniciada con:"+route.params.uid); 
-      }
-      return unsuscribe;
+          console.log("ya tienes sesión iniciada con:" + route.params.uid);
+        }
+        return unsuscribe;
       });
-    }, [route], [checkList]);
+
+      //-----------NAVBAR------------------
+      navigation.setOptions({
+        headerRight: () => (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: canControl })
+              }
+            >
+              <View style={{ alignContent: "center" }}>
+                <UsersImg />
+              </View>
+            </TouchableOpacity>
+
+              <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("HistorialScreen", {
+                  uid: route.params.uid,
+                  uidTask: route.params.uidTask,
+                  taskUser: taskUser,
+                });
+              }}
+            >
+              <View style={{ marginLeft: 5}}>
+                <HistorialImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Agregar Tarea", { uid: route.params.uid })
+              }
+            >
+              <View style={{ alignContent: "center", marginLeft:5 }}>
+                <AgregarTareaImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>{
+                if (canControl || cControl) {
+                  navigation.navigate("Asignar Tareas", { uid: route.params.uid });
+                }else{
+                  alert('solo admin');
+                }
+              }
+              }
+            >
+              <View style={{ marginLeft: 5 }}>
+                <AsigImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                if (canControl || cControl) {
+                  navigation.navigate("Admin", {
+                    uid: route.params.uid,
+                  });
+                }else{
+                  alert('solo admin');
+                }
+                
+              }}
+            >
+              <View style={{ marginLeft: 7}}>
+                <ConfigImg />
+              </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity onPress={AreYouSureAlert}>
+              <View style={{ marginLeft: 7 }}>
+                <LogOutImg />
+              </View>
+            </TouchableOpacity>
+          </View>
+        ),
+        headerLeft: () => <View></View>,
+      });
+      //-----------NAVBAR------------------
+      
+    },
+    [route.params.uidTask],
+    [nTasks],
+  );
+
+
   
 
-
-    // Return HomeScreen
-    return (
-      
-      <SafeAreaView style = {styles.container}>
-        <View style = {{flexDirection: 'row'}}>
-        
-
-        <View style={styles.viewHeader}>
-              <View style = {styles.btnHeader}>
-                <Text style = {styles.textHeader}>Sesión: {user} </Text>
-              </View>
-        </View>
-
-
-          <View style={styles.viewHeader}>
-
-            
-            <TouchableOpacity onPress={() => navigation.navigate('Usuarios', {uid: route.params.uid})}
-            style = {styles.btnHeader}>
-                <Text style = {styles.textHeader}>USUARIOS</Text>
-            </TouchableOpacity>
-            
-          </View>
-          
-          <View style={styles.viewHeader}>
-            <TouchableOpacity onPress={() => navigation.navigate('Asignar Tarea', {uid: route.params.uid})}
-            style = {styles.btnHeader}>
-              <Text style = {styles.textHeader} >ASIGNAR TAREAS</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.viewLogOut}>
-            <TouchableOpacity onPress={logOut}>
-              <IconLogOut/>
-            </TouchableOpacity>  
-          </View>
-          
-        </View>
-        
-        <View style = {{
-          flex: 1,
-          backgroundColor: '#cdcdcd',
-          alignItems: 'center',
-          justifyContent: 'center',
-          width: '80%',
-          }}>
-          
-        
-
-            <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
-              <Text style = {styles.titleHeader}>Hola {user} !</Text>
+  const BtnSelectAll = () => {
+    if (firsTask && canCheckTask){
+      return(
+        <View>
+            <View style={{flex: 1}}>
+              <Button onPress={setAllMarked}
+                title='Marcar Hechas'
+                color='#746ab0'
+                >
+              </Button>
             </View>
-
-          
-          
-          <TouchableOpacity onPress={()=> {navigation.navigate('Tasks', {uid: route.params.uid})}}>
-            <Text>Ir a Tasks</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={()=> {navigation.navigate('Agregar Tarea', {uid: route.params.uid})}}>
-            <Text>Ir a Crear tareas</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={irACrearSector}>
-            <Text>Ir a Crear Sector</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={()=> {navigation.navigate('Usuarios', {uid: route.params.uid})}}>
-            <Text>Ir a Usuarios</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={logActiveTasks}>
-            <Text>Ver tareas activas</Text>
-          </TouchableOpacity>
-
-            <View style = {{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center',}}>
-              <Text style = {styles.subtitleSection}>Tareas asignadas esta semana: {checkList.length} </Text>
-            </View>
-      <View style = {{height: "60%"}}>
-
-          <SectionList
-          sections={activeTasks}
-          renderItem={renderAssignedTasks}
-          renderSectionHeader={({ section: { sector } }) => (
-            <Text style={styles.SectionHeader}>{sector}</Text>
-          )}
-        />
-          
-      </View>
-
-      </View>
-
-      </SafeAreaView>
-    )
+        </View>
+      )
     }
+  }
+const BtnControlAll = () => {
+  if (firsTask && canControl){
+    return(
+          <View style={{flex: 1}}>
+            <Button onPress={setAllChecked}
+              title='Marcar control'
+              color='#E3682C'
+              >
+            </Button>
+          </View>
+    )
+  }
+}
+
+  
+
+const loadAllOrderedTasks = () => {
+  if(!chargedOrderedTasks){
+    
+    if(tasksInSectors.length!=0){
+      setChargedOrderedTasks(true);
+      //filter allTasks
+      const allOrderedTasks = [];
+      orderedTasks.forEach(taskName => {
+        for (let i = 0; i < tasksInSectors.length; i++) {
+          const tasks = tasksInSectors[i];
+            for (let j = 0; j < tasks.length; j++) {
+              const task = tasks[j].task_name;
+              if (task==taskName){
+                allOrderedTasks.push(tasks[j])
+                allDescTasks.push(tasks[j].task_description)
+                j = tasks.length;
+                i = tasksInSectors.length
+              }
+            }
+        }
+    });
+    setAllOrderedTasks(allOrderedTasks);
+    setAllDescTasks(allDescTasks)
+
+    }
+    
+  }
+}
+
+  // Return HomeScreen
+  return (
+    <SafeAreaView style={styles.container}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <View
+          style={{
+            marginTop: 30,
+            marginBottom: 30,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <CasaImg />
+        </View>
+          
+
+        {/* <TouchableOpacity
+          onPress={() => {
+            navigation.navigate("Tasks", { uid: route.params.uid });
+          }}
+        >
+          <Text>Ir a Tasks</Text>
+        </TouchableOpacity>
+
+
+        <TouchableOpacity onPress={irACrearSector}>
+          <Text>Ir a Crear Sector</Text>
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity onPress={logActiveTasks}>
+            <Text>Ver tareas activas</Text>
+          </TouchableOpacity> */}
+        
+        <View
+          style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 5}}
+        >
+          <Text style={styles.subtitleSection}>
+            Tareas de {taskUser} asignadas esta semana: {nTasks}{" "}
+          </Text>
+          
+        </View>
+        {!firsTask && <LoadingGif/>}
+        {firsTask && loadAllOrderedTasks()}
+           
+          <SectionComponent/>
+        
+      </View>
+    </SafeAreaView>
+  );
+}
