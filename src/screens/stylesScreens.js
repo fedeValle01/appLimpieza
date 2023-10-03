@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
-    paddingHorizontal: 32,
+    paddingHorizontal: 27,
     borderRadius: 4,
     elevation: 3,
     backgroundColor: "#252850",
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderColor: "#00fff6",
     marginBottom: 5,
-    backgroundColor: "#9b9b9b",
+    backgroundColor: "#fff",
   },
   item: {
     paddingHorizontal: 4,
@@ -86,6 +86,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "flex-end",
     textAlign: "right",
+  },
+  pSector: {
+    fontSize: 13,
+    lineHeight: 21,
+    fontStyle: 'italic',
+    letterSpacing: 0.25,
+    color: "#eef",
   },
   textHeader: {
     color: "#fff",

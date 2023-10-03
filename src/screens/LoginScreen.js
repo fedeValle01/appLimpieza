@@ -31,7 +31,17 @@ export default function LoginScreen({ navigation }) {
           console.log("Ingresado");
           console.log("UserCredential: " + UserCredential.user.uid);
           let uid = UserCredential.user.uid;
+
+
+
+
+          // -------------- CAMBIAR ADMIN A appLimpieza ------------------------
+          // esta en admin para testear
           navigation.navigate("appLimpieza", { uid: uid, uidTask: uid });
+
+
+
+
         })
         .catch((error) => {
           alert(error);

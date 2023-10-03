@@ -66,15 +66,15 @@ export default function AddTasks ({navigate, route}){
         const q = query(collectionRef, orderBy('sector_name', 'desc'))
     
 
-        Notifications.scheduleNotificationAsync({
-          content: {
-            title: "TasksAdd!",
-            body: 'Limpia gato!',
-          },
-          trigger: {
-            seconds: 10,
-          },
-        });
+        // Notifications.scheduleNotificationAsync({
+        //   content: {
+        //     title: "TasksAdd!",
+        //     body: 'Limpia gato!',
+        //   },
+        //   trigger: {
+        //     seconds: 10,
+        //   },
+        // });
         
         const unsuscribe = onSnapshot(q, querySnapshot =>{
           let sectors = [];

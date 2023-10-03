@@ -1,33 +1,27 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList } from "react-native";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp,
- updateDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
+doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
-
-import { Dropdown, MultiSelect } from "react-native-element-dropdown";
+import { MultiSelect } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
 import DatePicker from "react-native-date-picker";
 
-export default function AssignTaskScreen({ navigate, route }) {
+export default function TasksScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   //datepicker
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
   const [sectors, setSectors] = useState([]);
   const [task_name, setTask_name] = useState([]);
   const [task_frec, setTask_frec] = useState(1);
   const [user, setUser] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [nameSelected, setNameSelected] = useState(null);
-
-  
   const [selected, setSelected] = useState([]);
   const [taskSelected, setTaskSelected] = useState([]);
   const [taskAvaiable, setTaskAvaiable] = useState([]);
@@ -35,11 +29,21 @@ export default function AssignTaskScreen({ navigate, route }) {
   //efect on update checklist
   const onUpdateCheck = useRef(true);
 
-  
-  const [firstTask, setFirstTask] = useState('');
   const [checkList, setCheckList] = useState([]);
+  const [firstTask, setFirstTask] = useState('');
+
+  
   const [markAll, setMarkAll] = useState(false);
+
   const [checked, setChecked] = useState("unchecked");
+
+  const EditImg = memo(() => (
+    <Image
+          style={{ width: 25, height: 25 }}
+          source={require("../assets/tachoBasura.png")}
+    />
+  )
+);
 
   let contador = -1;
 
@@ -48,7 +52,6 @@ export default function AssignTaskScreen({ navigate, route }) {
       console.log("tarea: " + i + ": " + element);
     });
   };
-
   const verTaskSelected = () => {
     let id = [];
     console.log("paso n veces");
@@ -61,10 +64,6 @@ export default function AssignTaskScreen({ navigate, route }) {
       });
     });
   };
-
-
-  
-
 
   const setAllChecked = () => {
     let c = checkList;
@@ -118,13 +117,12 @@ export default function AssignTaskScreen({ navigate, route }) {
             singleObj["id"] = id;
 
             tasksAndSector.push(singleObj);
+
             let firstTask = tasksAndSector[0]
             firstTask = firstTask.data
             firstTask = firstTask[0]
             setTaskAvaiable(tasksAndSector);
             setFirstTask(firstTask)
-
-            console.log("paso una vez por aca");
           }
         });
       });
@@ -136,62 +134,31 @@ export default function AssignTaskScreen({ navigate, route }) {
     return unsuscribe;
   };
 
-const BtnSelectAll = () => {
-  if (task_name.length > 0) {
-  return(
-    <View style={{ width: 200, marginTop: 15 }}>
-      <Button onPress={setAllChecked}
-        title='Seleccionar todas'
-        color='#E3682C'
-        >
-      </Button>
-    </View>
-  )
-}
-}
-  const SelectDate = () => {
-    if (task_name.length > 0) {
-      return (
-        <View style={{ width: 200, marginTop: 15 }}>
-          <Button title="Plazo hasta" onPress={() => setOpen(true)} />
-          <DatePicker
-            title={"Seleccionar fecha"}
-            confirmText={"Confirmar"}
-            cancelText={"Cancelar"}
-            modal
-            open={open}
-            date={date}
-            onConfirm={(date) => {
-              setOpen(false);
-              setDate(date);
-            }}
-            onCancel={() => {
-              setOpen(false);
-            }}
-          />
-        </View>
-      );
-    }
-  };
-  const AssignTaskButton = () => {
-    if (task_name.length > 0) {
-      return (
-        <View style={{ width: 200, marginTop: 15 }}>
-          <Button
-            title="Asignar Tareas"
-            color="#43c6ac"
-            onPress={handleCreateTask}
-          />
-        </View>
-      );
-    }
-  };
+  const renderItem = ({ item }) => {
+    if (selected) {
+      console.log("selected: " + selected);
 
+      console.log("item renderItem: " + item.title);
+      return <Item title={item.title} />;
+    } else {
+      setTask_name([]);
+    }
+  };
+  
   const Item = ({ title }) => (
     <View style={styles.itemSectionlist}>
       <Text style={styles.titleSectionlist}>{title}</Text>
     </View>
   );
+
+  
+  const cleanTasks = () => {
+    setFirstTask('')
+    contador=-1;
+    setCheckList([])
+    setTaskAvaiable([])
+    setTask_name([])
+  }
 
   const addTaskSelected = (item) => {
     let arregloTasks = [];
@@ -206,14 +173,6 @@ const BtnSelectAll = () => {
     }
   };
 
-  const cleanTasks = () => {
-    setFirstTask('')
-    contador=-1;
-    setCheckList([])
-    setTaskAvaiable([])
-    setTask_name([])
-  }
-
   const _renderItem = (item) => {
     return (
       <View style={styles.item}>
@@ -222,6 +181,28 @@ const BtnSelectAll = () => {
       </View>
     );
   };
+
+  const areYouSureDeleteTask = (item) => {
+    console.log('aresure');
+      return Alert.alert("Vas a eliminar la tarea "+item, "Estas seguro?", [
+        {
+          text: "Cancelar",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },    
+        { text: "OK", onPress: () => deleteTask(item) },
+      ]);
+  }
+  
+  const deleteTask = async (item) =>{
+    console.log('llego aca');
+
+    deleteDoc(doc(db, "tasks", item)).then(() => {
+      Alert.alert('Se elimino la tarea '+ item+' con exito')
+    });
+  }
+
+
 
   const handleCreateTask = async () => {
     if (!task_name) {
@@ -300,7 +281,7 @@ const BtnSelectAll = () => {
 
   const renderSectionList = ({ item }) => {
     contador++;
-    if (firstTask == item){ // sincroniza index con la primera tarea
+    if (firstTask == item){
       contador = 0;
     }
     let checkIndex = 0;
@@ -322,69 +303,15 @@ const BtnSelectAll = () => {
           <Item title={item} />
         </View>
         <View style={{ flex: 1 }} />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <Text>{i}</Text>
-          <Checkbox
-            status={checkList[i]}
-            onPress={() => {
-              handleCheck(i);
-              if (checked == "unchecked") {
-                setChecked("checked");
-              } else {
-                setChecked("unchecked");
-              }
-            }}
-          />
+        <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center" }}>
+          <TouchableOpacity onPress={() => areYouSureDeleteTask(item)}>
+            <EditImg />
+          </TouchableOpacity>
+          <View style={{marginRight: 5}} />
         </View>
       </View>
     );
   };
-
-
-  const renderChecklist = ({ item }) => {
-    console.log("se renderiza con item: " + item.key);
-    let task = item.key;
-
-    let j = 0;
-    //  si no hay checklist, la setea unchecked
-    if (checkList.length == 0) {
-      for (j = 0; j < task_name.length; j++) {
-        console.log("i: " + i);
-        checkList[j] = "unchecked";
-      }
-    }
-
-    console.log("tarea: " + task + " en la posicion: " + i);
-    return (
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.item}>{task}</Text>
-        </View>
-        <View style={{ flex: 1 }} />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <Checkbox
-            status={checkList[i]}
-            onPress={() => {
-              handleCheck(i);
-            }}
-          />
-        </View>
-      </View>
-    );
-  };
-
   const handleCheck = (i) => {
     let check = checkList;
     if (check.length > 0) {
@@ -399,17 +326,6 @@ const BtnSelectAll = () => {
 
   useEffect(() => {
     console.log("entro assignTaskScreen");
-    //-----------Notifications------------------
-    // Notifications.scheduleNotificationAsync({
-    //   content: {
-    //     title: "Ultimo dia para limpiar!",
-    //     body: "Tenes tareas en: cocina, patio externo",
-    //   },
-    //   trigger: {
-    //     seconds: 10,
-    //   },
-    // });
-
     let collectionRef = collection(db, "sectors");
     let q = query(collectionRef, orderBy("sector_name", "desc"));
 
@@ -436,45 +352,11 @@ const BtnSelectAll = () => {
     collectionRef = collection(db, "user");
     q = query(collectionRef, orderBy("username", "asc"));
 
-    unsuscribe = onSnapshot(q, (querySnapshot) => {
-      let users = [];
-      users = querySnapshot.docs.map((doc) => ({
-        label: doc.data().username,
-        value: doc.data().username,
-        uid: doc.data().uid,
-      }));
-      setUser(users);
-
-      if (onUpdateCheck.current) {
-        onUpdateCheck.current = false;
-      } else {
-        console.log("updateCheck");
-      }
-    });
     return unsuscribe;
   }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Dropdown
-        style={styles.dropdown}
-        containerStyle={styles.shadow}
-        data={user}
-        search
-        searchPlaceholder="Buscar usuario"
-        labelField="label"
-        valueField="value"
-        label="User"
-        placeholder="Al usuario"
-        value={nameSelected}
-        onChange={(item) => {
-          setSelectedUser(item.uid);
-          setNameSelected(item.value)
-        }}
-        renderLeftIcon={() => <Image style={styles.icon} />}
-        renderItem={(item) => _renderItem(item)}
-        textError="Error"
-      />
 
       <MultiSelect
         renderLeftIcon={() => <Image style={styles.icon} />}
@@ -489,10 +371,9 @@ const BtnSelectAll = () => {
         searchPlaceholder="Buscar sector"
         value={selected}
         onChange={(item) => {
-          console.log('cambio');
           cleanTasks();
-          setSelected(item)
           addTaskSelected(item);
+          setSelected(item);
           ejecuteQuery(item);
         }}
         renderItem={(item) => _renderItem(item)}
@@ -517,16 +398,7 @@ const BtnSelectAll = () => {
           <Text style={styles.SectionHeader}>{title}</Text>
         )}
       />
-        <BtnSelectAll/>
-        
-      <View style={{ flex: 1 }}>
-
-        {/* doesn't work on android emulator */}
-        
-        <SelectDate />
-          
-        <AssignTaskButton />
-      </View>
+    
     </SafeAreaView>
   );
 }

@@ -17,32 +17,8 @@ export default function AdminScreen({ navigation, route }) {
   const [user, setUser] = useState([]);
   const [users, setUsers] = useState([]);
   const [usersInHome, setUsersInHome] = useState([]);
-
-
+  const [usersOutHome, setUsersOutHome] = useState([]);
   const [colAssignedTasks, setColAssignedTasks] = useState([]);
-
-
-  const AreYouSureAlert = () => {
-    return Alert.alert("Va a cerrar sesion", "Esta seguro?", [
-      {
-        text: "Cancelar",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },
-      { text: "OK", onPress: logOut },
-    ]);
-  };
-  const logOut = () => {
-    signOut(auth)
-      .then(() => {
-        navigation.navigate("Iniciar Sesion");
-      })
-      .catch((error) => {
-        alert(error);
-      });
-  };
-
-  
 
   const AreYouSaveAssignedTasks = () => {
     return Alert.alert("Va a guardar en el historial todas las tareas asignadas actualmente", "Esta seguro?", [
@@ -56,7 +32,7 @@ export default function AdminScreen({ navigation, route }) {
   }
   
   const AreYouSureAssign = () => {
-    return Alert.alert("Va a asignar tareas automaticamente a todos los usuarios que se encuentren en la casa", "Esta seguro?", [
+    return Alert.alert("Asignar sectores aleatoriamente a todos los usuarios que se esten en la casa", "Esta seguro?", [
       {
         text: "Cancelar",
         onPress: () => console.log("Cancel Pressed"),
@@ -67,7 +43,7 @@ export default function AdminScreen({ navigation, route }) {
   }
     
   const AreYouSureDeleteHistory = () => {
-    return Alert.alert("Vas a eliminar Tareas asignadas", "Estas seguro?", [
+    return Alert.alert("Eliminar historial de todos los usuarios", "Estas seguro?", [
       {
         text: "Cancelar",
         onPress: () => console.log("Cancel Pressed"),
@@ -79,7 +55,7 @@ export default function AdminScreen({ navigation, route }) {
 
   
   const AreYouSureDeleteAssignedTasks = () => {
-    return Alert.alert("Vas a eliminar Tareas asignadas", "Estas seguro?", [
+    return Alert.alert("Eliminar todas las tareas asignadas de los usuarios", "Estas seguro?", [
       {
         text: "Cancelar",
         onPress: () => console.log("Cancel Pressed"),
@@ -123,8 +99,31 @@ export default function AdminScreen({ navigation, route }) {
     return ListSectors
   }
 
-  const autoAssign = () => {
+  
+  const GoToAutoAssign = () => {
+    navigation.navigate("Asignar Tareas Automaticamente", {
+      user: user,
+      users: users,
+      usersInHome: usersInHome,
+      usersOutHome: usersOutHome,
+      colAssignedTasks: colAssignedTasks,
+      sectors: sectors,
+    });
+  }
 
+  const GoToTasksScreen = () => {
+    navigation.navigate("Tareas", {
+      user: user,
+      users: users,
+      usersInHome: usersInHome,
+      usersOutHome: usersOutHome,
+      colAssignedTasks: colAssignedTasks,
+      sectors: sectors,
+    });
+  }
+  
+
+  const autoAssign = () => {
     usersInHome.sort(function () {  //Shuffle users
       return 0.5 - Math.random();
     });
@@ -333,14 +332,20 @@ export default function AdminScreen({ navigation, route }) {
         username: doc.data().username,
         uid: doc.data().uid,
         canControl: doc.data().can_control,
+        expoPushToken: doc.data().expoPushToken,
       }));
 
       let usersInHome = [];
+      let usersOutHome = [];
       u.forEach(user => {
         if (user.in_home){
-          usersInHome.push(user);
+          usersInHome.push(user)
+        }
+        if (user.in_home == false){
+          usersOutHome.push(user)
         }
       });
+      setUsersOutHome(usersOutHome)
       setUsersInHome(usersInHome)
       setUsers(u);
     });
@@ -359,6 +364,14 @@ export default function AdminScreen({ navigation, route }) {
 
         <TouchableOpacity onPress={AreYouSureAssign} style={styles.btnUsuario}>
           <Text style={styles.txtUser}>Asignar tareas automaticamente</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={GoToAutoAssign} style={styles.btnUsuario}>
+          <Text style={styles.txtUser}>Pasar de semana</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={GoToTasksScreen} style={styles.btnUsuario}>
+          <Text style={styles.txtUser}>Ver todas las tareas</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -381,12 +394,6 @@ export default function AdminScreen({ navigation, route }) {
         >
           <Text style={styles.txtUser}>Eliminar tareas asignadas</Text>
         </TouchableOpacity>
-        {/* <TouchableOpacity
-          onPress={logListSectors}
-          style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
-        >
-          <Text style={styles.txtUser}>Dame sectores</Text>
-        </TouchableOpacity> */}
       </View>
     </SafeAreaView>
   );

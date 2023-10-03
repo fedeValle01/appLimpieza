@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "my-react-app",
+    "name": "appLimpieza",
     "slug": "my-react-app",
-    "icon": "icon.png", // Your icon path 
+    "icon": "./src/assets/icon.png",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
@@ -10,7 +10,7 @@
     "android": {
       "package": "com.myreactapp",
       "googleServicesFile": "./google-services.json",
-      "versionCode": 0
+      "versionCode": 1
     },
     "extra": {
       "eas": {
