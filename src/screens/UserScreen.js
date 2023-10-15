@@ -22,8 +22,23 @@ export default function TaskScreen({ navigation, route }) {
       in_home: !inHome,
     });
   }
-
+  const CircleYellow = memo(() => (
+    <View style={{marginLeft: 12}}>
+      <Image
+        style={{ width: 11, height: 11 }}
+        source={require("../assets/circle-yellow.png")}
+      />
+    </View>
+  ));
   const CircleBlue = memo(() => (
+    <View style={{marginLeft: 12}}>
+      <Image
+        style={{ width: 11, height: 11 }}
+        source={require("../assets/circle-blue.png")}
+      />
+    </View>
+  ));
+  const CircleGreen = memo(() => (
     <View style={{marginLeft: 12}}>
       <Image
         style={{ width: 11, height: 11 }}
@@ -33,11 +48,16 @@ export default function TaskScreen({ navigation, route }) {
   ));
 
 
-  const State = () => {
-
-    return (
-      <CircleBlue/>
-    )
+  const State = (props) => {
+    let state = props.state
+    if (state == 'finished'){ //admin marked all tasks completed
+      return (<CircleGreen/>)
+    }else if (state == 'completed'){ //user marked one or more as completed
+      return (<CircleBlue/>)
+    }else if (state == 'active'){ //have a tasks assigned without checks
+      return (<CircleYellow/>)
+    } //else the user don't have assigned tasks
+   
   }
   
   const ListItem = (props) => {
@@ -68,7 +88,7 @@ export default function TaskScreen({ navigation, route }) {
                 <Text style={styles.txtUser}>{props.value}</Text>
               </View>
               <View style={styles.circle}>
-                <State/>
+                <State state={props.states}/>
               </View>
             </View>
           {sectors && (sectors.map(sector => (
@@ -83,31 +103,32 @@ export default function TaskScreen({ navigation, route }) {
   const SectorList = (props) => {
 
 
-    let users = props.users;
+    let users = props.users
 
-    let namesInHome = [];
-    let UidsInHome = [];
-    let sectorsInHome = [];
-    
-    let namesOutHome = [];
-    let UidsOutHome = [];
-    let sectorsOutHome = [];
+    let namesInHome = []
+    let UidsInHome = []
+    let sectorsInHome = []
+    let states = []
+    let namesOutHome = []
+    let UidsOutHome = []
+    let sectorsOutHome = []
 
     if (users != "") {
-      let indexInHome = 0;
-      let indexOutHome = 0;
+      let indexInHome = 0
+      let indexOutHome = 0
 
       users.forEach((user) => {
         if(user.in_home){
-          namesInHome[indexInHome] = user.username;
-          UidsInHome[indexInHome] = user.uid;
+          namesInHome[indexInHome] = user.username
+          UidsInHome[indexInHome] = user.uid
           sectorsInHome[indexInHome] = user.sectors
-          indexInHome++;
+          states[indexInHome] = user.state
+          indexInHome++
         }else{
-          namesOutHome[indexOutHome] = user.username;
-          UidsOutHome[indexOutHome] = user.uid;
+          namesOutHome[indexOutHome] = user.username
+          UidsOutHome[indexOutHome] = user.uid
           sectorsOutHome[indexOutHome] = user.sectors
-          indexOutHome++;
+          indexOutHome++
         }
       });
       let cantUsersInhome = namesInHome.length
@@ -125,6 +146,7 @@ export default function TaskScreen({ navigation, route }) {
                 inHome={true}
                 uid={UidsInHome[i]}
                 sectors={sectorsInHome[i]}
+                states={states[i]}
               />
             ))}
           </Text>
@@ -141,6 +163,7 @@ export default function TaskScreen({ navigation, route }) {
                 inHome={false}
                 uid={UidsOutHome[i]}
                 sectors={sectorsOutHome[i]}
+                states={states[i]}
               />
             ))}
           </Text>
@@ -174,6 +197,9 @@ export default function TaskScreen({ navigation, route }) {
         querySnapshot.docs.map((doc) => ({
           uid: doc.data().uid,
           active_tasks: doc.data().active_tasks,
+          state: doc.data().state,
+          control_marked_tasks: doc.data().control_marked_tasks,
+          marked_tasks: doc.data().marked_tasks,
         }))
       );
     });
@@ -216,8 +242,35 @@ export default function TaskScreen({ navigation, route }) {
       });
 
 
+      const getState = (marked, control) =>{
+        let haveAllControlCheck = true;
+        let i = 0
+        while (haveAllControlCheck && i < control.length) {
+          if (control[i] == 'unchecked'){
+            haveAllControlCheck = false
+          }
+          i++
+        }
 
-
+        if (haveAllControlCheck){
+          return('finished')
+        }else{
+        let haveSomeCheck = false;
+        let j = 0
+        while (!haveSomeCheck && j < marked.length) {
+          if (marked[i] == 'checked'){ // if have one or more tasks mark as completed
+            haveSomeCheck = true
+          }
+          j++
+        }
+        if (haveSomeCheck){
+          return('completed')
+        }else{
+          return('active')
+        }
+      }
+    }
+    
       u.forEach(user => { //binding sectors to users
         let uid = user.uid
         let sectors = []
@@ -225,10 +278,15 @@ export default function TaskScreen({ navigation, route }) {
             let uidAssignedTask = assignedTask.uid
             if (uid == uidAssignedTask){
               let activeTasks = assignedTask.active_tasks
+              let control = assignedTask.control_marked_tasks
+              let marked = assignedTask.marked_tasks
+              let state = "";
               if(activeTasks){
+                state = getState(marked, control);
                 activeTasks.forEach(sector => {
                   sectors.push(sector.sector)
                 });
+                user.state = state
                 user.sectors = sectors
               }else{
                 user.sectors = ['No tiene tareas asignadas']
@@ -237,19 +295,11 @@ export default function TaskScreen({ navigation, route }) {
 
           });
       });
-      u.forEach(user => {
-        let s = user.sectors
-        s.forEach(sector => {
-          console.log(sector);
-        });
-      });
       
       setUsersOutHome(usersOutHome)
       setUsersInHome(usersInHome)
       setUsers(u);
     });
-
-
 
     return unsuscribe;
   }, []);
@@ -272,7 +322,8 @@ export default function TaskScreen({ navigation, route }) {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  marginBottom: 10,
+                  marginBottom: 5,
+                  marginTop: 16,
                 }}
               >
                 <Text style={styles.subtitleSection}>
