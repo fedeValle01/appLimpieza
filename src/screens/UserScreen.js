@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert, ScrollView } from "react-native";
+import React, { memo, useEffect, useState } from "react";
+import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert, ScrollView, Image } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
@@ -15,7 +15,7 @@ export default function TaskScreen({ navigation, route }) {
   const [sectors, setSectors] = useState([]); //all sectors
   const [colAssignedTasks, setColAssignedTasks] = useState([]);
 
-
+  
   const changeOnHome = async (uid, inHome) =>{
     console.log('uid: '+ uid);
     await updateDoc(doc(db, "user", uid), {
@@ -23,6 +23,23 @@ export default function TaskScreen({ navigation, route }) {
     });
   }
 
+  const CircleBlue = memo(() => (
+    <View style={{marginLeft: 12}}>
+      <Image
+        style={{ width: 11, height: 11 }}
+        source={require("../assets/circle-green.png")}
+      />
+    </View>
+  ));
+
+
+  const State = () => {
+
+    return (
+      <CircleBlue/>
+    )
+  }
+  
   const ListItem = (props) => {
     let sectors = props.sectors
     return (
@@ -45,10 +62,19 @@ export default function TaskScreen({ navigation, route }) {
             }
           }}
         >
-          <Text style={styles.txtUser}>{props.value}</Text>
+          <View style={{ justifyContent: "center", alignItems: "center", marginRight: 15}}>
+            <View style={{ flex: 1, flexDirection: "row"}}>
+              <View style={{ alignSelf: "center"}}>
+                <Text style={styles.txtUser}>{props.value}</Text>
+              </View>
+              <View style={styles.circle}>
+                <State/>
+              </View>
+            </View>
           {sectors && (sectors.map(sector => (
             <Text style={styles.pSector}> {sector}</Text>
           )))}
+          </View>
         </TouchableOpacity>
       </SafeAreaView>
     );
