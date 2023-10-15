@@ -36,6 +36,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
   },
+  circle: {
+    alignSelf: "center",
+    marginRight: -20
+  },
   txtUser: {
     fontSize: 16,
     lineHeight: 21,
