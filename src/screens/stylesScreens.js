@@ -9,6 +9,10 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
   },
+  scrollViewHome: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   viewHeader: {
     backgroundColor: "#3c3c3c",
     height: 40,
@@ -26,7 +30,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 12,
-    paddingHorizontal: 27,
+    paddingHorizontal: 15,
     borderRadius: 4,
     elevation: 3,
     backgroundColor: "#252850",

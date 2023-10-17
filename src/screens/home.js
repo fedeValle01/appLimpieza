@@ -1,8 +1,8 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import Separator from '../components/Separator'
 import LoadingGif from '../components/Loading'
-import { Text, SafeAreaView, TextInput, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button } from "react-native";
-import {doc,setDoc,getFirestore,collection,orderBy,onSnapshot,query,where,serverTimestamp,updateDoc, getDoc, deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button, ScrollView } from "react-native";
+import {doc,setDoc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
@@ -50,8 +50,15 @@ const HomeScreen = ({ navigation, route }) => {
     const [loading, setLoading] = useState(false);
   
     const [hasAssignedTasks, setHasAssignedTasks] = useState(null);
+    const [refreshing, setRefreshing] = useState(false);
+    const [refresh, setRefresh] = useState(false);
 
-    
+    const onRefresh = useCallback(() => {
+      setRefreshing(true);
+      setTimeout(() => {
+        setRefreshing(false);
+      }, 1400);
+    }, []);
     
     let contador = -1
     // let nRender = 0
@@ -338,15 +345,8 @@ const HomeScreen = ({ navigation, route }) => {
     <BtnSelectAll/>
   </View>
 
-  {/* <TouchableOpacity onPress={()=>{
-      allDescTasks.forEach(element => {
-        console.log(element);
-      });
-      }}>
-    <Text>Ver Desc</Text>
-  </TouchableOpacity> */}
 
-  <TouchableOpacity onPress={() => {
+  {/* <TouchableOpacity onPress={() => {
         navigation.navigate("TestScreen", {
           uid: route.params.uid,
           uidTask: route.params.uidTask,
@@ -354,7 +354,7 @@ const HomeScreen = ({ navigation, route }) => {
         });
       }}>
     <Text>TestScreen</Text>
-  </TouchableOpacity>
+  </TouchableOpacity> */}
 
   </View>
 
@@ -715,8 +715,7 @@ const HomeScreen = ({ navigation, route }) => {
       //-----------NAVBAR------------------
       
     },
-    [route.params.uidTask],
-    [nTasks],
+    [refresh, route.params.uidTask],
   );
 
 
@@ -815,9 +814,10 @@ const HomeScreen = ({ navigation, route }) => {
     console.log('return homescreeen');
     console.log('-----------');
 
-  
+    
     return (
       <SafeAreaView style={styles.container}>
+        
         <View
           style={{
             flex: 1,
@@ -825,6 +825,11 @@ const HomeScreen = ({ navigation, route }) => {
             justifyContent: "center",
           }}
         >
+          <ScrollView
+        contentContainerStyle={styles.scrollViewHome}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
+        }>
           <View
             style={{
               marginTop: 30,
@@ -836,7 +841,6 @@ const HomeScreen = ({ navigation, route }) => {
           >
             <CasaImg />
           </View>
-            
 
           {/* <TouchableOpacity
             onPress={() => {
@@ -883,19 +887,20 @@ const HomeScreen = ({ navigation, route }) => {
             </TouchableOpacity> */}
             
           </View>
-          {hasAssignedTasks === false && <Text>No tiene tareas asignadas</Text>}
-          {hasAssignedTasks === true || hasAssignedTasks === undefined || loading ? (
-            <>
-              {!firsTask ? (
-                <LoadingGif />
-              ) : (
-                  <SectionComponent/>
-              )}
-            </>
-          ) : null}
-
+          </ScrollView>
+            {hasAssignedTasks === false && <Text>No tiene tareas asignadas</Text>}
+            {hasAssignedTasks === true || hasAssignedTasks === undefined || loading ? (
+              <>
+                {!firsTask ? (
+                    <LoadingGif />
+                ) : (
+                    <SectionComponent/>
+                )}
+              </>
+            ) : null}
         </View>
         <View style={{marginTop: 15}}/>
+      
       </SafeAreaView>
     );
   }

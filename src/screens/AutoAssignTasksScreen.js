@@ -28,7 +28,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
         onPress: () => console.log("Cancel Pressed"),
         style: "cancel",
       },
-      { text: "OK", onPress: hasSaveHistory },
+      { text: "OK", onPress: nextWeek },
     ]);
   }
 
@@ -78,7 +78,40 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     return ListSectors
   }
 
-  
+
+  const areSameSectors = (sectorsa, sectorsb) => { //compare 2 sectors and return true or false
+    
+    let sameSectors = true;
+    let sectors1 = []
+    if (typeof sectorsa === 'string'){
+      console.log('es un string');
+      sectors1.push(sectorsa)
+    }else{
+      sectors1 = sectorsa;
+    }
+    sectors1.sort()
+    sectorsb.sort()
+      if (sectors1.length !== sectorsb.length) {
+        console.log('son distinta longitud: '+ sectors1.length + ' != '+sectorsb.length);
+
+        sameSectors = false;
+      }else{
+        let find = false
+        for (let i = 0; i < sectors1.length; i++) {
+          find = false
+          if (sectors1[i] == sectorsb[i]) {
+            find = true
+          }else{
+            console.log('sectors1[i] == sectorsb[i]'+sectors1[i] +' != '+ sectorsb[i]);
+          }
+
+        }
+        if (!find){
+          sameSectors = false
+        }
+    }
+    return(sameSectors)
+  }
 
   const reAsignUserList = (copyUserList) => {
     console.log('reAsignUserList');
@@ -93,22 +126,24 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
       let reasign = true
 
       for (let j = 0; j < cantSectors; j++) { //iterate userSectors
-        let userSector = sectorUser[j]
         let indexPriority = 0
         let findSector = false
         while (indexPriority < priorityListSectors.length) { //iterate priorityListSectors
           let sector = priorityListSectors[indexPriority]
-          if(sector == userSector){
+          console.log(' ');
+          console.log('compara sector: '+sector+' con userSector: '+sectorUser);
+          if (areSameSectors(sector, sectorUser)){
+            console.log('este es igual');
             priorityListSectors.splice(indexPriority, 1)
             findSector = true
-            if (j == cantSectors-1){ // is the last sector for that user
-              reasign = false
-            }
+            reasign = false
+            indexPriority = indexPriority+9999
             break
           }
           indexPriority++
         }
         if (!findSector){
+          console.log('NO ENCONTRO');
           break
         }
       }
@@ -378,8 +413,8 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     const message = {
       to: expoPushToken,
       sound: 'default',
-      title: 'Nuevas tareas asignadas!',
-      body: 'Hola! '+username+' te',
+      title: 'Hola '+username+'!',
+      body:  'Tenes nuevas tareas asignadas 🧹',
       data: { someData: 'goes here' },
     };
   
@@ -418,7 +453,6 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
             objUser.uid = user.uid
             objUser.username = user.username
             objUser.expoPushToken = user.expoPushToken
-            console.log('encontro a '+user.username);
             let sectors = []
             active_tasks.forEach(s => {
               sectors.push(s.sector)
@@ -466,7 +500,9 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
 
             while (buscaUid) {
               let userUid = userList[i]
-              userUid = userUid.uid
+              if(userUid){
+                userUid = userUid.uid
+              }
               if(uid == userUid){
                 buscaUid = false
                 encontroUid = true

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {Text,SafeAreaView,TextInput,TouchableOpacity,Alert,SectionList,View, ScrollView,} from "react-native";
 
 import LoadingGif  from "../components/Loading"
-import {doc,setDoc,getFirestore,collection,orderBy,query,where,onSnapshot,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import {doc,setDoc,getFirestore,collection,orderBy,query,where,onSnapshot, updateDoc,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
@@ -181,8 +181,26 @@ const Section3 = () =>{
 }
 
 
+const copyHistorial = () => {
+  let q;
+    let unsuscribe;
+    let collectionRef = collection(db, "assigned_tasks");
+    q = query(collectionRef, where("uid", "==", 'LU5pAgjhmlhzd9gCwXmVCLDPNET2')); //COPY FROM
 
-const HistorySubtitle = () =>{
+    unsuscribe = onSnapshot(q, async (querySnapshot) => {
+      let qhistory = querySnapshot.docs.map((doc) => ({
+        history: doc.data().history,
+      }));
+      console.log(qhistory);
+      await updateDoc(doc(db, "assigned_tasks", 'B1q2u3ZDguZkVGyNeNbqGZVsp512'), { // TO
+        history,
+      }).catch((error) => {
+        alert(error);
+      });
+    })
+}
+
+const HistorySubtitle = () => {
   return(
     <SafeAreaView>
         <Text style={styles.subtitleSection}>Historial de {taskUser}</Text>
@@ -198,10 +216,12 @@ const HistorySubtitle = () =>{
           flex: 1,
           alignItems: "center",
           justifyContent: "center",
+          marginTop: 12,
         }}
       >
+        
       {taskUser && (<HistorySubtitle/>)}
-          <View style={{ height: "60%", flex: 1}}>
+          <View style={{ height: "60%", flex: 1, marginTop: 12}}>
             <ScrollView>
               {!haveHistory && <LoadingGif/>}
               <Section3 />
