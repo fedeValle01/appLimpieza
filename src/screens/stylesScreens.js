@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   item: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 15,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",

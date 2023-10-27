@@ -13,8 +13,7 @@ export default function TaskScreen({ navigation, route }) {
   const [usersInHome, setUsersInHome] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
   const [sectors, setSectors] = useState([]); //all sectors
-  const [colAssignedTasks, setColAssignedTasks] = useState([]);
-
+  
   
   const changeOnHome = async (uid, inHome) =>{
     console.log('uid: '+ uid);
@@ -108,7 +107,9 @@ export default function TaskScreen({ navigation, route }) {
     let namesInHome = []
     let UidsInHome = []
     let sectorsInHome = []
-    let states = []
+    let statesInHome = []
+    
+    let statesOutHome = []
     let namesOutHome = []
     let UidsOutHome = []
     let sectorsOutHome = []
@@ -122,12 +123,13 @@ export default function TaskScreen({ navigation, route }) {
           namesInHome[indexInHome] = user.username
           UidsInHome[indexInHome] = user.uid
           sectorsInHome[indexInHome] = user.sectors
-          states[indexInHome] = user.state
+          statesInHome[indexInHome] = user.state
           indexInHome++
         }else{
           namesOutHome[indexOutHome] = user.username
           UidsOutHome[indexOutHome] = user.uid
           sectorsOutHome[indexOutHome] = user.sectors
+          statesOutHome[indexOutHome] = user.state
           indexOutHome++
         }
       });
@@ -146,7 +148,7 @@ export default function TaskScreen({ navigation, route }) {
                 inHome={true}
                 uid={UidsInHome[i]}
                 sectors={sectorsInHome[i]}
-                states={states[i]}
+                states={statesInHome[i]}
               />
             ))}
           </Text>
@@ -163,7 +165,7 @@ export default function TaskScreen({ navigation, route }) {
                 inHome={false}
                 uid={UidsOutHome[i]}
                 sectors={sectorsOutHome[i]}
-                states={states[i]}
+                states={statesOutHome[i]}
               />
             ))}
           </Text>
@@ -176,28 +178,16 @@ export default function TaskScreen({ navigation, route }) {
 
   useEffect(() => {
 
-    let collectionRef = collection(db, "sectors");
-    let q = query(collectionRef, orderBy("sector_name", "asc"));
+
+    let collectionRef = collection(db, "assigned_tasks");
+    let q = query(collectionRef);
     let assignedTasks = []
-    let unsuscribe = onSnapshot(q, (querySnapshot) => {
-      setSectors(
-        querySnapshot.docs.map((doc) => ({
-          sector_name: doc.data().sector_name,
-          sector_description: doc.data().sector_description,
-        }))
-      );
-    });
-
-    collectionRef = collection(db, "assigned_tasks");
-    q = query(collectionRef);
-
     // get assigned_tasks
-    unsuscribe = onSnapshot(q, (querySnapshot) => {
+    let unsuscribe = onSnapshot(q, (querySnapshot) => {
       assignedTasks = (
         querySnapshot.docs.map((doc) => ({
           uid: doc.data().uid,
           active_tasks: doc.data().active_tasks,
-          state: doc.data().state,
           control_marked_tasks: doc.data().control_marked_tasks,
           marked_tasks: doc.data().marked_tasks,
         }))
@@ -230,19 +220,12 @@ export default function TaskScreen({ navigation, route }) {
         sectors: [],
       }));
 
-      let usersInHome = [];
-      let usersOutHome = [];
-      u.forEach(user => {
-        if (user.in_home){
-          usersInHome.push(user)
-        }
-        if (user.in_home == false){
-          usersOutHome.push(user)
-        }
-      });
+      
 
 
-      const getState = (marked, control) =>{
+      const getState = (marked, control, haveTasks) => {
+        if(!haveTasks) return('none')
+
         let haveAllControlCheck = true;
         let i = 0
         while (haveAllControlCheck && i < control.length) {
@@ -251,14 +234,13 @@ export default function TaskScreen({ navigation, route }) {
           }
           i++
         }
-
         if (haveAllControlCheck){
           return('finished')
         }else{
         let haveSomeCheck = false;
         let j = 0
         while (!haveSomeCheck && j < marked.length) {
-          if (marked[i] == 'checked'){ // if have one or more tasks mark as completed
+          if (marked[j] == 'checked'){ // if have one or more tasks mark as completed
             haveSomeCheck = true
           }
           j++
@@ -271,31 +253,46 @@ export default function TaskScreen({ navigation, route }) {
       }
     }
     
-      u.forEach(user => { //binding sectors to users
+      u.forEach((user, i) => { //binding sectors to users
         let uid = user.uid
         let sectors = []
           assignedTasks.forEach(assignedTask => {
             let uidAssignedTask = assignedTask.uid
+            let haveTasks = false
             if (uid == uidAssignedTask){
               let activeTasks = assignedTask.active_tasks
               let control = assignedTask.control_marked_tasks
               let marked = assignedTask.marked_tasks
-              let state = "";
               if(activeTasks){
-                state = getState(marked, control);
+                haveTasks = true
                 activeTasks.forEach(sector => {
                   sectors.push(sector.sector)
                 });
-                user.state = state
+                
+                let stateGet = getState(marked, control, haveTasks);
+                user.state = stateGet
                 user.sectors = sectors
               }else{
+                user.state = 'none'
                 user.sectors = ['No tiene tareas asignadas']
               }
             }
 
           });
       });
+
       
+
+      let usersInHome = [];
+      let usersOutHome = [];
+      u.forEach(user => {
+        if (user.in_home){
+          usersInHome.push(user)
+        }
+        if (user.in_home == false){
+          usersOutHome.push(user)
+        }
+      });
       setUsersOutHome(usersOutHome)
       setUsersInHome(usersInHome)
       setUsers(u);

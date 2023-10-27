@@ -30,8 +30,6 @@ const ControlledTooltip = (props) => {
     />
   );
 }
-let nRenderALL = 0 
-let canRenderHome = true
 
 const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
@@ -61,9 +59,6 @@ const HomeScreen = ({ navigation, route }) => {
     }, []);
     
     let contador = -1
-    // let nRender = 0
-    // nRenderALL = nRenderALL+1
-    //can mark check controlCheckList
     const [canControl, setCanControl] = useState(false);
     
     const [firsTask, setFirsTask] = useState('');
@@ -193,14 +188,6 @@ const HomeScreen = ({ navigation, route }) => {
     
     const renderAssignedTasks = ({ item, index }, checkList, controlCheckList) => {
 
-      
-      // console.log('cant tareas: '+nTasks);
-      // console.log('nrender: '+nRender);
-      // console.log('nRenderALL: '+nRenderALL);
-
-      // nRenderALL=nRenderALL+1
-      // nRender=nRender+1
-
       contador++;
       if (firsTask==item){
         contador = 0
@@ -208,14 +195,12 @@ const HomeScreen = ({ navigation, route }) => {
         }
       if (contador == nTasks){
         contador = 0
-        console.log('ahora no puede renderHome');
-        canRenderHome = false
         console.log('i = 0');
       }
       let i = contador;
       nTasks
 
-      console.log('render item: '+item+'con index: '+i);
+      // console.log('render item: '+item+'con index: '+i);
       
         return (
           <View style={styles.viewSeccion}>
@@ -225,7 +210,7 @@ const HomeScreen = ({ navigation, route }) => {
             <View style={{ flex: 1 }} />
     
             <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <Text>{i+1}</Text>
+              {/* <Text>{i+1}</Text> */}
     
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View>
@@ -234,9 +219,6 @@ const HomeScreen = ({ navigation, route }) => {
                     disabled={!canCheckTask}
                     status={checkList[i]}
                     onPress={() => {
-                      console.log('estpy em checkbox ahora puede renderHome');
-                      canRenderHome = true
-                      // nRenderALL=0
                       handleCheck(i);
                       if (checked == "unchecked") {
                         setChecked("checked");
@@ -254,8 +236,6 @@ const HomeScreen = ({ navigation, route }) => {
                     disabled={!canControl}
                     onPress={() => {
                       handleControlCheck(i);
-                      // console.log('ahora puede renderHome');
-                      // canRenderHome = true
                       if (checked == "unchecked") {
                         setChecked("checked");
                       } else {
@@ -380,7 +360,7 @@ const HomeScreen = ({ navigation, route }) => {
     );
     const EditImg = memo(() => (
         <Image
-              style={{ width: 25, height: 25 }}
+              style={{ width: 23, height: 23 }}
               source={require("../assets/edit.png")}
         />
     )
@@ -399,6 +379,14 @@ const HomeScreen = ({ navigation, route }) => {
         />
       )
     );
+    const IconInfo = memo(() => (
+        <Image
+          style={{ width: 15, height: 15 }}
+          source={require("../assets/info-circle.png")}
+        />
+      )
+    );
+    
 
     // memo optimiza carga de imagenes
     const AgregarTareaImg = memo(() => (
@@ -409,10 +397,9 @@ const HomeScreen = ({ navigation, route }) => {
     ));
 
 
-    const Item = ({ title, i }) => {
-    let haveDesc = false;
-    let h = 100;
-    let desc = allDescTasks[i]
+    const calculeHeight = (desc) => {
+      let h = 100;
+      let haveDesc = false;
       if(desc!=null){
         haveDesc = true;
         let descLength = desc.length;
@@ -430,27 +417,46 @@ const HomeScreen = ({ navigation, route }) => {
           h = 180;
         }
       }
+      return(h)
+    }
+    
+    const Item = ({ title, i }) => { // RENDER ITEM TASK
+    let haveDesc = false;
+    let h = 0
+    let desc = allDescTasks[i]
+    if(desc!=null){
+      haveDesc = true;
+      h = calculeHeight(desc)
+    }
 
       return(
         <View style={styles.itemSectionlist}>
-          {haveDesc&&
+          {haveDesc &&
+
             <ControlledTooltip
                   popover={<Text>{desc}</Text>}
                   containerStyle={{ width: 200, height: h }}
                   backgroundColor={lightColors.primary}
                 >
-                  <Text style={styles.titleSectionlist}>{title}</Text>
 
+                  <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
+                    <View>
+                      <Text style={styles.titleSectionlist}>{title}</Text>
+                    </View>
+                    <View style={{marginLeft: 10}}>
+                      <IconInfo/>
+                    </View>
+                  </View>
+                  
             </ControlledTooltip>
+
           }
-          {!haveDesc&&
+          {!haveDesc &&
                   <Text style={styles.titleSectionlist}>{title}</Text>
           }
         </View>
       );
     }
-
-
 
 
 
@@ -865,19 +871,22 @@ const HomeScreen = ({ navigation, route }) => {
             <Text style={styles.subtitleSection}>
               Tareas de {taskUser} asignadas esta semana: {nTasks}{" "} 
               
-              {canControl && <Menu>
-                <MenuTrigger>
-                  <View style={{marginLeft:5}}>
-                    <EditImg />
-                  </View>
-                  
-                </MenuTrigger>
-                <MenuOptions>
-                  <MenuOption onSelect={() => AreYouSureDeleteAllAssignedTasks()} >
-                    <Text style={{color: 'red'}}>Eliminar tareas asignadas</Text>
-                  </MenuOption>
-                </MenuOptions>
-              </Menu>
+              {canControl && 
+                <Menu>
+                  <MenuTrigger>
+                    <View style={{marginLeft:10, alignSelf: "center"}}>
+                      <EditImg />
+                    </View>
+                    
+                  </MenuTrigger>
+                  <MenuOptions>
+                    <MenuOption onSelect={() => AreYouSureDeleteAllAssignedTasks()} >
+                      <View style={{alignSelf: "center"}}>
+                        <Text style={{color: 'red'}}>Eliminar tareas asignadas</Text>
+                      </View>
+                    </MenuOption>
+                  </MenuOptions>
+                </Menu>
               }
               
             </Text>
