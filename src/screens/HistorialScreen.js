@@ -128,7 +128,7 @@ const TitleSection = ({ timestamp }) => {
         </View>
         <View style={{ flex: 1 }}/>
         
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", position: "absolute", right: 0 }}>
           <Text>{cont}</Text>
 
           

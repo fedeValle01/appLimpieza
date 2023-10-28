@@ -130,18 +130,19 @@ export default function AddTasks ({navigate, route}){
                         renderItem={item => _renderItem(item)}
                         textError="Error"
                     />
-            <Text style = {{textAlign: 'center'}} >Descripción</Text>
-            <TextInput
-              onChangeText={(text) => setTask_description(text)}
-                multiline
-                numberOfLines={4}
-                value = {task_description}
-                placeholder={'Descripción'}
-                style={txtInputMultiline.input} 
-                editable
-                maxLength={200}
-              />
-          
+            <View style={{marginTop: 20}}>
+              <Text style = {{textAlign: 'center'}} >Descripción</Text>
+              <TextInput
+                  onChangeText={(text) => setTask_description(text)}
+                  multiline
+                  numberOfLines={4}
+                  value = {task_description}
+                  placeholder={'Descripción'}
+                  style={txtInputMultiline.input} 
+                  editable
+                  maxLength={200}
+                />
+            </View>
 
           
 

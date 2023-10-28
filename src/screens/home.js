@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
-import Separator from '../components/Separator'
 import LoadingGif from '../components/Loading'
-import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button, ScrollView } from "react-native";
+import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Button, ScrollView } from "react-native";
 import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
@@ -13,12 +12,10 @@ import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
 
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
-const { height } = Dimensions.get('window');
 
 const ControlledTooltip = (props) => {
   const [open, setOpen] = React.useState(false);
   return (
-    <TouchableOpacity onLongPress={()=>{console.log('ee');}}>
         <Tooltip
           visible={open}
           onOpen={() => {
@@ -29,7 +26,6 @@ const ControlledTooltip = (props) => {
           }}
           {...props}
         />
-    </TouchableOpacity>
   );
 }
 
@@ -73,6 +69,8 @@ const HomeScreen = ({ navigation, route }) => {
 
     const [checked, setChecked] = useState([]);
     const [markAll, setMarkAll] = useState(false);
+    const [checkControlAll, setCheckControlAll] = useState(false);
+
 
     const getToken = async () => {
       const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
@@ -170,16 +168,16 @@ const HomeScreen = ({ navigation, route }) => {
 
     const setAllChecked = async () => {
       let checkList = controlCheckList;
-      if (!markAll){
+      if (!checkControlAll){
         checkList.forEach((task, i) => {
           checkList[i] = 'checked';
         });
-        setMarkAll(true)
+        setCheckControlAll(true)
       }else{
         checkList.forEach((task, i) => {
           checkList[i] = 'unchecked';
         });
-        setMarkAll(false)
+        setCheckControlAll(false)
       }
       await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
         control_marked_tasks: checkList,
@@ -187,7 +185,8 @@ const HomeScreen = ({ navigation, route }) => {
       });
       
     }
-    
+
+  
     const renderAssignedTasks = ({ item, index }, checkList, controlCheckList) => {
 
       contador++;
@@ -205,11 +204,11 @@ const HomeScreen = ({ navigation, route }) => {
       // console.log('render item: '+item+'con index: '+i);
       
         return (
-          <View style={styles.viewSeccion}>
+          <TouchableOpacity style={styles.viewSeccion} disabled={!canControl} onLongPress={() => AreYouSureDeleteTask(item)}>
               <Item title={item} i = {i}/>
     
     
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ flexDirection: "row", alignItems: "center", position: "absolute", right: 0 }}>
                 <View>
                   {/* user checkbox */}
                   <Checkbox
@@ -242,7 +241,7 @@ const HomeScreen = ({ navigation, route }) => {
                   />
                 </View>
             </View>
-          </View>
+          </TouchableOpacity>
         );
   }
 
@@ -267,7 +266,7 @@ const HomeScreen = ({ navigation, route }) => {
         });
     };
 
-    const CasaImg = memo(() => (
+    const HouseImg = memo(() => (
       <Image
         style={{ width: 170, height: 170 }}
         source={require("../assets/casaLaCosta.png")}
@@ -294,10 +293,6 @@ const HomeScreen = ({ navigation, route }) => {
           source={require("../assets/cerrar-sesion.png")}
         />
     ))
-
-    
-
-
 
 
   const SectionComponent =  () =>{
@@ -426,8 +421,8 @@ const HomeScreen = ({ navigation, route }) => {
     }
 
     title = title.trim()
-    if (title.length > 25){
-      title = title.slice(0, 25);
+    if (title.length > 21){
+      title = title.slice(0, 21);
       title = title+"..."
     }
 
@@ -775,16 +770,67 @@ const HomeScreen = ({ navigation, route }) => {
     }
   }
 
+
   const deleteAllAssignedTasks = async () => {
-
       let ref = doc(db, "assigned_tasks", route.params.uidTask);
-
       await updateDoc(ref, {
         active_tasks: deleteField(),
       });
       setActiveTasks([])
-      
   }
+
+    
+  const AreYouSureDeleteTask = (item) => {
+    return Alert.alert("Vas a eliminar la tarea: "+item, "Estas seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },    
+      { text: "OK", onPress: () => {deleteTask(item)} },
+    ]);
+  }
+
+    const deleteTask = async (item) => {
+
+      let updateActiveTasks = activeTasks
+      let findTask = false
+      let i = 0
+      let indexToDelete = 0
+      while (!findTask) {
+        let activeTask = updateActiveTasks[i]
+        let sector = activeTask.data
+        for (let j = 0; j < sector.length; j++) {
+          let task = sector[j];
+          if (task == item){
+            console.log('lo encontro');
+            findTask = true
+            sector.splice(j, 1)
+            break
+          }
+          indexToDelete++
+        }
+        i++
+        if (i > sector.length){
+          findTask = true
+        }
+      }
+
+      let ref = doc(db, "assigned_tasks", route.params.uidTask);
+
+      let updateCheckList = checkList
+      let updateControlCheckList = controlCheckList
+      updateCheckList.splice(indexToDelete, 1)
+      updateControlCheckList.splice(indexToDelete, 1)
+      
+      await updateDoc(ref, {
+        active_tasks: updateActiveTasks,
+        marked_tasks: updateCheckList,
+        control_marked_tasks: updateControlCheckList,
+      });
+      setRefresh(refresh ? false : true);
+      
+    }
 
   const loadAllOrderedTasks = () => {
     if(!chargedOrderedTasks){
@@ -836,10 +882,10 @@ const HomeScreen = ({ navigation, route }) => {
           }}
         >
           <ScrollView
-        contentContainerStyle={styles.scrollViewHome}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
-        }>
+            contentContainerStyle={styles.scrollViewHome}
+            refreshControl={
+              <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
+            }>
           <View
             style={{
               marginTop: 30,
@@ -849,7 +895,7 @@ const HomeScreen = ({ navigation, route }) => {
               justifyContent: "center",
             }}
           >
-            <CasaImg />
+              <HouseImg/>
           </View>
 
           {/* <TouchableOpacity
@@ -901,11 +947,11 @@ const HomeScreen = ({ navigation, route }) => {
             
           </View>
           </ScrollView>
-            {hasAssignedTasks === false && <Text>No tiene tareas asignadas</Text>}
+            {hasAssignedTasks === false && <View style={{ position: "absolute", bottom: 230 }}><Text>No tiene tareas asignadas</Text></View>}
             {hasAssignedTasks === true || hasAssignedTasks === undefined || loading ? (
               <>
                 {!firsTask ? (
-                    <LoadingGif />
+                    <View style={{ position: "absolute", bottom: 150 }}><LoadingGif /></View>
                 ) : (
                     <SectionComponent/>
                 )}

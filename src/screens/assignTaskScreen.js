@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList } from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, ScrollView } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp,
  updateDoc, getDoc } from "firebase/firestore";
@@ -139,7 +139,7 @@ export default function AssignTaskScreen({ navigate, route }) {
 const BtnSelectAll = () => {
   if (task_name.length > 0) {
   return(
-    <View style={{ width: 200, marginTop: 15 }}>
+    <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
       <Button onPress={setAllChecked}
         title='Seleccionar todas'
         color='#E3682C'
@@ -152,7 +152,7 @@ const BtnSelectAll = () => {
   const SelectDate = () => {
     if (task_name.length > 0) {
       return (
-        <View style={{ width: 200, marginTop: 15 }}>
+        <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
           <Button title="Plazo hasta" onPress={() => setOpen(true)} />
           <DatePicker
             title={"Seleccionar fecha"}
@@ -176,7 +176,7 @@ const BtnSelectAll = () => {
   const AssignTaskButton = () => {
     if (task_name.length > 0) {
       return (
-        <View style={{ width: 200, marginTop: 15 }}>
+        <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
           <Button
             title="Asignar Tareas"
             color="#43c6ac"
@@ -329,7 +329,6 @@ const BtnSelectAll = () => {
             alignItems: "center",
           }}
         >
-          <Text>{i}</Text>
           <Checkbox
             status={checkList[i]}
             onPress={() => {
@@ -489,7 +488,6 @@ const BtnSelectAll = () => {
         searchPlaceholder="Buscar sector"
         value={selected}
         onChange={(item) => {
-          console.log('cambio');
           cleanTasks();
           setSelected(item)
           addTaskSelected(item);
@@ -508,21 +506,21 @@ const BtnSelectAll = () => {
       </View>
 
       <View style={{ marginTop: 15 }} />
+      <ScrollView style={{ height: "40%" }}>
+        <SectionList
+          style={{ height: "34%" }}
+          sections={task_name}
+          renderItem={renderSectionList}
+          renderSectionHeader={({ section: { title } }) => (
+            <Text style={styles.SectionHeader}>{title}</Text>
+          )}
+        />
+      </ScrollView>
 
-      <SectionList
-        style={{ height: "34%" }}
-        sections={task_name}
-        renderItem={renderSectionList}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.SectionHeader}>{title}</Text>
-        )}
-      />
+      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", position: "absolute", bottom: 20 }}>
         <BtnSelectAll/>
-        
-      <View style={{ flex: 1 }}>
 
         {/* doesn't work on android emulator */}
-        
         <SelectDate />
           
         <AssignTaskButton />

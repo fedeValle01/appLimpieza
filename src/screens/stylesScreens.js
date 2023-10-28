@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   viewSeccion: {
+    position: "relative",
     marginTop: 3,
     flexDirection: "row",
     alignItems: "center",
@@ -85,6 +86,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   item: {
+    position: "relative",
+    right: 0,
     paddingHorizontal: 15,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -149,6 +152,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   itemSectionlist: {
+    marginRight: 70,
     padding: 5,
     marginVertical: 4,
     marginHorizontal: 16,
