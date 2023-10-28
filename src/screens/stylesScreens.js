@@ -13,6 +13,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  center: {
+    flexDirection: "row",
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   viewHeader: {
     backgroundColor: "#3c3c3c",
     height: 40,
@@ -71,7 +76,8 @@ const styles = StyleSheet.create({
   viewSeccion: {
     marginTop: 3,
     flexDirection: "row",
-    flex: 1,
+    alignItems: "center",
+    justifyContent: "space-between",
     borderWidth: 2,
     borderRadius: 5,
     borderColor: "#00fff6",

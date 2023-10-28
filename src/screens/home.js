@@ -2,13 +2,13 @@ import React, { memo, useCallback, useEffect, useState } from "react";
 import Separator from '../components/Separator'
 import LoadingGif from '../components/Loading'
 import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Dimensions, Button, ScrollView } from "react-native";
-import {doc,setDoc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { Checkbox } from "react-native-paper";
-import { Tooltip, lightColors } from '@rneui/themed';
+import { Tooltip } from '@rneui/themed';
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
 
@@ -18,16 +18,18 @@ const { height } = Dimensions.get('window');
 const ControlledTooltip = (props) => {
   const [open, setOpen] = React.useState(false);
   return (
-    <Tooltip
-      visible={open}
-      onOpen={() => {
-        setOpen(true);
-      }}
-      onClose={() => {
-        setOpen(false);
-      }}
-      {...props}
-    />
+    <TouchableOpacity onLongPress={()=>{console.log('ee');}}>
+        <Tooltip
+          visible={open}
+          onOpen={() => {
+            setOpen(true);
+          }}
+          onClose={() => {
+            setOpen(false);
+          }}
+          {...props}
+        />
+    </TouchableOpacity>
   );
 }
 
@@ -204,13 +206,8 @@ const HomeScreen = ({ navigation, route }) => {
       
         return (
           <View style={styles.viewSeccion}>
-            <View>
               <Item title={item} i = {i}/>
-            </View>
-            <View style={{ flex: 1 }} />
     
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              {/* <Text>{i+1}</Text> */}
     
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View>
@@ -244,7 +241,6 @@ const HomeScreen = ({ navigation, route }) => {
                     }}
                   />
                 </View>
-              </View>
             </View>
           </View>
         );
@@ -429,6 +425,12 @@ const HomeScreen = ({ navigation, route }) => {
       h = calculeHeight(desc)
     }
 
+    title = title.trim()
+    if (title.length > 25){
+      title = title.slice(0, 25);
+      title = title+"..."
+    }
+
       return(
         <View style={styles.itemSectionlist}>
           {haveDesc &&
@@ -436,12 +438,12 @@ const HomeScreen = ({ navigation, route }) => {
             <ControlledTooltip
                   popover={<Text>{desc}</Text>}
                   containerStyle={{ width: 200, height: h }}
-                  backgroundColor={lightColors.primary}
+                  backgroundColor={"#f6cb8e"}
                 >
 
                   <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
                     <View>
-                      <Text style={styles.titleSectionlist}>{title}</Text>
+                      <Text numberOfLines={1} style={[styles.titleSectionlist ]}>{title}</Text>
                     </View>
                     <View style={{marginLeft: 10}}>
                       <IconInfo/>
@@ -452,7 +454,9 @@ const HomeScreen = ({ navigation, route }) => {
 
           }
           {!haveDesc &&
-                  <Text style={styles.titleSectionlist}>{title}</Text>
+                  <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
+                    <Text numberOfLines={1} style={[styles.titleSectionlist]}>{title}</Text>
+                  </View>
           }
         </View>
       );

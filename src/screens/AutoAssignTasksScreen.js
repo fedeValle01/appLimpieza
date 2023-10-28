@@ -1,8 +1,10 @@
 import React, { memo, useEffect, useState } from "react";
 import { Text, SafeAreaView, TouchableOpacity, Alert, View, ScrollView, Image} from "react-native";
-import { doc, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, deleteField, updateDoc, addDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, setDoc, getFirestore, collection, onSnapshot, query, where, serverTimestamp, updateDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
+import { Checkbox } from "react-native-paper";
+
 import Separator from '../components/Separator'
 import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
@@ -20,6 +22,8 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
   const [nextUserList, setNextUserList] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
   const [userOrder, setUserOrder] = useState([]);
+  const [checkNotifyAllUsers, setCheckNotifyAllUsers] = useState('checked');
+
 
   const AreYouSureAssign = () => {
     return Alert.alert("Asignar tareas a todos los usuarios en casa rotando los sectores", "Esta seguro?", [
@@ -401,7 +405,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
                    uid: uidUser,
                  })
                }
-               if (expoPushToken) notifyUser(expoPushToken, username)
+               if (expoPushToken && checkNotifyAllUsers) notifyUser(expoPushToken, username)
                
    
 
@@ -650,7 +654,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
                 {usersOutHome && <UsersOutHomeComp />}
             </View>
 
-            <View style={{marginTop: 10}}>
+            <View style={{marginTop: 30}}>
 
               <Text style={{fontSize: 20}}>Los sectores rotaran a</Text>
 
@@ -686,10 +690,15 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
             </View>
           <View style={{marginTop: 15}}/>
           <View>
-            <TouchableOpacity onPress={AreYouSureAssign} style={styles.btnUsuario}>
-              <Text style={styles.txtUser}>Pasar de semana</Text>
-            </TouchableOpacity>
-
+            <View style={styles.center}>
+              <TouchableOpacity onPress={AreYouSureAssign} style={styles.btnUsuario}>
+                <Text style={styles.txtUser}>Pasar de semana</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => {(checkNotifyAllUsers=='checked') ? setCheckNotifyAllUsers('unchecked') : setCheckNotifyAllUsers('checked')}} style={styles.center}>
+                <Text style={{marginLeft:10}}>Notificar a usuarios</Text>
+                <Checkbox status={checkNotifyAllUsers}/>
+              </TouchableOpacity>
+            </View>
             <View style={{marginTop: 15}}/>
             <TouchableOpacity onPress={AreYouSureSaveOrder}>
               <View style={{ alignItems: 'center', backgroundColor: '#DDDDDD', padding: 18 }}>
@@ -700,8 +709,6 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
 
           <View style={{marginTop: 40}}/>
         </ScrollView>
-        
-        
         
       </View>
     </SafeAreaView>
