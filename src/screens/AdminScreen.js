@@ -121,6 +121,19 @@ export default function AdminScreen({ navigation, route }) {
       sectors: sectors,
     });
   }
+
+  const GoToStockScreen = () => {
+    navigation.navigate("Stock", {
+      user: user,
+      users: users,
+      usersInHome: usersInHome,
+      usersOutHome: usersOutHome,
+      colAssignedTasks: colAssignedTasks,
+      sectors: sectors,
+    });
+  }
+
+  
   
 
   const autoAssign = () => {
@@ -372,6 +385,10 @@ export default function AdminScreen({ navigation, route }) {
 
         <TouchableOpacity onPress={GoToTasksScreen} style={styles.btnUsuario}>
           <Text style={styles.txtUser}>Ver todas las tareas</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={GoToStockScreen} style={[styles.btnUsuario, { backgroundColor: "#008fff" }]}>
+          <Text style={styles.txtUser}>Stock de limpieza ✨</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
