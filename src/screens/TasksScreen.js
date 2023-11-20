@@ -302,8 +302,7 @@ export default function TasksScreen({ navigate, route }) {
         <View>
           <Item title={item} />
         </View>
-        <View style={{ flex: 1 }} />
-        <View style={{ flexDirection: "row", justifyContent: "flex-end", alignItems: "center" }}>
+        <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
           <TouchableOpacity onPress={() => areYouSureDeleteTask(item)}>
             <EditImg />
           </TouchableOpacity>

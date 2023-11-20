@@ -152,6 +152,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   itemSectionlist: {
+    maxWidth: '60%',
     marginRight: 70,
     padding: 5,
     marginVertical: 4,

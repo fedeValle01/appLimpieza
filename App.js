@@ -7,13 +7,12 @@ import { getFirestore } from "firebase/firestore";
 import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
-AdminScreen, TaskScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
- TestScreen, TasksScreen
+AdminScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
+ TestScreen, TasksScreen, StockScreen
 } from "./src/screens";
 import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
-
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
@@ -35,6 +34,8 @@ export default function App() {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
+
+  
 
   useEffect(() => {
 
@@ -92,7 +93,6 @@ export default function App() {
 
           <Stack.Screen name="Sectors" component={Sectors} />
           <Stack.Screen name="AddSector" component={AddSector} />
-          <Stack.Screen name="Tasks" component={TaskScreen} />
           <Stack.Screen name="TestScreen" component={TestScreen} />
           <Stack.Screen name="Tareas" component={TasksScreen} />
 
@@ -106,6 +106,7 @@ export default function App() {
           />
           <Stack.Screen name="Asignar Tareas" component={AssignTaskScreen} />
           <Stack.Screen name="Asignar Tareas Automaticamente" component={AutoAssignTaskScreen} />
+          <Stack.Screen name="Stock" component={StockScreen} />
           <Stack.Screen
             name="HistorialScreen"
             component={HistorialScreen}

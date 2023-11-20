@@ -372,7 +372,7 @@ const HomeScreen = ({ navigation, route }) => {
     );
     const IconInfo = memo(() => (
         <Image
-          style={{ width: 15, height: 15 }}
+          style={{ width: 17, height: 17 }}
           source={require("../assets/info-circle.png")}
         />
       )
@@ -421,13 +421,9 @@ const HomeScreen = ({ navigation, route }) => {
     }
 
     title = title.trim()
-    if (title.length > 21){
-      title = title.slice(0, 21);
-      title = title+"..."
-    }
-
+    
       return(
-        <View style={styles.itemSectionlist}>
+        <View style={[styles.itemSectionlist, {maxWidth: '60%'}] }>
           {haveDesc &&
 
             <ControlledTooltip
@@ -438,7 +434,7 @@ const HomeScreen = ({ navigation, route }) => {
 
                   <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
                     <View>
-                      <Text numberOfLines={1} style={[styles.titleSectionlist ]}>{title}</Text>
+                      <Text numberOfLines={2} style={[styles.titleSectionlist ]}>{title}</Text>
                     </View>
                     <View style={{marginLeft: 10}}>
                       <IconInfo/>
@@ -450,7 +446,7 @@ const HomeScreen = ({ navigation, route }) => {
           }
           {!haveDesc &&
                   <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
-                    <Text numberOfLines={1} style={[styles.titleSectionlist]}>{title}</Text>
+                    <Text numberOfLines={2} style={[styles.titleSectionlist]}>{title}</Text>
                   </View>
           }
         </View>
