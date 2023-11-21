@@ -692,6 +692,8 @@ const HomeScreen = ({ navigation, route }) => {
                 if (canControl || cControl) {
                   navigation.navigate("Admin", {
                     uid: route.params.uid,
+                    uidTask: route.params.uidTask,
+                    canControl: canControl
                   });
                 }else{
                   Alert.alert('Lo siento', 'No tienes permiso para administrar app',  [ {text: 'ok 😢'} ]);

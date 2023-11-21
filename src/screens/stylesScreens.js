@@ -96,7 +96,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     height: 44,
   },
-
+  navItem: {
+    fontSize: 20
+  },
   check: {
     paddingHorizontal: 4,
     flexDirection: "row",

@@ -6,10 +6,40 @@ import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
-import { getStorage, ref, uploadBytes } from "firebase/storage";
+import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
 import * as ImagePicker from 'expo-image-picker';
 
+function copyOfScriptStock () {
+  
+  let productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
+  console.log('----Stock productos 24/06/2023-------')
+  let litrosActual = [16,4,2,0,1,8,5,1,0.5];
+  console.log('Quiero saber los litros que se gastan de cada producto por mes')
+  
+  const msjGasto = 'Se gasto del 14/03/2023 al 24/06/2023'
+  console.log(msjGasto)
+  let diasGasto=102
+  let litrosGastados=[14,2,21,5,1,8,5,1,0.5];
 
+  litrosGastados.forEach(function(prod, i) {
+    console.log(productos[i]+ ': '+ prod+' L')
+  });
+
+  console.log('Equivale a un gasto diario de:')
+  litrosGastados.forEach(function(litro, i) {
+    console.log(productos[i]+ ': '+ (litro/diasGasto).toFixed(4) +' L')
+  });
+
+  console.log('Equivale a un gasto mensual de:')
+  litrosGastados.forEach(function(litro, i) {
+    console.log(productos[i]+ ': '+ ((litro/diasGasto)*30).toFixed(4) +' L')
+  });
+
+  console.log('Estimando lo que se gasta en 4 meses')
+  litrosGastados.forEach(function(litro, i) {
+    console.log(productos[i]+ ': '+ ((litro/diasGasto)*120).toFixed(4) +' L')
+  });
+}
 const styleModal = StyleSheet.create({
   centeredView: {
     flex: 1,
@@ -18,10 +48,6 @@ const styleModal = StyleSheet.create({
     marginTop: 22,
   },
   modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -29,19 +55,21 @@ const styleModal = StyleSheet.create({
       height: 2,
     },
     shadowOpacity: 0.25,
-    shadowRadius: 4,
+    shadowRadius: 2,
     elevation: 5,
   },
   button: {
-    borderRadius: 20,
+    borderRadius: 10,
     padding: 10,
     elevation: 2,
   },
   buttonOpen: {
-    backgroundColor: '#F194FF',
+    backgroundColor: '#2196F3',
   },
   buttonClose: {
     backgroundColor: '#2196F3',
+    paddingLeft: 30,
+    paddingRight: 30
   },
   textStyle: {
     color: 'white',
@@ -57,8 +85,15 @@ const styleModal = StyleSheet.create({
 const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-export default function StockScreen () {
 
+const StockScreen = ({ navigation, route }) => {
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [stockActualVisible, setStockActualVisible] = useState(false);
+
+  const [uriLastReceip, setUriLastReceip] = useState('');
+
+  
   const pickImageAsync = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       allowsEditing: true,
@@ -91,19 +126,41 @@ export default function StockScreen () {
   };
 
 
+  const LastReceiptImg = memo(() => {
 
-  const Factura = memo(() => (
-    <Image
-      style={{ width: 300, height: 600 }}
-      source={require("../assets/factura26-06-2023.jpeg")}
-    />
-  ));
+    if(uriLastReceip){
+      return (
+        <Image
+          style={{ width: 300, height: 600 }}
+          source={{uri: uriLastReceip}}
+        />
+      )
+    }
+    else {
+      return (<Text>No hay imagen del ultimo comprobante</Text>)
+    }
+  }
+  )
+
   
+  const ArrowBack = memo((params) => (
+    <Image
+        style={{ width: 23, height: 23 }}
+        source={require("../assets/arrow_back.png")}
+      />
+  ))
 
+  
+  const SectionStockActual = () => {
+
+    return(
+      <View>
+        <Text style={styles.subtitleSection}>Ultimo inventario</Text>
+      </View>
+    )
+  }
 
   useEffect(()=>{
-
-
 
     // const getStock = async () => {
     //   const docRef = doc(db, "stock", "SF");
@@ -121,49 +178,134 @@ export default function StockScreen () {
     // }
   
     // getStock()
-    
+
+
+
+    //---------------  NAVBAR  ----------------
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Usuarios", { uid: route.params.uid, canControl: route.params.canControl })
+            }
+          >
+            <View style={{ alignContent: "center" }}>
+              <Text>usuarios</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Products", { uid: route.params.uid, canControl: route.params.canControl })
+            }
+          >
+            <View style={{ alignContent: "center" }}>
+              <Text style={styles.navItem}>Lista de productos</Text>
+            </View>
+          </Pressable>
+
+
+          
+        </View>
+      ),
+      headerLeft: () => (
+                          <View style = {{marginRight:30, alignItems: "center", justifyContent: "center"}}>
+                            <Pressable
+                              onPress={() => navigation.goBack('appLimpieza', {uid: route.params.uid, uidTask: route.params.uid, loading: true})}>
+                                <ArrowBack />
+                            </Pressable>
+                          </View>
+      )
+    });
+    //-----------NAVBAR------------------
+
+
+
+
+
+    const storage = getStorage();
+    const pathReceipts = ref(storage, 'images/receipts');
+      
+      listAll(pathReceipts).then((res) => {
+        
+        let lastReceip = res.items[res.items.length-1]
+
+          console.log('imagen: '+lastReceip);
+  
+          getDownloadURL(ref(storage, lastReceip))
+          .then((url) => {
+            console.log('esta url en url '+url);
+            setUriLastReceip(url)
+          })
+          .catch((error) => {
+             Alert.alert(error)
+          });
+  
+      }).catch((error) => {
+        Alert.alert(error)
+      }).finally( () => console.log('listo'))
+  
     
   },[])
 
+  
 
+  function scriptStock () {
+    let productoss = [{nombre: 'Lavandina' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Lavandina en gel' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Desodorante piso lisoform' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Desodorante piso pino' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Desodorante piso limon' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Detergente magistral' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Detergente magistral' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Jabón manos dove' , unidadMedida: 'Litros', precio: 0  },
+    {nombre: 'Jabón manos melón' , unidadMedida: 'Litros', precio: 0 },
+    {nombre: 'Bolsas' , unidadMedida: 'Litros', precio: 0 },
+    {nombre: 'Bolsas2' , unidadMedida: 'Litros', precio: 0 },
+    {nombre: 'Bolsas3' , unidadMedida: 'Litros', precio: 0 }]
 
-  let productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
-  console.log('----Stock productos 24/06/2023-------')
-  let litrosActual = [16,4,2,0,1,8,5,1,0.5];
-  console.log('Quiero saber los litros que se gastan de cada producto por mes')
+    let productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
+    console.log('----Stock productos 24/06/2023-------')
+    let litrosActual = [16,4,2,0,1,8,5,1,0.5];
+    console.log('Quiero saber los litros que se gastan de cada producto por mes')
 
-  const msjGasto = 'Se gasto del 14/03/2023 al 24/06/2023'
-  console.log(msjGasto)
-  let diasGasto=102
-  let litrosGastados=[14,2,21,5,1,8,5,1,0.5];
+    const msjGasto = 'Se gasto del 14/03/2023 al 24/06/2023'
+    console.log(msjGasto)
+    let diasGasto=102
+    let litrosGastados=[14,2,21,5,1,8,5,1,0.5];
 
-  litrosGastados.forEach(function(prod, i) {
-    console.log(productos[i]+ ': '+ prod+' L')
-  });
+    litrosGastados.forEach(function(prod, i) {
+      console.log(productos[i]+ ': '+ prod+' L')
+    });
 
-  console.log('Equivale a un gasto diario de:')
-  litrosGastados.forEach(function(litro, i) {
-    console.log(productos[i]+ ': '+ (litro/diasGasto).toFixed(4) +' L')
-  });
+    console.log('Equivale a un gasto diario de:')
+    litrosGastados.forEach(function(litro, i) {
+      console.log(productos[i]+ ': '+ (litro/diasGasto).toFixed(4) +' L')
+    });
 
-  console.log('Equivale a un gasto mensual de:')
-  litrosGastados.forEach(function(litro, i) {
-    console.log(productos[i]+ ': '+ ((litro/diasGasto)*30).toFixed(4) +' L')
-  });
+    console.log('Equivale a un gasto mensual de:')
+    litrosGastados.forEach(function(litro, i) {
+      console.log(productos[i]+ ': '+ ((litro/diasGasto)*30).toFixed(4) +' L')
+    });
 
-  console.log('Estimando lo que se gasta en 4 meses')
-  litrosGastados.forEach(function(litro, i) {
-    console.log(productos[i]+ ': '+ ((litro/diasGasto)*120).toFixed(4) +' L')
-  });
-  const [modalVisible, setModalVisible] = useState(false);
+    console.log('Estimando lo que se gasta en 4 meses')
+    litrosGastados.forEach(function(litro, i) {
+      console.log(productos[i]+ ': '+ ((litro/diasGasto)*120).toFixed(4) +' L')
+    });
+  }
+
+ 
+  
 
     return (
         <View style={[styles.container, {backgroundColor: ""} ]}>
             <ScrollView>
-                <Text style={styles.titleHeader}>
+              <View style={{marginTop: 20}}>
+                <Text style={{color: "#3e3944", fontSize: 35, fontWeight: "40"}}>
                     Control de Stock
                 </Text>
-                <Text style={styles.subtitleSection}>Ultima compra</Text>
+              </View>
                 <Modal
                   animationType="slide"
                   transparent={true}
@@ -174,30 +316,45 @@ export default function StockScreen () {
                   }}>
                   <View style={styleModal.centeredView}>
                     <View style={styleModal.modalView}>
-                      <Text style={styleModal.modalText}>Hello World!</Text>
+                      <LastReceiptImg />
                       <Pressable
-                        style={[styleModal.button, styleModal.buttonClose]}
+                        style={[styleModal.button, styleModal.buttonClose, {marginTop:10}]}
                         onPress={() => setModalVisible(!modalVisible)}>
                         <Text style={styleModal.textStyle}>Ok</Text>
                       </Pressable>
                     </View>
                   </View>
                 </Modal>
-                <Pressable
-                  style={[styleModal.button, styleModal.buttonOpen]}
-                  onPress={() => setModalVisible(true)}>
-                  <Text style={styleModal.textStyle}>Ultima compra</Text>
+
+                <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
+                  <Pressable
+                    style={[styleModal.button, styleModal.buttonOpen]}
+                    onPress={() => setModalVisible(true)}>
+                    <Text style={styleModal.textStyle}>Ultima compra</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styleModal.button, styleModal.buttonOpen]}
+                    onPress={pickImageAsync}>
+                    <Text style={styleModal.textStyle}>Subir compra</Text>
+                  </Pressable>
+                </View>
+                
+                
+
+                <Pressable style={[styleModal.button, styleModal.buttonOpen, {backgroundColor: "#31a84f"}]} 
+                  onPress={() => stockActualVisible ? setStockActualVisible(false) : setStockActualVisible(true)}>
+                  <Text style={styleModal.textStyle}>Stock Actual</Text>
                 </Pressable>
-                <Pressable
-                  style={[styleModal.button, styleModal.buttonOpen]}
-                  onPress={pickImageAsync}>
-                  <Text style={styleModal.textStyle}>Subir imagen</Text>
-                </Pressable>
-                <Factura />
+                {stockActualVisible && (
+                  <SectionStockActual />
+                )}
+                <Text style={styles.subtitleSection}>Estimación de gasto</Text>
+
+                
             </ScrollView>
         </View>
     )
 
-    
-    
 }
+  export default memo(StockScreen);
+    

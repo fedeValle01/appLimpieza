@@ -46,7 +46,6 @@ Notifications.setNotificationHandler({
           saveToken(t)
         }
         navigation.navigate('appLimpieza', {uid: user.uid, uidTask: user.uid, loading: true})
-
         
     }
         
