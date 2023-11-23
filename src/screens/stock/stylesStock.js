@@ -1,6 +1,18 @@
 import { StyleSheet } from "react-native";
 
 const stylesStock = StyleSheet.create({
+    textPrice: {
+        fontSize: 13,
+        lineHeight: 21,
+        fontStyle: 'italic',
+        letterSpacing: 0.25,
+        color: "#606060",
+    },
+    viewItem: {
+        padding: 5,
+        marginVertical: 4,
+        marginHorizontal: 16,
+    },
     input: {
         height: 30,
         margin: 12,

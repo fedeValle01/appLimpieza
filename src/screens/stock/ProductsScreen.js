@@ -4,7 +4,7 @@ import stylesStock from "./stylesStock";
 
 import { memo, useEffect, useState } from "react";
 import firebaseConfig from "../../firebase-config";
-import { addDoc, collection, doc, getDoc, getFirestore, setDoc, where } from "firebase/firestore"; 
+import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from "firebase/firestore"; 
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
@@ -19,13 +19,18 @@ const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const StockScreen = ({ navigation, route }) => {
+export default function StockScreen({ navigation, route }){
 
     const [modalVisible, setModalVisible] = useState(false);
     const [products, setProducts] = useState([]);
     const [existProducts, setExistProducts] = useState(false);
     const [productName, setProductName] = useState('');
-    const [measurementUnit, setMeasurementUnit] = useState('');
+    const [price, setPrice] = useState(0);
+    const [change, setChange] = useState('0');
+
+
+    
+    const [measurementUnit, setMeasurementUnit] = useState('Litro');
 
     
     
@@ -35,112 +40,35 @@ const StockScreen = ({ navigation, route }) => {
 
 useEffect(() => {
 
-    // let q;
-    // let unsuscribe;
-    // let u;
-    // let collectionRef = collection(db, "user");
-    // q = query(collectionRef, where("uid", "==", route.params.uid));
-    // unsuscribe = onSnapshot(q, (querySnapshot) => {
-    //     u = querySnapshot.docs.map((doc) => ({
-    //     name: doc.data().username,
-    //     canControl: doc.data().can_control,
-    //     }));
+    async function getProducts(){
 
-    //     u.forEach((element) => {
-    //     console.log("u: " + element.name); //username active session
-    //     setUser(element.name);
-    //     setCanControl(element.canControl);
-    //     cControl = element.canControl
-    //     console.log('control: ', element.canControl);
-    //     });
-    // });
-    const getProducts = async () => {
-        const docRef = doc(db, "stock", 'products');
-        const docSnap = await getDoc(docRef);
-        
-        // if exist update
-        if (docSnap.exists()) {
-            console.log('data:  '+ docSnap.data());
-        } else {
-            console.log('no hay data')
-            // await setDoc(doc(db, "sectors", sector), {
-            //     sector_name: sector,
-            //     sector_description: description,
-            //   }).then(Alert.alert("Sector Creado"));
-        }
+      let collectionRef = collection(db, "products");
+      let q = query(collectionRef);
+
+      const querySnapshot = await getDocs(q);
+      let listProducts = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        productName: doc.data().product_name,
+        measurementUnit: doc.data().measurement_unit,
+        price: doc.data().price,
+      }));
+      if (listProducts){
+        setProducts(listProducts)
+        setExistProducts(true)
+      }
     }
-    getProducts().catch((err) => console.log(err))
-        .then(()=>console.log(''))
-    console.log('');
+  getProducts()
+
+}, [change])
 
 
-
-}, [])
-
-  const LastReceiptImg = memo(() => {
-
-    if(uriLastReceip){
-      return (
-        <Image
-          style={{ width: 300, height: 600 }}
-          source={{uri: uriLastReceip}}
-        />
-      )
-    }
-    else {
-      return (<Text>No hay imagen del ultimo comprobante</Text>)
-    }
-  }
+  const DeleteImg = memo(() => (
+    <Image
+          style={{ width: 25, height: 25 }}
+          source={require("../../assets/tachoBasura.png")}
+    />
   )
-
- 
-
-  
-  
-
-  function scriptStock () {
-    let productoss = [{nombre: 'Lavandina' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Lavandina en gel' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Desodorante piso lisoform' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Desodorante piso pino' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Desodorante piso limon' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Detergente magistral' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Detergente magistral' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Jabón manos dove' , unidadMedida: 'Litros', precio: 0  },
-    {nombre: 'Jabón manos melón' , unidadMedida: 'Litros', precio: 0 },
-    {nombre: 'Bolsas' , unidadMedida: 'Litros', precio: 0 },
-    {nombre: 'Bolsas2' , unidadMedida: 'Litros', precio: 0 },
-    {nombre: 'Bolsas3' , unidadMedida: 'Litros', precio: 0 }]
-
-    let productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
-    console.log('----Stock productos 24/06/2023-------')
-    let litrosActual = [16,4,2,0,1,8,5,1,0.5];
-    console.log('Quiero saber los litros que se gastan de cada producto por mes')
-
-    const msjGasto = 'Se gasto del 14/03/2023 al 24/06/2023'
-    console.log(msjGasto)
-    let diasGasto=102
-    let litrosGastados=[14,2,21,5,1,8,5,1,0.5];
-
-    litrosGastados.forEach(function(prod, i) {
-      console.log(productos[i]+ ': '+ prod+' L')
-    });
-
-    console.log('Equivale a un gasto diario de:')
-    litrosGastados.forEach(function(litro, i) {
-      console.log(productos[i]+ ': '+ (litro/diasGasto).toFixed(4) +' L')
-    });
-
-    console.log('Equivale a un gasto mensual de:')
-    litrosGastados.forEach(function(litro, i) {
-      console.log(productos[i]+ ': '+ ((litro/diasGasto)*30).toFixed(4) +' L')
-    });
-
-    console.log('Estimando lo que se gasta en 4 meses')
-    litrosGastados.forEach(function(litro, i) {
-      console.log(productos[i]+ ': '+ ((litro/diasGasto)*120).toFixed(4) +' L')
-    });
-  }
+);
 
   const handleCreateProduct = async () => {
     if (!productName) {
@@ -150,22 +78,121 @@ useEffect(() => {
     if (!measurementUnit) {
         Alert.alert('Falta unidad de medida')
         return 
-    }  
+    }
+    if (!price) {
+      Alert.alert('Falta precio')
+      return 
+    }   
 
-      await addDoc(collection(db, 'stock'), {
-      product_name: productName,
-      measurement_unit: measurementUnit,
-    }).then(Alert.alert('Producto Agregado'));
+    let product = {
+      productName: productName,
+      measurementUnit: measurementUnit,
+      price: price
+    }
+      await addDoc(collection(db, 'products'), {
+        product_name: productName,
+        measurement_unit: measurementUnit,
+        price: price}).then(() => {
+        let newProducts = products
+        newProducts.push(product)
+        setChange(productName)
+        return Alert.alert('Producto Agregado')
+      })
+      
   }
+
+  const deleteProduct = async ({product}) => {
+    let productName = product.productName
+    let id = product.id
+    let newProducts = products
+    await deleteDoc(doc(db, "products", id)).then(() => {
+      Alert.alert('Se elimino el producto '+ productName+' con exito')
+      newProducts = newProducts.filter(product => product.id != id)
+      setProducts(newProducts)
+    }).catch((err)=>Alert.alert(err))
+  }
+
+  const areYouSureDeleteProduct = ({product}) => {
+      let id = product.id
+      let productName = product.productName
+
+      return Alert.alert("Vas a eliminar el producto "+ productName, "Estas seguro?", [
+        {
+          text: "Cancelar",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },    
+        { text: "OK", onPress: () => deleteProduct({product}) },
+      ]);
+  }
+
+
+  const DeleteBtn = ({product}) => (
+    <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", marginRight: 5 }}>
+      <TouchableOpacity onPress={() => areYouSureDeleteProduct({product})}>
+        <DeleteImg />
+      </TouchableOpacity>
+    </View>
+  )
+
+
   
+  const Price = ({product}) => {
+
+    let price = product.price
+    let measurementUnit = product.measurementUnit
+    let text = `${price}/${measurementUnit}`
+
+    return(
+      <View style={{ marginRight: 5 }}>
+        <Text style={stylesStock.textPrice}>{text}</Text>
+      </View>
+    )
+  } 
+
+  
+  
+  const Item = ({product}) => {
+
+    return (
+      <View style={[styles.viewSeccionColors, {flexDirection: "row", justifyContent: "space-between"}]}>
+        <View style={[stylesStock.viewItem, {flexDirection: "row", flex: 1, justifyContent: "center", alignItems: "center"}]}>
+          <View>
+            <Text style={styles.titleSectionlist}>{product.productName}</Text>
+          </View>
+          <View style={{flex:1}}></View>
+          <Price product={product}/>
+        </View>
+        <DeleteBtn product={product}/>
+
+      </View>
+    )
+  }
+
+
+  const ProductsList = () => {
+
+    if (modalVisible) {
+      return
+    }else{
+      if(!existProducts){
+        return <Text>No hay productos</Text>
+      }
+    }
+
+    return (  
+      (products.map((product, i) => {
+        return <Item product={product} />
+      }))
+      
+    )
+  }
 
     return (
         <View style={[styles.container, {backgroundColor: ""} ]}>
             <ScrollView>
               <View style={{marginTop: 20}}>
-                <Text style={{color: "#3e3944", fontSize: 35, fontWeight: "40"}}>
-                    Lista de productos
-                </Text>
+                <Text style={{color: "#3e3944", fontSize: 35, fontWeight: "40"}}>Lista de productos</Text>
               </View>
                 <Modal
                   animationType="slide"
@@ -196,6 +223,17 @@ useEffect(() => {
                             value={measurementUnit}
                             />
                         </View>
+                        <View style={{marginTop: 20}}>
+                            <Text style={{paddingLeft: 11, marginBottom: -5}}>Precio</Text>
+                            <TextInput
+                            style={stylesStock.input}
+                            onChangeText={(text) => setPrice(text)}
+                            placeholder={`Precio/${(measurementUnit) ? measurementUnit : 'unidad de medida'}`}
+                            value={price}
+                            />
+                        </View>
+
+                        
 
 
                         <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
@@ -218,29 +256,15 @@ useEffect(() => {
                 <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
                   
                     <TouchableOpacity style={[stylesStock.button, stylesStock.buttonOpen, {backgroundColor: "#31a84f"}]} 
-                    disabled={modalVisible}
-                    onPress={() => setModalVisible(true)}>
+                      disabled={modalVisible}
+                      onPress={() => setModalVisible(true)}>
                     <Text style={stylesStock.textStyle}>Agregar producto</Text>
-                    </TouchableOpacity>
-                    
-                    <TouchableOpacity
-                        style={[stylesStock.button, stylesStock.buttonOpen]}
-                        onPress={() => setModalVisible(true)}>
-                        <Text style={stylesStock.textStyle}>Ultima compra</Text>
                     </TouchableOpacity>
                     
                 </View>
                 
-                
-
-                
-                {/* {stockActualVisible && (
-                  <SectionStockActual />
-                )} */}
-                <View style={styles.center}>
-                    {(!existProducts || modalVisible) && (
-                        <Text>No hay productos</Text>
-                    )}
+                <View>
+                    <ProductsList />
                 </View>
                 
 
@@ -250,5 +274,4 @@ useEffect(() => {
     )
 
 }
-  export default memo(StockScreen);
     

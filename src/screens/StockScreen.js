@@ -1,13 +1,17 @@
-import { View, ScrollView, Alert, StyleSheet, Text, Pressable, Modal, Image } from "react-native";
+import { View, ScrollView, Alert, StyleSheet, Text, Pressable, Modal, Image, TouchableOpacity } from "react-native";
 import styles from "./stylesScreens";
+import stylesStock from "./stock/stylesStock";
+import { BlurView } from 'expo-blur';
+
 import { memo, useEffect, useState } from "react";
 import firebaseConfig from "../firebase-config";
-import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore"; 
+import { collection, doc, getDoc, getDocs, getFirestore, query, setDoc } from "firebase/firestore"; 
 import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
 import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
 import * as ImagePicker from 'expo-image-picker';
+import { TextInput } from "react-native-paper";
 
 function copyOfScriptStock () {
   
@@ -66,6 +70,9 @@ const styleModal = StyleSheet.create({
   buttonOpen: {
     backgroundColor: '#2196F3',
   },
+  buttonControlStock: {
+    backgroundColor: '#E4952B',
+  },
   buttonClose: {
     backgroundColor: '#2196F3',
     paddingLeft: 30,
@@ -89,6 +96,9 @@ const db = getFirestore(app);
 const StockScreen = ({ navigation, route }) => {
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [modalControlVisible, setModalControlVisible] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [existProducts, setExistProducts] = useState(false);
   const [stockActualVisible, setStockActualVisible] = useState(false);
 
   const [uriLastReceip, setUriLastReceip] = useState('');
@@ -121,7 +131,7 @@ const StockScreen = ({ navigation, route }) => {
       });
 
     } else {
-      alert('No seleccionaste ninguna imagen');
+      Alert.alert('No seleccionaste ninguna imagen');
     }
   };
 
@@ -150,106 +160,6 @@ const StockScreen = ({ navigation, route }) => {
       />
   ))
 
-  
-  const SectionStockActual = () => {
-
-    return(
-      <View>
-        <Text style={styles.subtitleSection}>Ultimo inventario</Text>
-      </View>
-    )
-  }
-
-  useEffect(()=>{
-
-    // const getStock = async () => {
-    //   const docRef = doc(db, "stock", "SF");
-    //   const docSnap = await getDoc(docRef);
-  
-    //   if (docSnap.exists()) {
-    //     console.log("Document data:", docSnap.data());
-    //   } else {
-
-    //       await setDoc(doc(db, "stock", "factura"), {
-    //         img: Factura,
-    //         date: '26-06-2023'
-    //       });
-    // }
-    // }
-  
-    // getStock()
-
-
-
-    //---------------  NAVBAR  ----------------
-    navigation.setOptions({
-      headerRight: () => (
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
-          <Pressable
-            onPress={() =>
-              navigation.navigate("Usuarios", { uid: route.params.uid, canControl: route.params.canControl })
-            }
-          >
-            <View style={{ alignContent: "center" }}>
-              <Text>usuarios</Text>
-            </View>
-          </Pressable>
-
-          <Pressable
-            onPress={() =>
-              navigation.navigate("Products", { uid: route.params.uid, canControl: route.params.canControl })
-            }
-          >
-            <View style={{ alignContent: "center" }}>
-              <Text style={styles.navItem}>Lista de productos</Text>
-            </View>
-          </Pressable>
-
-
-          
-        </View>
-      ),
-      headerLeft: () => (
-                          <View style = {{marginRight:30, alignItems: "center", justifyContent: "center"}}>
-                            <Pressable
-                              onPress={() => navigation.goBack('appLimpieza', {uid: route.params.uid, uidTask: route.params.uid, loading: true})}>
-                                <ArrowBack />
-                            </Pressable>
-                          </View>
-      )
-    });
-    //-----------NAVBAR------------------
-
-
-
-
-
-    const storage = getStorage();
-    const pathReceipts = ref(storage, 'images/receipts');
-      
-      listAll(pathReceipts).then((res) => {
-        
-        let lastReceip = res.items[res.items.length-1]
-
-          console.log('imagen: '+lastReceip);
-  
-          getDownloadURL(ref(storage, lastReceip))
-          .then((url) => {
-            console.log('esta url en url '+url);
-            setUriLastReceip(url)
-          })
-          .catch((error) => {
-             Alert.alert(error)
-          });
-  
-      }).catch((error) => {
-        Alert.alert(error)
-      }).finally( () => console.log('listo'))
-  
-    
-  },[])
-
-  
 
   function scriptStock () {
     let productoss = [{nombre: 'Lavandina' , unidadMedida: 'Litros', precio: 0  },
@@ -295,9 +205,191 @@ const StockScreen = ({ navigation, route }) => {
     });
   }
 
- 
+
+
+  async function getProducts(){
+    if (products.length > 0) return
+    let collectionRef = collection(db, "products");
+    let q = query(collectionRef);
+
+    const querySnapshot = await getDocs(q);
+    let listProducts = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      productName: doc.data().product_name,
+      measurementUnit: doc.data().measurement_unit,
+      price: doc.data().price,
+    }));
+    if (listProducts){
+      setProducts(listProducts)
+      setExistProducts(true)
+      console.log(listProducts)
+    }
+  }
+
+
+  const handleCreateStock = () => {
+    console.log('crear stock');
+  }
+
+
+
+  useEffect(() => {
+
+    //---------------  NAVBAR  ----------------
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+          <Pressable
+            onPress={() =>
+              navigation.navigate("Products", { uid: route.params.uid, canControl: route.params.canControl })
+            }
+          >
+            <View style={{ alignContent: "center" }}>
+              <Text style={styles.navItem}>Lista de productos</Text>
+            </View>
+          </Pressable>
+        </View>
+      ),
+      headerLeft: () => (
+                          <View style = {{marginRight:30, alignItems: "center", justifyContent: "center"}}>
+                            <Pressable
+                              onPress={() => navigation.goBack('appLimpieza', {uid: route.params.uid, uidTask: route.params.uid, loading: true})}>
+                                <ArrowBack />
+                            </Pressable>
+                          </View>
+      )
+    });
+    //-----------NAVBAR------------------
+
+
+
+
+
+    const storage = getStorage();
+    const pathReceipts = ref(storage, 'images/receipts');
+      
+      listAll(pathReceipts).then((res) => {
+        
+        let lastReceip = res.items[res.items.length-1]
+
+          console.log('imagen: '+lastReceip);
+  
+          getDownloadURL(ref(storage, lastReceip))
+          .then((url) => {
+            console.log('esta url en url '+url);
+            setUriLastReceip(url)
+          })
+          .catch((error) => {
+             Alert.alert(error)
+          });
+  
+      }).catch((error) => {
+        Alert.alert(error)
+      }).finally( () => console.log('listo'))
+  
+    
+  },[])
+
+  //---------end useEfect----------
+
+  
+  
+  
   
 
+  
+  const SectionStockActual = () => {
+
+    return(
+      <View>
+        <Text style={styles.subtitleSection}>Ultimo inventario</Text>
+      </View>
+    )
+  }
+
+  const Price = ({product}) => {
+
+    let price = product.price
+    let measurementUnit = product.measurementUnit
+    let text = `${price}/${measurementUnit}`
+
+    return(
+      <View style={{ marginRight: 5 }}>
+        <Text style={stylesStock.textPrice}>{text}</Text>
+      </View>
+    )
+  } 
+
+  const Item = ({product}) => {
+    return (
+                        
+      <View style={[styles.viewSeccionColors, {flexDirection: "row",  width: "70%", justifyContent: "space-between" }]}>
+          <View style = {{ flex: 1, marginLeft: 10, alignSelf: "center"}}>
+            <Text numberOfLines={2} style={[styles.titleSectionlist]}>{product.productName}</Text>
+          </View>
+          <View>
+            <TextInput
+            style={[styles.input, {borderColor: '#aaa', marginLeft: 10, marginRight: 10}]}
+            placeholder="cantidad"
+            />
+          </View>
+          
+
+      </View>
+    )
+  }
+
+  const ProductsList = () => {
+    
+    if(!existProducts){
+      return <Text>No hay productos</Text>
+    }
+    return (
+
+      <View style = {{ marginTop: 50, marginBottom: 50}}>
+        <ScrollView contentContainerStyle = {{justifyContent: "center", alignItems: "center"}}>
+        
+          {(products.map((product, i) => {
+          return <><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /><Item product={product} /></>
+        }))}
+
+        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
+            <TouchableOpacity
+                style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, marginRight:30, backgroundColor: "#31a84f"}]}
+                onPress={handleCreateStock}>
+                <Text style={stylesStock.textStyle}>Guardar control</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+            style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, backgroundColor: "#d33"}]}
+            onPress={() => setModalControlVisible(!modalControlVisible)}>
+            <Text style={stylesStock.textStyle}>Cancelar</Text>
+            </TouchableOpacity>
+        </View>
+        </ScrollView>
+      </View>
+
+      
+    )
+  }
+
+  const SectionDoControl = () => {
+   
+    return(
+      <BlurView tint="dark" intensity={60} style={[styleModal.centeredView]}>
+        <View style={styleModal.modalView}>
+            <ProductsList />
+          <Pressable
+            style={[styleModal.button, styleModal.buttonClose, {marginTop:10}]}
+            onPress={() => setModalControlVisible(!modalControlVisible)}>
+            <Text style={styleModal.textStyle}>{modalControlVisible}algo aca</Text>
+          </Pressable>
+        </View>
+      </BlurView>
+    )
+  }
+
+
+  //return StockScreen
     return (
         <View style={[styles.container, {backgroundColor: ""} ]}>
             <ScrollView>
@@ -307,7 +399,7 @@ const StockScreen = ({ navigation, route }) => {
                 </Text>
               </View>
                 <Modal
-                  animationType="slide"
+                  animationType="fade"
                   transparent={true}
                   visible={modalVisible}
                   onRequestClose={() => {
@@ -326,7 +418,18 @@ const StockScreen = ({ navigation, route }) => {
                   </View>
                 </Modal>
 
-                <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
+                <Modal
+                  animationType="fade"
+                  transparent={true}
+                  visible={modalControlVisible}
+                  onRequestClose={() => {
+                    setModalVisible(!modalControlVisible);
+                  }}>
+                      <SectionDoControl />
+                </Modal>
+
+                
+                <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 30}}>
                   <Pressable
                     style={[styleModal.button, styleModal.buttonOpen]}
                     onPress={() => setModalVisible(true)}>
@@ -338,8 +441,16 @@ const StockScreen = ({ navigation, route }) => {
                     <Text style={styleModal.textStyle}>Subir compra</Text>
                   </Pressable>
                 </View>
-                
-                
+                <View style={{flex: 1, flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
+                  <Pressable
+                    style={[styleModal.button, styleModal.buttonControlStock]}
+                    onPress={() => {
+                      getProducts()
+                      setModalControlVisible(true)
+                    }}>
+                    <Text style={styleModal.textStyle}>Realizar control de stock</Text>
+                  </Pressable>
+                </View>
 
                 <Pressable style={[styleModal.button, styleModal.buttonOpen, {backgroundColor: "#31a84f"}]} 
                   onPress={() => stockActualVisible ? setStockActualVisible(false) : setStockActualVisible(true)}>

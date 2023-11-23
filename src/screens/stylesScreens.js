@@ -41,6 +41,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#252850",
     margin: 3,
   },
+  input: {
+    height: 26,
+    borderWidth: 1,
+    border: '#aaa',
+    padding: 5,
+    width: 120
+    },
   btnRight: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
@@ -72,6 +79,13 @@ const styles = StyleSheet.create({
     marginTop: 3,
     flexDirection: "row",
     flex: 1,
+  },
+  viewSeccionColors: {
+    borderWidth: 2,
+    borderRadius: 5,
+    borderColor: "#00fff6",
+    marginBottom: 5,
+    backgroundColor: "#fff",
   },
   viewSeccion: {
     position: "relative",
