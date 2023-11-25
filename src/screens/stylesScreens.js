@@ -42,11 +42,11 @@ const styles = StyleSheet.create({
     margin: 3,
   },
   input: {
-    height: 26,
+    height: 20,
     borderWidth: 1,
     border: '#aaa',
     padding: 5,
-    width: 120
+    width: 100
     },
   btnRight: {
     flexDirection: 'row-reverse',
