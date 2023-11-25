@@ -2,14 +2,22 @@ import React, { useEffect, useState, Component, useRef } from "react";
 import { StyleSheet, Text, Image, SafeAreaView, TextInput, TouchableOpacity, View, Alert } from "react-native";
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
-AdminScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
- TestScreen, TasksScreen, StockScreen, ProductsScreen
+AdminScreen, TaskScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
+ TestScreen, TasksScreen, StockScreen, 
 } from "./src/screens";
 import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
+import ProductsScreen from "./src/screens/stock/ProductsScreen";
 
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const Stack = createNativeStackNavigator();
 const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
 
@@ -28,8 +36,6 @@ export default function App() {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
-
-  
 
   useEffect(() => {
 
@@ -84,9 +90,11 @@ export default function App() {
             name="Admin"
             component={AdminScreen}
           />
-
+          <Stack.Screen name="Stock" component={StockScreen} />
+          <Stack.Screen name="Products" component={ProductsScreen} />
           <Stack.Screen name="Sectors" component={Sectors} />
           <Stack.Screen name="AddSector" component={AddSector} />
+          <Stack.Screen name="Tasks" component={TaskScreen} />
           <Stack.Screen name="TestScreen" component={TestScreen} />
           <Stack.Screen name="Tareas" component={TasksScreen} />
 
@@ -100,8 +108,6 @@ export default function App() {
           />
           <Stack.Screen name="Asignar Tareas" component={AssignTaskScreen} />
           <Stack.Screen name="Asignar Tareas Automaticamente" component={AutoAssignTaskScreen} />
-          <Stack.Screen name="Stock" component={StockScreen} />
-          <Stack.Screen name="Products" component={ProductsScreen} />
           <Stack.Screen
             name="HistorialScreen"
             component={HistorialScreen}

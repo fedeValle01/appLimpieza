@@ -908,10 +908,7 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={irACrearSector}>
             <Text>Ir a Crear Sector</Text>
           </TouchableOpacity>
-
-          {/* <TouchableOpacity onPress={logActiveTasks}>
-              <Text>Ver tareas activas</Text>
-            </TouchableOpacity> */}
+           */}
           
           <View
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 5 }}

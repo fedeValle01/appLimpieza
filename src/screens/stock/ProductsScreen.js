@@ -19,7 +19,7 @@ const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-export default function StockScreen({ navigation, route }){
+export default function ProductsScreen({ navigation, route }){
 
     const [modalVisible, setModalVisible] = useState(false);
     const [products, setProducts] = useState([]);

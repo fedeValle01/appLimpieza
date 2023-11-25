@@ -50,6 +50,13 @@ const styleModal = StyleSheet.create({
     alignItems: 'center',
     marginTop: 22,
   },
+  titleDate: {
+    fontSize: 30,
+    color: "#efe",
+    marginBottom: 20,
+    textDecorationLine: "underline",
+    textDecorationColor: "0f0",
+  },
   modalView: {
     alignItems: 'center',
     shadowColor: '#000',
@@ -91,7 +98,8 @@ const styleModal = StyleSheet.create({
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
-const StockScreen = ({ navigation, route }) => {
+export default function StockScreen({ navigation, route }) {
+
 
   const [createBtnDisabled, setCreateBtnDisabled] = useState(false)
   const [modalVisible, setModalVisible] = useState(false)
@@ -418,10 +426,32 @@ const StockScreen = ({ navigation, route }) => {
     for (let i = 0; i < lastStockProducts.length; i++) {
       list = list.concat(lastStockProducts[i].stockProducts);
     }
-    list.shift()
     return list
   }
 
+  const formatTimestamp = (timestamp) => {
+
+    let dateTime = timestamp.toDate();
+    dateTime.setUTCHours(dateTime.getUTCHours() + 2);
+    
+    let date = new Date(
+      dateTime.getFullYear(),
+      dateTime.getMonth(),
+      dateTime.getDate()
+    )
+   
+    const message = date.getDate() + "/" + (date.getMonth() + 1) + "/" + date.getFullYear()
+    
+
+    return message
+  }
+  const TitleDate = ({date}) => (
+    <View style={styles.viewTitleDate}>
+      <Text style={styleModal.titleDate}>Stock en el dia {date}</Text>
+    </View>
+  )
+
+  
   const ProductsList = ({typeList}) => {
     
     let list = []
@@ -435,14 +465,22 @@ const StockScreen = ({ navigation, route }) => {
     if (list.length < 0) {
       return <Text>No hay productos</Text>
     }
+    let timestamp = ''
     if (typeList == 'lastStock'){
       list = formatedLastStock(list)
+      timestamp = list.shift()
+      timestamp = timestamp.timestamp
+      timestamp = formatTimestamp(timestamp)
+      console.log('timestamp: '+timestamp);
     }
 
     return (
 
       <View style={{ marginTop: 50, marginBottom: 50 }}>
         <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+          {(timestamp) && (
+            <TitleDate date = {timestamp} />
+          )}
 
           {(list.map((product, i) => {
             return <Item product={product} typeList={typeList} i={i} key={i} />
@@ -578,4 +616,3 @@ const StockScreen = ({ navigation, route }) => {
   )
 
 }
-export default memo(StockScreen)
