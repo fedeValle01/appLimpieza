@@ -18,6 +18,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  viewRotation: {
+    marginTop: 5,
+    flexDirection: "row", 
+    justifyContent: "space-between", 
+    backgroundColor: "#f2f3f3", 
+    padding: 8, 
+    marginBottom: 4,
+    borderRadius: 10,
+  },
+  titleRotation: {
+    fontSize: 25,
+    color: "#4044c9",
+    marginBottom: 5
+  },
   viewHeader: {
     backgroundColor: "#3c3c3c",
     height: 40,

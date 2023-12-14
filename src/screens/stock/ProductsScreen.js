@@ -1,21 +1,16 @@
-import { View, ScrollView, Alert, StyleSheet, Text, Modal, Image, TouchableOpacity } from "react-native";
+import { View, ScrollView, Alert, Text, Modal, Image, TouchableOpacity } from "react-native";
 import styles from "../stylesScreens";
 import stylesStock from "./stylesStock";
 
 import { memo, useEffect, useState } from "react";
 import firebaseConfig from "../../firebase-config";
 import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, getFirestore, query, setDoc, where } from "firebase/firestore"; 
-import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 
-import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from "firebase/storage";
-import * as ImagePicker from 'expo-image-picker';
 import { TextInput } from "react-native-paper";
-import Button from "../../components/Button";
+import { getProducts } from "./getProducts";
 
 
-
-const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -27,37 +22,14 @@ export default function ProductsScreen({ navigation, route }){
     const [productName, setProductName] = useState('');
     const [price, setPrice] = useState(0);
     const [change, setChange] = useState('0');
-
-
-    
     const [measurementUnit, setMeasurementUnit] = useState('Litro');
 
-    
-    
-    const [uriLastReceip, setUriLastReceip] = useState('');
-
-  
 
 useEffect(() => {
-
-    async function getProducts(){
-
-      let collectionRef = collection(db, "products");
-      let q = query(collectionRef);
-
-      const querySnapshot = await getDocs(q);
-      let listProducts = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        productName: doc.data().product_name,
-        measurementUnit: doc.data().measurement_unit,
-        price: doc.data().price,
-      }));
-      if (listProducts){
-        setProducts(listProducts)
-        setExistProducts(true)
-      }
-    }
-  getProducts()
+  getProducts().then((listProducts)=> {
+    setProducts(listProducts)
+    setExistProducts(true)
+  })
 
 }, [change])
 
@@ -182,7 +154,7 @@ useEffect(() => {
 
     return (  
       (products.map((product, i) => {
-        return <Item product={product} />
+        return <Item key={i} product={product} />
       }))
       
     )
@@ -203,53 +175,49 @@ useEffect(() => {
                     setModalVisible(!modalVisible);
                   }}>
                   <View style={stylesStock.centeredView}>
-                    <View style={stylesStock.modalView}>
-                        <View>
-                            <Text style={{paddingLeft: 11, marginBottom: -5}}>Nombre de producto</Text>
-                            <TextInput
-                            style={stylesStock.input}
-                            onChangeText={(text) => setProductName(text)}
-                            placeholder="Nombre de producto"
-                            value={productName}
-                            />
-                        </View>
-                        
-                        <View style={{marginTop: 20}}>
-                            <Text style={{paddingLeft: 11, marginBottom: -5}}>Unidad de medida</Text>
-                            <TextInput
-                            style={stylesStock.input}
-                            onChangeText={(text) => setMeasurementUnit(text)}
-                            placeholder="Unidad de medida"
-                            value={measurementUnit}
-                            />
-                        </View>
-                        <View style={{marginTop: 20}}>
-                            <Text style={{paddingLeft: 11, marginBottom: -5}}>Precio</Text>
-                            <TextInput
-                            style={stylesStock.input}
-                            onChangeText={(text) => setPrice(text)}
-                            placeholder={`Precio/${(measurementUnit) ? measurementUnit : 'unidad de medida'}`}
-                            value={price}
-                            />
-                        </View>
+                      <View style={stylesStock.modalView}>
+                          <View>
+                              <Text style={{paddingLeft: 11, marginBottom: -5}}>Nombre de producto</Text>
+                              <TextInput
+                              style={stylesStock.input}
+                              onChangeText={(text) => setProductName(text)}
+                              placeholder="Nombre de producto"
+                              value={productName}
+                              />
+                          </View>
+                          
+                          <View style={{marginTop: 20}}>
+                              <Text style={{paddingLeft: 11, marginBottom: -5}}>Unidad de medida</Text>
+                              <TextInput
+                              style={stylesStock.input}
+                              onChangeText={(text) => setMeasurementUnit(text)}
+                              placeholder="Unidad de medida"
+                              value={measurementUnit}
+                              />
+                          </View>
+                          <View style={{marginTop: 20}}>
+                              <Text style={{paddingLeft: 11, marginBottom: -5}}>Precio</Text>
+                              <TextInput
+                              style={stylesStock.input}
+                              onChangeText={(text) => setPrice(text)}
+                              placeholder={`Precio/${(measurementUnit) ? measurementUnit : 'unidad de medida'}`}
+                              value={price}
+                              />
+                          </View>
 
-                        
-
-
-                        <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
-                            <TouchableOpacity
-                                style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, backgroundColor: "#31a84f"}]}
-                                onPress={handleCreateProduct}>
-                                <Text style={stylesStock.textStyle}>Ok</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                            style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, backgroundColor: "#d33"}]}
-                            onPress={() => setModalVisible(!modalVisible)}>
-                            <Text style={stylesStock.textStyle}>Cancelar</Text>
-                            </TouchableOpacity>
-                        </View>
-                      
-                    </View>
+                          <View style={{flexDirection: "row", justifyContent: "space-evenly", marginTop: 30, marginBottom: 50}}>
+                              <TouchableOpacity
+                                  style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, backgroundColor: "#31a84f"}]}
+                                  onPress={handleCreateProduct}>
+                                  <Text style={stylesStock.textStyle}>Ok</Text>
+                              </TouchableOpacity>
+                              <TouchableOpacity
+                              style={[stylesStock.button, stylesStock.buttonClose, {marginTop: 10, backgroundColor: "#d33"}]}
+                              onPress={() => setModalVisible(!modalVisible)}>
+                              <Text style={stylesStock.textStyle}>Cancelar</Text>
+                              </TouchableOpacity>
+                          </View>
+                      </View>
                   </View>
                 </Modal>
 
@@ -263,9 +231,9 @@ useEffect(() => {
                     
                 </View>
                 
-                <View>
+                <ScrollView>
                     <ProductsList />
-                </View>
+                </ScrollView>
                 
 
                 

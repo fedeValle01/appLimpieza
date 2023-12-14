@@ -16,3 +16,8 @@ export { default as TaskScreen } from "./TaskScreen";
 export { default as TasksScreen } from "./TasksScreen";
 export { default as StockScreen } from "./StockScreen";
 export { default as ProductsScreen } from "./stock/ProductsScreen";
+export { default as StockBuysScreen } from "./stock/StockBuysScreen";
+
+//-----Styles----
+export { default as styles } from "./stylesScreens";
+export { default as styleModal } from "./styleModal";

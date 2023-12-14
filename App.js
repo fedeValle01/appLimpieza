@@ -8,12 +8,11 @@ import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to impo
 import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
 AdminScreen, TaskScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
- TestScreen, TasksScreen, StockScreen, 
+ TestScreen, TasksScreen, StockScreen, ProductsScreen, StockBuysScreen
 } from "./src/screens";
 import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
-import ProductsScreen from "./src/screens/stock/ProductsScreen";
 
 
 const app = initializeApp(firebaseConfig);
@@ -91,7 +90,8 @@ export default function App() {
             component={AdminScreen}
           />
           <Stack.Screen name="Stock" component={StockScreen} />
-          <Stack.Screen name="Products" component={ProductsScreen} />
+          <Stack.Screen name="Lista de Productos" component={ProductsScreen} />
+          <Stack.Screen name="Compras" component={StockBuysScreen} />
           <Stack.Screen name="Sectors" component={Sectors} />
           <Stack.Screen name="AddSector" component={AddSector} />
           <Stack.Screen name="Tasks" component={TaskScreen} />

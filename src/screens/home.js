@@ -297,6 +297,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   const SectionComponent =  () =>{
 
+
     return(
   <View style={{ height: "55%"}}>
 
@@ -312,7 +313,7 @@ const HomeScreen = ({ navigation, route }) => {
 
   <View style={{ flexDirection: "row-reverse", marginTop:20, marginBottom: 10 }}>
     <BtnControlAll/>
-    <View style = {{marginLeft: 5}} />
+      <View style = {{marginLeft: 5}} />
     <BtnSelectAll/>
   </View>
 
@@ -329,7 +330,8 @@ const HomeScreen = ({ navigation, route }) => {
 
   </View>
 
-  )};
+  )
+};
 
     function LogoTitle() {
       return (

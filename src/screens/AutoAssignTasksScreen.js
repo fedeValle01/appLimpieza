@@ -47,6 +47,31 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     ]);
   }
 
+const deepCopy = (obj) => {
+  if (obj === null || typeof obj !== 'object') {
+    // If the object is a primitive or null, return it as is
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    // If the object is an array, create a new array and copy each element
+    const newArray = [];
+    for (let i = 0; i < obj.length; i++) {
+      newArray[i] = deepCopy(obj[i]);
+    }
+    return newArray;
+  }
+  // If the object is a non-array object, create a new object and copy each property
+  const newObj = {};
+  for (const key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      newObj[key] = deepCopy(obj[key]);
+    }
+  }
+
+  return newObj;
+  }
+
 
   const getListSectors = (nUsers) =>{
     let ListSectors = []
@@ -82,41 +107,6 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     return ListSectors
   }
 
-
-  const areSameSectors = (sectorsa, sectorsb) => { //compare 2 sectors and return true or false
-    
-    let sameSectors = true;
-    let sectors1 = []
-    if (typeof sectorsa === 'string'){
-      console.log('es un string');
-      sectors1.push(sectorsa)
-    }else{
-      sectors1 = sectorsa;
-    }
-    sectors1.sort()
-    sectorsb.sort()
-      if (sectors1.length !== sectorsb.length) {
-        console.log('son distinta longitud: '+ sectors1.length + ' != '+sectorsb.length);
-
-        sameSectors = false;
-      }else{
-        let find = false
-        for (let i = 0; i < sectors1.length; i++) {
-          find = false
-          if (sectors1[i] == sectorsb[i]) {
-            find = true
-          }else{
-            console.log('sectors1[i] == sectorsb[i]'+sectors1[i] +' != '+ sectorsb[i]);
-          }
-
-        }
-        if (!find){
-          sameSectors = false
-        }
-    }
-    return(sameSectors)
-  }
-
   const reAsignUserList = (copyUserList) => {
     console.log('reAsignUserList');
     const nUser = copyUserList.length
@@ -134,10 +124,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
         let findSector = false
         while (indexPriority < priorityListSectors.length) { //iterate priorityListSectors
           let sector = priorityListSectors[indexPriority]
-          console.log(' ');
-          console.log('compara sector: '+sector+' con userSector: '+sectorUser);
           if (areSameSectors(sector, sectorUser)){
-            console.log('este es igual');
             priorityListSectors.splice(indexPriority, 1)
             findSector = true
             reasign = false
@@ -180,14 +167,38 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     }
 
   }
-  
-  const logUserList = (userList) => {
-    userList.forEach(user => {
-      console.log('--------');
-      console.log('usuario: '+user.username);
-      console.log('tiene: '+user.sectors);
-    });
+
+  const areSameSectors = (sectorsa, sectorsb) => { //compare 2 sectors and return true or false
+    
+    let sameSectors = true;
+    let sectors1 = []
+    if (typeof sectorsa === 'string'){
+      sectors1.push(sectorsa)
+    }else{
+      sectors1 = sectorsa;
+    }
+    sectors1.sort()
+    sectorsb.sort()
+      if (sectors1.length !== sectorsb.length) {
+
+        sameSectors = false;
+      }else{
+        let find = false
+        for (let i = 0; i < sectors1.length; i++) {
+          find = false
+          if (sectors1[i] == sectorsb[i]) {
+            find = true
+          }
+
+        }
+        if (!find){
+          sameSectors = false
+        }
+    }
+    return(sameSectors)
   }
+
+  
 
   const sortUsers = (userList, userOrder) => {
     // Crear un objeto que mapee los objetos en userOrder por su uid
@@ -237,33 +248,64 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     handleUserOrder();
   }
 
+  const updateUserList = (i) => {
+    let nextUserListAux = userList.map(user => ({ ...user })); // copy the userList
+    let newUserList = userList.map(user => ({ ...user })); // copy the userList
+    let userClicked = newUserList[i]
+    let userUpp = nextUserListAux[i-1]
+    newUserList[i-1] = userClicked
+    newUserList[i] = userUpp
+    setUserList(newUserList)
+  }
+
   const orderUp = (i) => {
-    if (i!=0){
-      let nextUserListAux = userList.map(user => ({ ...user })); // copy the userList
-      let newUserList = userList.map(user => ({ ...user })); // copy the userList
+    if (i==0) return
+    updateUserList(i)
+    
+    
+    let rotUserListAux = deepCopy(nextUserList)
+    let rotUserList = deepCopy(nextUserList)
+    let rotUserClicked = rotUserListAux[i]
+    
+    let userUp = rotUserListAux[i-1]
+    let userUpUp = rotUserListAux[i-2]
+    rotUserList[i-1] = rotUserClicked
+    rotUserList[i] = userUp
+    if (i == 1){
+      console.log('i=1');
+      let firtUser = rotUserList[0]
+      let secondUser = rotUserList[i]
+      let thridUser = rotUserList[i+1]
+      let lastUser = rotUserList[rotUserList.length-1]
+      let firstSector = deepCopy(firtUser.sectors)
+      let secondSector = deepCopy(secondUser.sectors)
+      let thridSector = deepCopy(thridUser.sectors)
+      let lastSector = deepCopy(lastUser.sectors)
 
-      let userClicked = newUserList[i]
-      let userUp = nextUserListAux[i-1]
-      newUserList[i-1] = userClicked
-      newUserList[i] = userUp
-      setUserList(newUserList)
+      console.log(thridUser.sectors);
+      console.log(thridUser.username);
+
+      firtUser.sectors = lastSector
+      secondUser.sectors = firstSector
+      lastUser.sectors = secondSector
+
+      setNextUserList(rotUserList)
+    }else{//rotation in the midle
       
-      let nextUserList = newUserList.map(user => ({ ...user })); // copy the userList
-      let firtUser = newUserList[0]
-
-      for (let i = nextUserList.length-2; i >= 0 ; i--) { // sector rotation
-        console.log('i: '+i);
-        let currentUser = nextUserList[i]
-        let user = newUserList[i+1]
-        currentUser.sectors = user.sectors
-      }
-      let lastUser = nextUserList[nextUserList.length-1]
-      lastUser.sectors = firtUser.sectors
-      setNextUserList(nextUserList)
-
-
+      let userUUP = rotUserList[i-2]
+      let actualUser = rotUserListAux[i]
+      let actualSector = deepCopy(actualUser.sectors)
+      let downSector = deepCopy(userUp.sectors)
+      let upUpSector = deepCopy(userUpUp.sectors)
+      actualUser.sectors = upUpSector
+      userUp.sectors = actualSector
+      userUpUp.sectors = downSector
+      rotUserClicked.sector = upUpSector
+      userUp.sector = actualSector
+      userUUP.sectors = downSector
+      setNextUserList(rotUserList)
+    }
         
-      }
   }
 
   const hasSaveHistory = () => { //check if the last history is saved
@@ -433,18 +475,18 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
     });
   }
 
+ 
   useEffect(() => {
     console.log('entra useffect');
     //set users from params
     let colAssignedTasks = route.params.colAssignedTasks
-    setAssignedTasks(colAssignedTasks)
-    let reAsignedUserList = false
     let usersInHome = route.params.usersInHome
     let usersOutHome = route.params.usersOutHome
-    let users = route.params.users
+    setAssignedTasks(colAssignedTasks)
     setUsersInHome(usersInHome)
     setUsersOutHome(usersOutHome)
-    let userList = []
+    let reAsignedUserList = false
+    let userListOriginal = []
     let active_tasks = []
     colAssignedTasks.forEach(assigned_task => {
       if (assigned_task.active_tasks){
@@ -469,16 +511,41 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
           }
         });
         if (findUser){
-          userList.push(objUser) //userList have all users in home with active tasks,
+          userListOriginal.push(objUser) //userList have all users in home with active tasks,
           //is a collection of objets, objUser have strings username, uid and array sectors
         }
-        
       }
     });
-    console.log('n usu: '+users.length+' n: ususInHome: '+usersInHome.length+ ' nUserList: '+userList.length);
+
+    //console.log('n usu: '+users.length+' n: ususInHome: '+usersInHome.length+ ' nUserList: '+userList.length);
+
+    if (usersInHome.length > userListOriginal.length){
+      for (let i = 0; i < usersInHome.length; i++) { // find user in home withing tasks assigned
+        const userA = usersInHome[i];
+        const uidA = userA.uid;
+        let findUser = false
+        for (let j = 0; j < userListOriginal.length; j++) {
+          const userB = userListOriginal[j];
+          const uidB = userB.uid
+          if (uidA == uidB){
+            findUser = true
+            break
+          }
+        }
+        if (!findUser){
+          let objUser = {}
+          objUser.uid = userA.uid
+          objUser.username = userA.username
+          objUser.expoPushToken = userA.expoPushToken
+          objUser.sectors = ['No tiene sectores asignados']
+          userListOriginal.push(objUser)
+        }
+      }
+     
+    }
     setActiveTasks(active_tasks)
-    setUserList(userList)
-    
+    setUserList(userListOriginal)
+    let userList = userListOriginal.map(user => ({ ...user })); // copy the userList
 
     // -------- table config --------
     // the sectors assigned to users will rotate in a specific order
@@ -530,9 +597,14 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
             console.log('mismos usuarios');
             let sortedUserList = sortUsers(userList, userOrder);
             setUserList(sortedUserList)
-            userList = sortedUserList
+            console.log('GUARDA ESTO Y NO LO TOCA: ', sortedUserList);
+            userList = sortedUserList.map(user => ({ ...user })); // copy the userList
+            
+            reAsignUserList(userList) // reAsign by priorityListSectors
+
           }else{
             sortUsers(userList, userOrder)
+
             reAsignUserList(userList) // reAsign by priorityListSectors
           }
           setUserOrder(userOrder);
@@ -564,7 +636,6 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
 
 
       if(reAsignedUserList){
-        console.log('ESTO ES REASIGNUSER');
         nextUserList = reAsignedUserList.map(user => ({ ...user })); // copy the userList
         let firtUser = reAsignedUserList[0]
         for (let i = nextUserList.length-2; i >= 0 ; i--) { //sector rotation
@@ -589,6 +660,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
         setNextUserList(nextUserList)
       }
     }
+    
     handleUserOrder();
 
   }, []);
@@ -617,7 +689,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
 );
   // Return AutoAssignTaskScreen
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, {backgroundColor:"#fff"}]}>
       <View
         style={{
           flex: 1,
@@ -628,7 +700,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
         <ScrollView>
           <View style={{marginTop: 15}}/>
 
-          <Text style={{fontSize: 20}}>Actualmente</Text>
+          <Text style={styles.titleRotation}>Sectores asignados actualmente</Text>
 
               {
                 userList.map(user => {
@@ -638,9 +710,9 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
                     let formattedSectors = sectors.join(", ");
                     return (
                       <>
-                        <View style={{ marginTop: 5, flexDirection: "row", justifyContent: "space-between" }}>
-                          <Text key={user.uid} style={{ fontSize: 16 }}>
-                            {username} tiene sectores en :  {formattedSectors} 
+                        <View style={styles.viewRotation}>
+                          <Text key={user.uid} style={{ fontSize: 16, marginLeft: 10 }}>
+                            {username}   -   {formattedSectors} 
                           </Text>
                         </View>
                       </>
@@ -654,9 +726,9 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
                 {usersOutHome && <UsersOutHomeComp />}
             </View>
 
-            <View style={{marginTop: 30}}>
+            <View style={{marginTop: 40}}>
 
-              <Text style={{fontSize: 20}}>Los sectores rotaran a</Text>
+              <Text style={styles.titleRotation}>Los sectores rotaran a</Text>
 
               {
                   nextUserList.map((user, i) => {
@@ -668,9 +740,9 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
                       console.log(formattedSectors);
                       return (
                         <>
-                          <View style={{ marginTop: 5, flexDirection: "row", justifyContent: "space-between" }}>
-                            <View>
-                              <Text key={user.uid} style={{ fontSize: 16 }}>
+                          <View style={styles.viewRotation}>
+                            <View >
+                              <Text key={user.uid} style={{ fontSize: 16, marginLeft: 10 }}>
                                 {username}  -   {formattedSectors} 
                               </Text>
                             </View>

@@ -1,5 +1,5 @@
 import { View, ScrollView, Alert, StyleSheet, Text, Pressable, Modal, Image, TouchableOpacity } from 'react-native'
-import styles from './stylesScreens'
+import { styles, styleModal } from '.'
 import stylesStock from './stock/stylesStock'
 import { BlurView } from 'expo-blur'
 
@@ -12,6 +12,7 @@ import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/
 import * as ImagePicker from 'expo-image-picker'
 import { TextInput } from 'react-native-paper'
 
+import { getProducts } from './stock/getProducts'
 function copyOfScriptStock() {
 
   const productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
@@ -43,57 +44,7 @@ function copyOfScriptStock() {
     console.log(productos[i] + ': ' + ((litro / diasGasto) * 120).toFixed(4) + ' L')
   })
 }
-const styleModal = StyleSheet.create({
-  centeredView: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 22,
-  },
-  titleDate: {
-    fontSize: 30,
-    color: "#efe",
-    marginBottom: 20,
-    textDecorationLine: "underline",
-    textDecorationColor: "0f0",
-  },
-  modalView: {
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  button: {
-    borderRadius: 10,
-    padding: 10,
-    elevation: 2,
-  },
-  buttonOpen: {
-    backgroundColor: '#2196F3',
-  },
-  buttonControlStock: {
-    backgroundColor: '#E4952B',
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-    paddingLeft: 30,
-    paddingRight: 30
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-  },
-})
+
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
@@ -105,6 +56,7 @@ export default function StockScreen({ navigation, route }) {
   const [modalVisible, setModalVisible] = useState(false)
   const [modalControlVisible, setModalControlVisible] = useState(false)
   const [modalStockVisible, setModalStockVisible] = useState(false)
+  const [modalRegisterPurchase, setModalRegisterPurchase] = useState(false)
 
   const [uriLastReceip, setUriLastReceip] = useState('')
   const [products, setProducts] = useState([])
@@ -144,14 +96,7 @@ export default function StockScreen({ navigation, route }) {
     }
   }
 
-  const wait = async () => {
-    console.log('entra timeus');
-    setTimeout(()=> {
-      setModalStockVisible(true)
-    },5000)
-
-
-  }
+  
   const LastReceiptImg = memo(() => {
 
     if (uriLastReceip) {
@@ -236,36 +181,18 @@ export default function StockScreen({ navigation, route }) {
   }
 
 
-  async function getProducts() {
-    if (products.length < 0) return
-    const collectionRef = collection(db, 'products')
-    const q = query(collectionRef)
-
-    const querySnapshot = await getDocs(q)
-    const listProducts = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      productName: doc.data().product_name,
-      measurementUnit: doc.data().measurement_unit,
-      price: doc.data().price,
-    }))
-    if (listProducts) {
-      setStockProducts(listProducts)
-      setProducts(listProducts)
-      console.log(listProducts)
-    }
-  }
-
 
   const handleCreateStock = async () => {
 
     let isQuantityEmpty = false
     stockProducts.forEach(product => {
       const quantity = product.quantity
-      if (!quantity) {
+
+      if(quantity==0){
+
+      }else if (!quantity) {
         isQuantityEmpty = true
         return
-      } else {
-
       }
     })
 
@@ -294,11 +221,20 @@ export default function StockScreen({ navigation, route }) {
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <Pressable
             onPress={() =>
-              navigation.navigate('Products', { uid: route.params.uid, canControl: route.params.canControl })
+              navigation.navigate('Lista de Productos', { uid: route.params.uid, canControl: route.params.canControl })
             }
           >
             <View style={{ alignContent: 'center' }}>
               <Text style={styles.navItem}>Lista de productos</Text>
+            </View>
+          </Pressable>
+          <Pressable
+            onPress={() =>
+              navigation.navigate('Compras', { uid: route.params.uid, canControl: route.params.canControl })
+            }
+          >
+            <View style={{ alignContent: 'center' }}>
+              <Text style={styles.navItem}>Compras</Text>
             </View>
           </Pressable>
         </View>
@@ -476,8 +412,7 @@ export default function StockScreen({ navigation, route }) {
 
     return (
 
-      <View style={{ marginTop: 50, marginBottom: 50 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <>
           {(timestamp) && (
             <TitleDate date = {timestamp} />
           )}
@@ -485,6 +420,19 @@ export default function StockScreen({ navigation, route }) {
           {(list.map((product, i) => {
             return <Item product={product} typeList={typeList} i={i} key={i} />
           }))}
+      </>
+
+    )
+  }
+
+  const SectionDoControl = ({typeList}) => {
+
+    return (
+      <BlurView tint="dark" intensity={60} style={[styleModal.centeredView]}>
+        <View style={styleModal.modalView}>
+        <View style={{ marginTop: 50, marginBottom: 50 }}>
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ProductsList typeList={typeList} />
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 30, marginBottom: 50 }}>
             <TouchableOpacity
@@ -502,19 +450,8 @@ export default function StockScreen({ navigation, route }) {
               <Text style={stylesStock.textStyle}>Cancelar</Text>
             </TouchableOpacity>
           </View>
-        </ScrollView>
-      </View>
-
-
-    )
-  }
-
-  const SectionDoControl = ({typeList}) => {
-
-    return (
-      <BlurView tint="dark" intensity={60} style={[styleModal.centeredView]}>
-        <View style={styleModal.modalView}>
-          <ProductsList typeList={typeList} />
+          </ScrollView>
+          </View>
         </View>
       </BlurView>
     )
@@ -523,14 +460,17 @@ export default function StockScreen({ navigation, route }) {
 
   //return StockScreen
   return (
-    <View style={[styles.container, { backgroundColor: '' }]}>
+    <View style={[styles.container]}>
       <ScrollView>
         <View style={{ marginTop: 20 }}>
-          <Text style={{ color: '#3e3944', fontSize: 35, fontWeight: '40' }}>
+          <Text style={{ color: '#3e3944', fontSize: 35, fontWeight: '40', textAlign: 'center' }}>
             Control de Stock
           </Text>
         </View>
 
+
+
+          {/* MODALS */}
         <Modal
           animationType="fade"
           transparent={true}
@@ -561,7 +501,29 @@ export default function StockScreen({ navigation, route }) {
           <SectionDoControl typeList={'products'}/>
         </Modal>
 
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalStockVisible}
+          onRequestClose={() => {
+            setModalStockVisible(false)
+          }}>
+          <SectionDoControl typeList={'lastStock'} />
+        </Modal>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalRegisterPurchase}
+          onRequestClose={() => {
+            setModalRegisterPurchase(false)
+          }}>
+          <SectionDoControl typeList={'products'} />
+        </Modal>
+          {/* MODALS */}
 
+
+
+        
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 30 }}>
           <Pressable
             style={[styleModal.button, styleModal.buttonOpen]}
@@ -578,10 +540,20 @@ export default function StockScreen({ navigation, route }) {
           <Pressable
             style={[styleModal.button, styleModal.buttonControlStock]}
             onPress={() => {
-              getProducts()
-              setModalControlVisible(true)
+              getProducts().then((products) => {
+                setStockProducts(products)
+                setProducts(products)
+                setModalControlVisible(true)
+              })
             }}>
             <Text style={styleModal.textStyle}>Realizar control de stock</Text>
+          </Pressable>
+          <Pressable
+            style={[styleModal.button, styleModal.buttonControlStock]}
+            onPress={() => {
+              setModalRegisterPurchase(true)
+            }}>
+            <Text style={styleModal.textStyle}>Registrar compra</Text>
           </Pressable>
         </View>
 
@@ -597,17 +569,9 @@ export default function StockScreen({ navigation, route }) {
           <Text style={styleModal.textStyle}>Stock Actual</Text>
         </Pressable>
 
-        <Modal
-          animationType="fade"
-          transparent={true}
-          visible={modalStockVisible}
-          onRequestClose={() => {
-            setModalStockVisible(false)
-          }}>
-          <SectionDoControl typeList={'lastStock'} />
-        </Modal>
+        
 
-
+        <View style={{}} />
         <Text style={styles.subtitleSection}>Estimación de gasto</Text>
 
 

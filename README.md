@@ -2,10 +2,6 @@
 
 (Sujeto a modificacion)
 
-<h1>Sitio Web: https://xstranged1.github.io/xstranged/#appLimpieza</h1>
-<br>
-
-
 <h3>----------------- Requerimientos funcionales -----------------------</h3>
 
 La aplicacion debera poder:
@@ -14,13 +10,9 @@ La aplicacion debera poder:
 2. CRUD Sectores.
 3. CRUD Tareas.
 4. CRUD Tareas asignadas.
-5. Marcar tareas completadas y controladas.
-6. Guardar historial de cada usuario.
-7. Ver historial de cada usuario.
-8. Iniciar sesion con con E-mail, constraseña / auth google.
-9. Notificar al usuario cuando se le asigna tareas.
-10. Asignar automaticamente con orden de rotacion.
-11. Asignar tareas aleatoriamente y equitativamente.
+5. Iniciar sesion con con E-mail, constraseña / auth google.
+6. Notificar al usuario las tareas que debe realizar en el ultimo dia del plazo.
+7. Asignar automaticamente tareas sin injusticias ni errores
 
 
 
@@ -28,12 +20,14 @@ La aplicacion debera poder:
 
 La aplicacion tiene que ser
 1. Intuitiva y clara.
-2. Segura.
-3. Compatible con cualquier dispositivo android (6.0 en adelante).
-4. Disponible con conexion a internet.
+2. Util para la administración, control y visualizacion de las tareas
+3. Relativamente rapida.
+4. Posible de ejecutar en cualquier dispositivo android (6.0 en adelante)
+5. Disponible con conexion a internet.
 
 
-<h3>Screenshoots viejas (actualizadas en el sitio web): </h3>
+
+<h3>Screenshoots:</h3>
 
 ![Screen1-min](https://user-images.githubusercontent.com/118495317/231611625-c4bc3ace-58f3-4cf2-8410-c4f5a5f1feeb.jpeg)
 ![Screen2-min](https://user-images.githubusercontent.com/118495317/231611627-f9640159-a772-43ef-9d52-2e237c745f23.jpeg)

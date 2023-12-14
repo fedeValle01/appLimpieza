@@ -16,6 +16,9 @@
       "eas": {
         "projectId": "3c9a76c3-ce7b-4117-bfc8-5477534c06a6"
       }
+    },
+    "ios": {
+      "bundleIdentifier": "com.myreactapp"
     }
   },
   "name": "my-react-app"
