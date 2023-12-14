@@ -124,12 +124,13 @@ export default function AdminScreen({ navigation, route }) {
 
   const GoToStockScreen = () => {
     navigation.navigate("Stock", {
+      uid: route.params.uid,
+      uidTask: route.params.uidTask,
       user: user,
       users: users,
       usersInHome: usersInHome,
       usersOutHome: usersOutHome,
-      colAssignedTasks: colAssignedTasks,
-      sectors: sectors,
+      canControl: route.params.canControl
     });
   }
 

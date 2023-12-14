@@ -110,26 +110,26 @@ export default function AddTasks ({navigate, route}){
               value={task_name}
             />
             <Dropdown
-                        style={styles.dropdown}
-                        containerStyle={styles.shadow}
-                        data={items}
-                        search
-                        searchPlaceholder="Buscar sector"
-                        labelField="label"
-                        valueField="value"
-                        label="Dropdown"
-                        placeholder="Sector"
-                        value = {value}
-                        onChange = {item => {                                                                                                                                                                                                                                                                         setDropdown(item.value);
-                            console.log('selected', item.value);
-                            setSectorSelected(item.value)
-                        }}
-                        renderLeftIcon={() => (
-                            <Image style={styles.icon}  />
-                        )}
-                        renderItem={item => _renderItem(item)}
-                        textError="Error"
-                    />
+              style={styles.dropdown}
+              containerStyle={styles.shadow}
+              data={items}
+              search
+              searchPlaceholder="Buscar sector"
+              labelField="label"
+              valueField="value"
+              label="Dropdown"
+              placeholder="Sector"
+              value = {value}
+              onChange = {item => {                                                                                                                                                                                                                                                                         setDropdown(item.value);
+                  console.log('selected', item.value);
+                  setSectorSelected(item.value)
+              }}
+              renderLeftIcon={() => (
+                  <Image style={styles.icon}  />
+              )}
+              renderItem={item => _renderItem(item)}
+              textError="Error"
+          />
             <View style={{marginTop: 20}}>
               <Text style = {{textAlign: 'center'}} >Descripción</Text>
               <TextInput
@@ -158,7 +158,7 @@ export default function AddTasks ({navigate, route}){
 }
 const txtInput = StyleSheet.create({
   input: {
-    height: 40,
+    height: 30,
     margin: 12,
     borderWidth: 1,
     padding: 10,
@@ -175,23 +175,5 @@ const txtInputMultiline = StyleSheet.create({
       width: 200,
       alignContent: 'flex-start',
       textAlignVertical: 'top'
-    },
-  });
-
-
-  const stylesButton = StyleSheet.create({
-      
-    title: {
-      textAlign: 'center',
-      marginVertical: 8,
-    },
-    fixToText: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-    },
-    separator: {
-      marginVertical: 8,
-      borderBottomColor: '#737373',
-      borderBottomWidth: StyleSheet.hairlineWidth,
     },
   });

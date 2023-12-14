@@ -37,7 +37,7 @@ export default function TasksScreen({ navigate, route }) {
 
   const [checked, setChecked] = useState("unchecked");
 
-  const EditImg = memo(() => (
+  const DeleteImg = memo(() => (
     <Image
           style={{ width: 25, height: 25 }}
           source={require("../assets/tachoBasura.png")}
@@ -304,7 +304,7 @@ export default function TasksScreen({ navigate, route }) {
         </View>
         <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
           <TouchableOpacity onPress={() => areYouSureDeleteTask(item)}>
-            <EditImg />
+            <DeleteImg />
           </TouchableOpacity>
           <View style={{marginRight: 5}} />
         </View>

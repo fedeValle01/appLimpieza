@@ -692,6 +692,8 @@ const HomeScreen = ({ navigation, route }) => {
                 if (canControl || cControl) {
                   navigation.navigate("Admin", {
                     uid: route.params.uid,
+                    uidTask: route.params.uidTask,
+                    canControl: canControl
                   });
                 }else{
                   Alert.alert('Lo siento', 'No tienes permiso para administrar app',  [ {text: 'ok 😢'} ]);
@@ -906,10 +908,7 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity onPress={irACrearSector}>
             <Text>Ir a Crear Sector</Text>
           </TouchableOpacity>
-
-          {/* <TouchableOpacity onPress={logActiveTasks}>
-              <Text>Ver tareas activas</Text>
-            </TouchableOpacity> */}
+           */}
           
           <View
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 5 }}

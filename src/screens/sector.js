@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore'
-import firebaseConfig from '../firebase-config';
-import styles from '../screens/stylesScreens';
+import firebaseConfig from '../firebase-config' 
+import styles from '../screens/stylesScreens'
 
 export default function Sector({navigation, route})  {
     const app = initializeApp(firebaseConfig);

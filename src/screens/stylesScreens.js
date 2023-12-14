@@ -41,6 +41,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#252850",
     margin: 3,
   },
+  input: {
+    height: 20,
+    borderWidth: 1,
+    border: '#aaa',
+    padding: 5,
+    width: 100
+    },
   btnRight: {
     flexDirection: 'row-reverse',
     justifyContent: 'space-between',
@@ -73,6 +80,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flex: 1,
   },
+  viewSeccionColors: {
+    borderWidth: 2,
+    borderRadius: 5,
+    borderColor: "#00fff6",
+    marginBottom: 5,
+    backgroundColor: "#fff",
+  },
   viewSeccion: {
     position: "relative",
     marginTop: 3,
@@ -96,7 +110,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     height: 44,
   },
-
+  navItem: {
+    fontSize: 20
+  },
   check: {
     paddingHorizontal: 4,
     flexDirection: "row",

@@ -5,7 +5,6 @@ const firebaseConfig = {
         storageBucket: "applimpieza-1e5d0.appspot.com",
         messagingSenderId: "667447022124",
         appId: "1:667447022124:web:6c9d8868afa5c86b01b789",
-        measurementId: "G-GVFZGZLQB4",
-        storageBucket: "gs://applimpieza-1e5d0.appspot.com"
+        measurementId: "G-GVFZGZLQB4"
     }
 export default firebaseConfig;
