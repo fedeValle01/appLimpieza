@@ -3,8 +3,7 @@ import { StyleSheet, Text, Image, SafeAreaView, TextInput, TouchableOpacity, Vie
 import { NavigationContainer, useNavigation } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { initializeApp } from "firebase/app";
-import { getFirestore } from "firebase/firestore";
-import { doc, setDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
 AdminScreen, TaskScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,

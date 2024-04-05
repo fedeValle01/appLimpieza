@@ -14,25 +14,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 
-const DATA = [
-  {
-    title: 'Main dishes',
-    data: ['Pizza', 'Burger', 'Risotto'],
-  },
-  {
-    title: 'Sides',
-    data: ['French Fries', 'Onion Rings', 'Fried Shrimps'],
-  },
-  {
-    title: 'Drinks',
-    data: ['Water', 'Coke', 'Beer'],
-  },
-  {
-    title: 'Desserts',
-    data: ['Cheese Cake', 'Ice Cream'],
-  },
-];
-
 export default function HistorialScreen({ navigation, route }) {
   const [history, setHistory] = useState([]);
   const [haveHistory, setHaveHistory] = useState(false);

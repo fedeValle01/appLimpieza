@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Text, SafeAreaView, TouchableOpacity, Alert, View} from "react-native";
-import { doc, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, deleteField, updateDoc, addDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, writeBatch, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, deleteField, updateDoc, addDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
+
+// Get a new write batch
 
 console.log("Refresh AutoAssignTaskScreen");
 
@@ -13,13 +15,14 @@ export default function AdminScreen({ navigation, route }) {
   const auth = getAuth(app);
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const batch = writeBatch(db);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);
   const [users, setUsers] = useState([]);
   const [usersInHome, setUsersInHome] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
   const [colAssignedTasks, setColAssignedTasks] = useState([]);
-
+  
   const AreYouSaveAssignedTasks = () => {
     return Alert.alert("Va a guardar en el historial todas las tareas asignadas actualmente", "Esta seguro?", [
       {
@@ -224,15 +227,20 @@ export default function AdminScreen({ navigation, route }) {
     });
   };
 
-  
+  const commitBatchDelete = async () => {
+    await batch.commit().then(() => {
+      Alert.alert('Historial borrado con exito!')
+    })
+  }
+
   const deleteAllHistory = () => {
-    colAssignedTasks.forEach(async (element) => {
+    colAssignedTasks.forEach((element) => {
       let ref = doc(db, "assigned_tasks", element.uid);
 
-      await updateDoc(ref, {
-        history: deleteField(),
-      });
+      batch.delete(ref);
+
     });
+    commitBatchDelete();
   }
 
   const deleteAllAssignedTasks = () => {
@@ -257,8 +265,24 @@ export default function AdminScreen({ navigation, route }) {
     let cont = 0;
     let setHistory = [];
     let objHistory = {};
-    colAssignedTasks.forEach(async (element) => {
+
+
+    
+    
+    const commitBatch = async () => {
+      await batch.commit().then(() => {
+        Alert.alert('Historial guardado con exito!')
+      })
+    }
+
+
+
+
+
+    colAssignedTasks.forEach((element) => {
+        
       console.log("foreach vuelta: " + cont);
+      console.log("col: ",element);
       cont++;
 
       objHistory.timestamp = element.timestamp;
@@ -271,7 +295,8 @@ export default function AdminScreen({ navigation, route }) {
         );
       }
       //If the current assigned task has the same timestamp as one from the history, do nothing.
-      if (!hasEven) {
+      if (!hasEven && element.active_tasks) {
+        
         objHistory.data = element.active_tasks;
         objHistory.control_marked_tasks = element.control_marked_tasks;
         objHistory.marked_tasks = element.marked_tasks;
@@ -280,13 +305,17 @@ export default function AdminScreen({ navigation, route }) {
         setHistory.push(objHistory);
         let history = setHistory;
 
-        await updateDoc(doc(db, "assigned_tasks", element.uid), {
-          history,
-        }).catch((error) => {
-          alert(error);
-        });
+          
+        batch.update(doc(db, "assigned_tasks", element.uid), { history });
+
+
+
+
       }
     });
+    commitBatch();
+    
+
   };
 
   useEffect(() => {
