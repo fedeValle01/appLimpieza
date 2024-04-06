@@ -4,7 +4,7 @@ import { doc, setDoc, getFirestore, collection, onSnapshot, query, where, server
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { Checkbox } from "react-native-paper";
-
+import LoadingGif from '../components/Loading'
 import Separator from '../components/Separator'
 import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
@@ -15,6 +15,7 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
   const auth = getAuth(app);
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const [loading, setLoading] = useState(true)
   const [usersInHome, setUsersInHome] = useState([]);
   const [assigned_tasks, setAssignedTasks] = useState([]);
   const [active_tasks, setActiveTasks] = useState([]);
@@ -25,6 +26,19 @@ export default function AutoAssignTaskScreen({ navigation, route }) {
   const [checkNotifyAllUsers, setCheckNotifyAllUsers] = useState('checked');
 
 
+
+
+  const AreYouSurePass = () => {
+    return Alert.alert("Asignar tareas a los usuarios en casa reasignando los sectores segun su historial. Se le asignara a cada usuario el sector le toco menos veces en promedio", "Esta seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+      { text: "OK", onPress: nextWeekByHistory },
+    ]);
+  }
+  
   const AreYouSureAssign = () => {
     return Alert.alert("Asignar tareas a todos los usuarios en casa rotando los sectores", "Esta seguro?", [
       {
@@ -73,7 +87,7 @@ const deepCopy = (obj) => {
   }
 
 
-  const getListSectors = (nUsers) =>{
+  const getListSectors = (nUsers) => { //PRIORIDAD DE LOS SECTORES
     let ListSectors = []
     switch (nUsers) {
       case 11:
@@ -231,12 +245,19 @@ const deepCopy = (obj) => {
     nameAndUid.username = user.username
     return nameAndUid
   }
+
   async function handleUserOrder(){
     if (!userList){
       Alert.alert('No hay usuarios cargados')
       return
     }else{
-      const namesAndUid = userList.map(toNamesAndUid)
+      let namesAndUid = []
+      userList.forEach(user => {
+        let nameAndUid = {}
+        nameAndUid.uid = user.uid
+        nameAndUid.username = user.username
+        namesAndUid.push(nameAndUid)
+      });
       await setDoc(doc(db, "config", "user_order"), {
         user_order: namesAndUid
       });
@@ -364,7 +385,27 @@ const deepCopy = (obj) => {
       }
       });
   }
+  
+  const nextWeekByHistory = async ()  => {
+  
+    let collectionRef = collection(db, "assigned_tasks");
+    let q = query (collectionRef, where("history", "!=", null));
 
+    let unsuscribe = onSnapshot(q, (querySnapshot) => {
+      getRecords = querySnapshot.docs.map((doc) => ({
+        history: doc.data().history,
+      }));
+      
+      getRecords.forEach((history, i) => {
+        tasks[i] = task.task_name;
+      });
+      
+
+    });
+    
+    return unsuscribe
+
+  }
 
   const nextWeek = () => {
 
@@ -478,7 +519,21 @@ const deepCopy = (obj) => {
  
   useEffect(() => {
     console.log('entra useffect');
-    //set users from params
+    
+
+    // -------- table config --------
+    // the sectors assigned to users will rotate in a specific order
+    async function handleUserOrder(){
+
+
+
+
+
+
+
+
+
+      //set users from params
     let colAssignedTasks = route.params.colAssignedTasks
     let usersInHome = route.params.usersInHome
     let usersOutHome = route.params.usersOutHome
@@ -543,13 +598,17 @@ const deepCopy = (obj) => {
       }
      
     }
-    setActiveTasks(active_tasks)
-    setUserList(userListOriginal)
     let userList = userListOriginal.map(user => ({ ...user })); // copy the userList
 
-    // -------- table config --------
-    // the sectors assigned to users will rotate in a specific order
-    async function handleUserOrder(){
+
+
+
+
+
+
+
+
+
       const usersOrder = doc(db, "config", "user_order");
       const docSnap = await getDoc(usersOrder);
       if (docSnap.exists()) {
@@ -604,13 +663,14 @@ const deepCopy = (obj) => {
 
           }else{
             sortUsers(userList, userOrder)
-
             reAsignUserList(userList) // reAsign by priorityListSectors
           }
-          setUserOrder(userOrder);
+          setUserOrder(userOrder)
         }else{
           console.log('orderUser.lenght != userList.lenght');
-          sortUsers(userList, userOrder)
+          let sortedUsers = sortUsers(userList, userOrder)
+          setUserList(sortedUsers)
+
           let copyUserList = userList.map(user => ({ ...user })); // copy the userList
           reAsignUserList(copyUserList) // reAsign by priorityListSectors
           reAsignedUserList = copyUserList
@@ -659,6 +719,7 @@ const deepCopy = (obj) => {
         lastUser.sectors = firtUser.sectors
         setNextUserList(nextUserList)
       }
+      setLoading(false)
     }
     
     handleUserOrder();
@@ -667,7 +728,7 @@ const deepCopy = (obj) => {
 
 
   const UsersOutHomeComp = () =>{
-    let formattedUsers = usersOutHome.map((user) => user.username)
+    let formattedUsers = usersOutHome.map((user, i) => user.username)
     formattedUsers = formattedUsers.join(", ");
     let msj = "";
     if(usersOutHome.length == 0){
@@ -701,7 +762,11 @@ const deepCopy = (obj) => {
           <View style={{marginTop: 15}}/>
 
           <Text style={styles.titleRotation}>Sectores asignados actualmente</Text>
-
+              {loading && (
+                <View style={styles.center}>
+                  <LoadingGif />
+                </View>
+              )}
               {
                 userList.map(user => {
                   let username = user.username
@@ -777,6 +842,9 @@ const deepCopy = (obj) => {
                 <Text style={{fontSize: 15}}>Guardar orden de rotación</Text>
               </View>
             </TouchableOpacity>
+            <TouchableOpacity onPress={AreYouSurePass} style={styles.btnUsuario}>
+                <Text style={styles.txtUser}>Pasar de semana por estadística</Text>
+              </TouchableOpacity>
           </View>
 
           <View style={{marginTop: 40}}/>

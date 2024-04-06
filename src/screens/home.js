@@ -295,7 +295,7 @@ const HomeScreen = ({ navigation, route }) => {
     ))
 
 
-  const SectionComponent =  () =>{
+  const SectionComponent =  () => {
 
 
     return(
@@ -492,6 +492,7 @@ const HomeScreen = ({ navigation, route }) => {
       let unsuscribe;
       setAllDescTasks([]);
       let u;
+      let canControl2 = false;
       let collectionRef = collection(db, "user");
       q = query(collectionRef, where("uid", "==", route.params.uid));
       unsuscribe = onSnapshot(q, (querySnapshot) => {
@@ -504,6 +505,7 @@ const HomeScreen = ({ navigation, route }) => {
           console.log("u: " + element.name); //username active session
           setUser(element.name);
           setCanControl(element.canControl);
+          canControl2 = element.canControl
           cControl = element.canControl
           console.log('control: ', element.canControl);
         });
@@ -637,7 +639,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: canControl })
+                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2) })
               }
             >
               <View style={{ alignContent: "center" }}>
