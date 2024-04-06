@@ -885,6 +885,7 @@ const HomeScreen = ({ navigation, route }) => {
         >
           <ScrollView
             contentContainerStyle={styles.scrollViewHome}
+            scrollEnabled={false}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
             }>
