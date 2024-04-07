@@ -12,7 +12,6 @@ export default function TaskScreen({ navigation, route }) {
   const [users, setUsers] = useState([]); //all the users
   const [usersInHome, setUsersInHome] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
-  const [sectors, setSectors] = useState([]); //all sectors
   
   
   const changeOnHome = async (uid, inHome) =>{

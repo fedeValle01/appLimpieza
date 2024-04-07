@@ -15,6 +15,9 @@ const db = getFirestore(app);
 
 
 export default function HistorialScreen({ navigation, route }) {
+
+  const [loading, setLoading] = useState(true);
+
   const [history, setHistory] = useState([]);
   const [haveHistory, setHaveHistory] = useState(false);
   const [taskUser, setTaskUser] = useState(null);
@@ -41,9 +44,13 @@ export default function HistorialScreen({ navigation, route }) {
           if (element.history){
             setHistory(element.history.reverse());
             setHaveHistory(true);
+          }else{
+            setLoading(false)
           }
         });
       }
+      setLoading(false)
+
     });
   }, []);
 
@@ -204,7 +211,7 @@ const HistorySubtitle = () => {
       {taskUser && (<HistorySubtitle/>)}
           <View style={{ height: "60%", flex: 1, marginTop: 12}}>
             <ScrollView>
-              {!haveHistory && <LoadingGif/>}
+              {loading && <LoadingGif/>}
               <Section3 />
             </ScrollView>
           </View>

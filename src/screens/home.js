@@ -560,7 +560,7 @@ const HomeScreen = ({ navigation, route }) => {
             setControlCheckList(controlMarkedTasks);
           }
         });
-        if (activeTasks) {
+        if (activeTasks.length > 0) {
           setHasAssignedTasks(true)
           setActiveTasks(activeTasks);
           
@@ -720,7 +720,7 @@ const HomeScreen = ({ navigation, route }) => {
         headerLeft: () => <View></View>,
       });
       //-----------NAVBAR------------------
-      
+
     },
     [refresh, route.params.uidTask],
   );
@@ -885,6 +885,7 @@ const HomeScreen = ({ navigation, route }) => {
         >
           <ScrollView
             contentContainerStyle={styles.scrollViewHome}
+            scrollEnabled={false}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
             }>

@@ -6,14 +6,14 @@ import { initializeApp } from "firebase/app";
 import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
-AdminScreen, TaskScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
+AdminScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
  TestScreen, TasksScreen, StockScreen, ProductsScreen, StockBuysScreen
 } from "./src/screens";
 import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 
-
+console.log(process.env.EXPO_PUBLIC_API_KEY);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const Stack = createNativeStackNavigator();
@@ -29,6 +29,7 @@ function LogoTitle() {
 }
 
 export default function App() {
+  console.log(process.env.EXPO_PUBLIC_API_KEY);
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);
@@ -93,7 +94,6 @@ export default function App() {
           <Stack.Screen name="Compras" component={StockBuysScreen} />
           <Stack.Screen name="Sectors" component={Sectors} />
           <Stack.Screen name="AddSector" component={AddSector} />
-          <Stack.Screen name="Tasks" component={TaskScreen} />
           <Stack.Screen name="TestScreen" component={TestScreen} />
           <Stack.Screen name="Tareas" component={TasksScreen} />
 

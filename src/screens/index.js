@@ -12,7 +12,6 @@ export { default as UserScreen } from "./UserScreen";
 export { default as AdminScreen } from "./AdminScreen";
 export { default as HistorialScreen } from "./HistorialScreen";
 export { default as TestScreen } from "./TestScreen";
-export { default as TaskScreen } from "./TaskScreen";
 export { default as TasksScreen } from "./TasksScreen";
 export { default as StockScreen } from "./StockScreen";
 export { default as ProductsScreen } from "./stock/ProductsScreen";

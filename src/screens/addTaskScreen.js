@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, Image, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, Image, TouchableOpacity, Button, Pressable } from 'react-native';
 import { initializeApp } from 'firebase/app'
-import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc } from 'firebase/firestore'
+import { getFirestore, collection, query, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, addDoc } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as Notifications from 'expo-notifications';
 import { Dropdown } from 'react-native-element-dropdown';
+import { Checkbox } from "react-native-paper";
 
 
 export default function AddTasks ({navigate, route}){
@@ -14,7 +15,7 @@ export default function AddTasks ({navigate, route}){
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const [open, setOpen] = useState(false);
+    const [checked, setChecked] = useState('checked');
     const [value, setValue] = useState(null);
     const [items, setItems] = useState([]);
     const [task_description, setTask_description] = useState(null);
@@ -22,7 +23,7 @@ export default function AddTasks ({navigate, route}){
     const [task_frec, setTask_frec] = useState(1);
     const [dropdown, setDropdown] = useState(null);
     const [sectorSelected, setSectorSelected] = useState(null);
-
+    const msgCheck = 'Activado por defecto (La tarea estara seleccionada por defecto cuando se asigne un sector a un usuario)'
     
 
       //Add element to objet
@@ -44,11 +45,13 @@ export default function AddTasks ({navigate, route}){
         Alert.alert('Falta seleccionar sector');
       }
       else{
-        await setDoc(doc(db, 'tasks', task_name), {
+        let defaultAssigned = (checked == 'checked') ? true : false
+        await addDoc(collection(db, 'tasks'), {
         task_name: task_name,
         task_description: task_description,
         task_sector: sectorSelected,
         task_frec: task_frec,
+        default_assigned: defaultAssigned
       }).then(Alert.alert('Tarea Creada'));
      }  
     }
@@ -64,18 +67,6 @@ export default function AddTasks ({navigate, route}){
     useEffect(() =>{
         const collectionRef = collection(db, 'sectors');
         const q = query(collectionRef, orderBy('sector_name', 'desc'))
-    
-
-        // Notifications.scheduleNotificationAsync({
-        //   content: {
-        //     title: "TasksAdd!",
-        //     body: 'Limpia gato!',
-        //   },
-        //   trigger: {
-        //     seconds: 10,
-        //   },
-        // });
-        
         const unsuscribe = onSnapshot(q, querySnapshot =>{
           let sectors = [];
 
@@ -120,7 +111,8 @@ export default function AddTasks ({navigate, route}){
               label="Dropdown"
               placeholder="Sector"
               value = {value}
-              onChange = {item => {                                                                                                                                                                                                                                                                         setDropdown(item.value);
+              onChange = {item => {
+                  setDropdown(item.value);
                   console.log('selected', item.value);
                   setSectorSelected(item.value)
               }}
@@ -143,8 +135,13 @@ export default function AddTasks ({navigate, route}){
                   maxLength={200}
                 />
             </View>
-
-          
+                <Pressable style={[styles.center, {marginTop: 5}]} onPress={() => {(checked == 'checked') ? setChecked('unchecked') : setChecked('checked')}}>
+                  <Text style = {{textAlign: 'center', maxWidth:200, fontSize: 13}} >{msgCheck}</Text>
+                  <Checkbox
+                    status={checked}  
+                  />
+                </Pressable>
+            
 
           <View style = {{width: 200, marginTop: 25}}>
             <Button               
@@ -158,7 +155,7 @@ export default function AddTasks ({navigate, route}){
 }
 const txtInput = StyleSheet.create({
   input: {
-    height: 30,
+    height: 35,
     margin: 12,
     borderWidth: 1,
     padding: 10,

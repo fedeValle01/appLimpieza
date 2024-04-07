@@ -1,14 +1,12 @@
 import React, { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList } from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable } from "react-native";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
+import { getFirestore, writeBatch, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
 doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
 
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { MultiSelect } from "react-native-element-dropdown";
-import { Checkbox } from "react-native-paper";
-import DatePicker from "react-native-date-picker";
 
 export default function TasksScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
@@ -26,9 +24,12 @@ export default function TasksScreen({ navigate, route }) {
   const [taskSelected, setTaskSelected] = useState([]);
   const [taskAvaiable, setTaskAvaiable] = useState([]);
 
+  const batch = writeBatch(db);
+
   //efect on update checklist
   const onUpdateCheck = useRef(true);
-
+  const [cond, setCond] = useState(false);
+  
   const [checkList, setCheckList] = useState([]);
   const [firstTask, setFirstTask] = useState('');
 
@@ -95,6 +96,7 @@ export default function TasksScreen({ navigate, route }) {
         unsuscribe = onSnapshot(q, (querySnapshot) => {
           TaskQuery = querySnapshot.docs.map((doc) => ({
             key: doc.data().task_name,
+            defaultAssigned: doc.data().default_assigned,
           }));
           if (TaskQuery == "") {
             console.log("taskquery vacio");
@@ -103,10 +105,12 @@ export default function TasksScreen({ navigate, route }) {
             let id = [];
 
             TaskQuery.forEach((task) => {
-              let a;
-              a = task.key;
+              let objTask = {}
+              objTask.taskName = task.key;
+              objTask.defaultAssigned = task.defaultAssigned;
+              
               id.push(nid);
-              Tasks.push(a);
+              Tasks.push(objTask);
               nid++;
               console.log("id each: " + nid);
             });
@@ -122,6 +126,9 @@ export default function TasksScreen({ navigate, route }) {
             firstTask = firstTask.data
             firstTask = firstTask[0]
             setTaskAvaiable(tasksAndSector);
+            console.log("tasksAndSector");
+
+            console.log(tasksAndSector);
             setFirstTask(firstTask)
           }
         });
@@ -279,9 +286,13 @@ export default function TasksScreen({ navigate, route }) {
     }
   };
 
+  const changeDefault = async (task) => {
+    const ref = doc(db, "tasks", task.taskName);
+    updateDoc(ref, {default_assigned: !task.defaultAssigned})
+  }
   const renderSectionList = ({ item }) => {
     contador++;
-    if (firstTask == item){
+    if (firstTask == item.taskName){
       contador = 0;
     }
     let checkIndex = 0;
@@ -295,15 +306,19 @@ export default function TasksScreen({ navigate, route }) {
       });
     }
     let i = contador;
-    console.log("se renderiza con item " + item + " index: " + i);
-
+    console.log("se renderiza con item " + item.taskName + " index: " + i);
+    let defaultAssigned = item.defaultAssigned
     return (
-      <View style={styles.viewSeccion}>
+      <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>
         <View>
-          <Item title={item} />
+          <Item title={item.taskName} />
         </View>
-        <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center" }}>
-          <TouchableOpacity onPress={() => areYouSureDeleteTask(item)}>
+        <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+          <View>
+            {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(item)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
+            {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(item)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
+          </View>
+          <TouchableOpacity onPress={() => areYouSureDeleteTask(item.taskName)}>
             <DeleteImg />
           </TouchableOpacity>
           <View style={{marginRight: 5}} />
@@ -348,12 +363,42 @@ export default function TasksScreen({ navigate, route }) {
       } else console.log("No hay sectores");
     });
 
-    collectionRef = collection(db, "user");
-    q = query(collectionRef, orderBy("username", "asc"));
-
     return unsuscribe;
   }, []);
 
+
+  const getAllTasks = async () => {
+    const q = query(collection(db, "tasks"), where("task_name", "!=", null));
+    let tasks = []
+    const querySnapshot = await getDocs(q);
+
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      tasks.push(doc.data())
+    });
+    return tasks
+  }
+  
+
+  const commitBatch = async () => {
+    await batch.commit().then(() => {
+      Alert.alert('Change successfully!')
+    })
+  }
+
+
+  const putAllTasksDefaultActive = async () => {
+      let allTasks = await getAllTasks();
+      console.log(allTasks);
+      console.log(allTasks.length);
+      
+      allTasks.forEach((task) => {
+          let ref = doc(db, "tasks", task.task_name);
+          batch.update(ref, { default_assigned: true });
+      });
+      commitBatch();
+
+  }
   return (
     <SafeAreaView style={styles.container}>
 
@@ -390,13 +435,16 @@ export default function TasksScreen({ navigate, route }) {
       <View style={{ marginTop: 15 }} />
 
       <SectionList
-        style={{ height: "34%" }}
+        style={{ height: "34%", maxWidth: "95%" }}
         sections={task_name}
         renderItem={renderSectionList}
         renderSectionHeader={({ section: { title } }) => (
           <Text style={styles.SectionHeader}>{title}</Text>
         )}
       />
+      {/* <Pressable onPress={putAllTasksDefaultActive}>
+        <Text>actualizar</Text>
+      </Pressable> */}
     
     </SafeAreaView>
   );

@@ -1,7 +1,6 @@
 # OSX
 #
 .DS_Store
-
 # Xcode
 #
 build/
@@ -54,3 +53,5 @@ buck-out/
 .expo/
 web-build/
 dist/
+.env*
+.applimpieza-1e5d0-firebase-adminsdk-caw52-2838df4db3.json

@@ -141,6 +141,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.25,
     color: "#eef",
   },
+  pActive: {
+    fontSize: 13,
+    lineHeight: 21,
+    fontStyle: 'italic',
+    letterSpacing: 0.25,
+  },
   textHeader: {
     color: "#fff",
     fontSize: 20,

@@ -236,9 +236,9 @@ export default function AdminScreen({ navigation, route }) {
   const deleteAllHistory = () => {
     colAssignedTasks.forEach((element) => {
       let ref = doc(db, "assigned_tasks", element.uid);
-
-      batch.delete(ref);
-
+      batch.update(ref, {
+        history: deleteField(),
+      });
     });
     commitBatchDelete();
   }
@@ -262,9 +262,6 @@ export default function AdminScreen({ navigation, route }) {
 
   const saveAssignedTasks = () => {
     //foreach assigned_tasks
-    let cont = 0;
-    let setHistory = [];
-    let objHistory = {};
 
 
     
@@ -276,14 +273,11 @@ export default function AdminScreen({ navigation, route }) {
     }
 
 
-
-
-
     colAssignedTasks.forEach((element) => {
-        
-      console.log("foreach vuelta: " + cont);
+      let setHistory = [];
+      let objHistory = {};
+      
       console.log("col: ",element);
-      cont++;
 
       objHistory.timestamp = element.timestamp;
 
@@ -304,11 +298,11 @@ export default function AdminScreen({ navigation, route }) {
         //just push actual assigned task and his data in history
         setHistory.push(objHistory);
         let history = setHistory;
+        console.log('HISTORY REEMP');
+        console.log(history);
 
           
-        batch.update(doc(db, "assigned_tasks", element.uid), { history });
-
-
+        batch.update(doc(db, "assigned_tasks", element.uid), { history: history });
 
 
       }

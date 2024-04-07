@@ -386,11 +386,11 @@ const deepCopy = (obj) => {
       });
   }
   
-  const nextWeekByHistory = async ()  => {
-  
+  const getHistoryOfAllUsers = async () => {
+
     let collectionRef = collection(db, "assigned_tasks");
     let q = query (collectionRef, where("history", "!=", null));
-
+    
     let unsuscribe = onSnapshot(q, (querySnapshot) => {
       getRecords = querySnapshot.docs.map((doc) => ({
         history: doc.data().history,
@@ -399,11 +399,39 @@ const deepCopy = (obj) => {
       getRecords.forEach((history, i) => {
         tasks[i] = task.task_name;
       });
-      
-
     });
     
     return unsuscribe
+  }
+  
+  const createHistoryStat = async () => {
+    let historyOfAllUsers = await getHistoryOfAllUsers()
+    if (!historyOfAllUsers){
+      Alert.alert('No hay historial guardado de ningun usuario')
+      return
+    }
+    
+
+    
+
+  }
+
+  const getHistoryStat = async () => {
+    const docRef = doc(db, "stats", "history_length");
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data()
+    }
+  }
+  const nextWeekByHistory = async ()  => {
+
+    let HistoryStat = await getHistoryStat()
+    if(!HistoryStat){
+      createHistoryStat()
+    }
+  
+    
 
   }
 
@@ -488,7 +516,7 @@ const deepCopy = (obj) => {
                    uid: uidUser,
                  })
                }
-               if (expoPushToken && checkNotifyAllUsers) notifyUser(expoPushToken, username)
+               if (expoPushToken && (checkNotifyAllUsers == 'checked')) notifyUser(expoPushToken, username)
                
    
 
