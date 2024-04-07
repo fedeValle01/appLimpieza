@@ -451,7 +451,7 @@ const deepCopy = (obj) => {
           let getTasks = [];
           let tasks = [];
           let collectionRef = collection(db, "tasks");
-          let q = query (collectionRef, where("task_sector", "==", sector));
+          let q = query (collectionRef, where("task_sector", "==", sector), where("default_assigned", "==", true));
 
           let unsuscribe = onSnapshot(q, async (querySnapshot) => {
             getTasks = querySnapshot.docs.map((doc) => ({
@@ -461,7 +461,6 @@ const deepCopy = (obj) => {
             getTasks.forEach((task, i) => {
               tasks[i] = task.task_name;
             });
-            
             
             let objTask = {};
             

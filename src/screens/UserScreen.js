@@ -44,6 +44,14 @@ export default function TaskScreen({ navigation, route }) {
       />
     </View>
   ));
+  const Crown = memo(() => (
+    <View>
+      <Image
+        style={{ width: 15, height: 15 }}
+        source={require("../assets/crown.png")}
+      />
+    </View>
+  ));
 
 
   const State = (props) => {
@@ -60,6 +68,8 @@ export default function TaskScreen({ navigation, route }) {
   
   const ListItem = (props) => {
     let sectors = props.sectors
+    let canControl = props.canControl
+
     return (
       <SafeAreaView>
         <TouchableOpacity
@@ -75,12 +85,13 @@ export default function TaskScreen({ navigation, route }) {
 
           onLongPress = {() => {
             
-            if(route.params.canControl){
+            if(route.params.canControl == true){
               changeOnHome(props.uid, props.inHome)
             }
           }}
         >
           <View style={{ justifyContent: "center", alignItems: "center", marginRight: 15}}>
+              {canControl == true && (<Crown />)}
             <View style={{ flex: 1, flexDirection: "row"}}>
               <View style={{ alignSelf: "center"}}>
                 <Text style={styles.txtUser}>{props.value}</Text>
@@ -107,11 +118,14 @@ export default function TaskScreen({ navigation, route }) {
     let UidsInHome = []
     let sectorsInHome = []
     let statesInHome = []
+    let canControlInHome = []
     
     let statesOutHome = []
     let namesOutHome = []
     let UidsOutHome = []
     let sectorsOutHome = []
+    let canControlOutHome = []
+
 
     if (users != "") {
       let indexInHome = 0
@@ -123,12 +137,16 @@ export default function TaskScreen({ navigation, route }) {
           UidsInHome[indexInHome] = user.uid
           sectorsInHome[indexInHome] = user.sectors
           statesInHome[indexInHome] = user.state
+          canControlInHome[indexInHome] = user.canControl
+
           indexInHome++
         }else{
           namesOutHome[indexOutHome] = user.username
           UidsOutHome[indexOutHome] = user.uid
           sectorsOutHome[indexOutHome] = user.sectors
           statesOutHome[indexOutHome] = user.state
+          canControlOutHome[indexOutHome] = user.canControl
+
           indexOutHome++
         }
       });
@@ -148,6 +166,8 @@ export default function TaskScreen({ navigation, route }) {
                 uid={UidsInHome[i]}
                 sectors={sectorsInHome[i]}
                 states={statesInHome[i]}
+                canControl={canControlInHome[i]}
+
               />
             ))}
           </Text>
@@ -165,6 +185,7 @@ export default function TaskScreen({ navigation, route }) {
                 uid={UidsOutHome[i]}
                 sectors={sectorsOutHome[i]}
                 states={statesOutHome[i]}
+                canControl={canControlOutHome[i]}
               />
             ))}
           </Text>
@@ -324,7 +345,7 @@ export default function TaskScreen({ navigation, route }) {
               >
                 <Text style={styles.subtitleSection}>
                   {" "}
-                  Ver tareas asignadas de los usuarios:
+                  Tareas asignadas de los usuarios
                 </Text>
               </View>
             <SectorList users={users} />

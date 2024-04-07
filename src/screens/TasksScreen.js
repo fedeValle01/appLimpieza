@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable } from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable, ScrollView } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, writeBatch, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
 doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
@@ -16,7 +16,7 @@ export default function TasksScreen({ navigate, route }) {
   const [date, setDate] = useState(new Date());
   const [open, setOpen] = useState(false);
   const [sectors, setSectors] = useState([]);
-  const [task_name, setTask_name] = useState([]);
+  const [tasks, setTasks] = useState([]);
   const [task_frec, setTask_frec] = useState(1);
   const [user, setUser] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -56,7 +56,7 @@ export default function TasksScreen({ navigate, route }) {
   const verTaskSelected = () => {
     let id = [];
     console.log("paso n veces");
-    task_name.forEach((element) => {
+    tasks.forEach((element) => {
       console.log("paso b veces");
 
       id = element.id;
@@ -94,6 +94,7 @@ export default function TasksScreen({ navigate, route }) {
       item.forEach((element) => {
         let q = query(collectionRef, where("task_sector", "==", element));
         unsuscribe = onSnapshot(q, (querySnapshot) => {
+          console.log('ejectuta on snap');
           TaskQuery = querySnapshot.docs.map((doc) => ({
             key: doc.data().task_name,
             defaultAssigned: doc.data().default_assigned,
@@ -126,16 +127,13 @@ export default function TasksScreen({ navigate, route }) {
             firstTask = firstTask.data
             firstTask = firstTask[0]
             setTaskAvaiable(tasksAndSector);
-            console.log("tasksAndSector");
-
-            console.log(tasksAndSector);
             setFirstTask(firstTask)
           }
         });
       });
     } else {
       console.log("se setea vacio");
-      setTask_name([]);
+      setTasks([]);
     }
 
     return unsuscribe;
@@ -148,7 +146,7 @@ export default function TasksScreen({ navigate, route }) {
       console.log("item renderItem: " + item.title);
       return <Item title={item.title} />;
     } else {
-      setTask_name([]);
+      setTasks([]);
     }
   };
   
@@ -164,7 +162,7 @@ export default function TasksScreen({ navigate, route }) {
     contador=-1;
     setCheckList([])
     setTaskAvaiable([])
-    setTask_name([])
+    setTasks([])
   }
 
   const addTaskSelected = (item) => {
@@ -209,87 +207,37 @@ export default function TasksScreen({ navigate, route }) {
     });
   }
 
+  
+  const getIndexTask = (task) => {
 
-
-  const handleCreateTask = async () => {
-    if (!task_name) {
-      Alert.alert("No hay tareas en ese sector");
-    } else if (selectedUser == null) {
-      Alert.alert("No hay usuario seleccionado");
-    } else {
-      let cantChecks = 0;
-      checkList.forEach((element) => {
-        if (element == "unchecked") {
-          cantChecks++;
+    let pos = 0
+    let findIndex = false
+    let updateTasks = tasks
+    while (!findIndex) {
+      for (let i = 0; i < updateTasks.length; i++) {
+        let sector = updateTasks[i];
+        let data = sector.data
+        for (let j = 0; j < data.length; j++) {
+          let taskOriginal = data[j]
+          if (task.taskName == taskOriginal.taskName){
+            findIndex = true
+            taskOriginal.defaultAssigned = !taskOriginal.defaultAssigned
+            break
+          }
+          pos++
         }
-      });
-      if (cantChecks == checkList.length) {
-        Alert.alert("Por lo menos hay que asignar 1 tarea");
-      } else {
-        //Add AssignTask
-        let search = 0;
-        let assigned_tasks = [];
-
-        task_name.forEach((s) => {
-          let objAssigned_tasks = {};
-          let addData = [];
-          let data = s.data;
-          let title = s.title;
-          data.forEach((task) => {
-            if (checkList[search] == "checked") {
-              addData.push(task);
-            }
-            search++;
-          });
-          objAssigned_tasks.data = addData;
-          objAssigned_tasks.sector = title;
-          assigned_tasks.push(objAssigned_tasks);
-        });
-
-        let marked = [];
-        let checkIndex = 0;
-
-        assigned_tasks.forEach((s) => {
-          s.data.forEach((task) => {
-            marked[checkIndex] = "unchecked";
-            checkIndex++;
-          });
-        });
-        checkIndex = 0;
-
-        // check if already exist assigned task for selectedUser
-
-        const docRef = doc(db, "assigned_tasks", selectedUser);
-        const docSnap = await getDoc(docRef);
-
-        // if exist update
-        if (docSnap.exists()) {
-          await updateDoc(doc(db, "assigned_tasks", selectedUser), {
-            active_tasks: assigned_tasks,
-            marked_tasks: marked,
-            control_marked_tasks: marked,
-            timestamp: serverTimestamp(),
-            uid: selectedUser,
-            time_limit: date,
-          }).then(Alert.alert("Tareas asignadas"));
-        } else {
-          await setDoc(doc(db, "assigned_tasks", selectedUser), {
-            active_tasks: assigned_tasks,
-            marked_tasks: marked,
-            control_marked_tasks: marked,
-            timestamp: serverTimestamp(),
-            uid: selectedUser,
-            time_limit: date,
-          }).then(Alert.alert("Tareas asignadas"));
-        }
+        if (findIndex) break
       }
     }
-  };
+    setTasks([updateTasks])
+  }
 
   const changeDefault = async (task) => {
     const ref = doc(db, "tasks", task.taskName);
-    updateDoc(ref, {default_assigned: !task.defaultAssigned})
+    await updateDoc(ref, {default_assigned: !task.defaultAssigned})
+    getIndexTask(task)
   }
+
   const renderSectionList = ({ item }) => {
     contador++;
     if (firstTask == item.taskName){
@@ -298,7 +246,7 @@ export default function TasksScreen({ navigate, route }) {
     let checkIndex = 0;
     //  si no hay checklist, la setea unchecked
     if (checkList.length == 0) {
-      task_name.forEach((s) => {
+      tasks.forEach((s) => {
         s.data.forEach((task) => {
           checkList[checkIndex] = "unchecked";
           checkIndex++;
@@ -337,6 +285,8 @@ export default function TasksScreen({ navigate, route }) {
     }
     setCheckList(check);
   };
+
+
 
   useEffect(() => {
     console.log("entro assignTaskScreen");
@@ -399,6 +349,36 @@ export default function TasksScreen({ navigate, route }) {
       commitBatch();
 
   }
+  const TaskView = ({ task }) => {
+    let taskName = task.taskName
+    let defaultAssigned = task.defaultAssigned
+
+    return(
+        <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>
+          <View style={[styles.itemSectionlist, {width:"50%"}]}>
+            <Text style={styles.titleSectionlist}>{taskName}</Text>
+          </View>
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+              {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
+              {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
+            </View>
+            <TouchableOpacity onPress={() => areYouSureDeleteTask(taskName)}>
+              <DeleteImg />
+            </TouchableOpacity>
+            <View style={{marginRight: 5}} />
+          </View>
+    )
+  }
+  const ListTasks = ( {data, id} ) => {
+
+    return (
+      <View>
+        {data && (
+          data.map((task, i) => (<TaskView key="{i}" task={task}/>))
+        )}
+      </View>
+    )
+  }
   return (
     <SafeAreaView style={styles.container}>
 
@@ -427,21 +407,35 @@ export default function TasksScreen({ navigate, route }) {
           title="Ver tareas disponibles"
           color="#B0C4DE"
           onPress={() => {
-            setTask_name(taskAvaiable);
+            setTasks(taskAvaiable);
           }}
         />
       </View>
-
       <View style={{ marginTop: 15 }} />
 
-      <SectionList
+      <ScrollView>
+          {tasks.map((sector, i) => {
+            let id = i
+            let data = sector.data
+            return(
+              <View>
+                <Text style={styles.SectionHeader}>{sector.title}</Text>
+                <ListTasks key="{i}" id={id} data={data} />
+              </View>
+              )
+            })
+        }
+      </ScrollView>
+
+      {/* <SectionList
         style={{ height: "34%", maxWidth: "95%" }}
-        sections={task_name}
+        sections={tasks}
         renderItem={renderSectionList}
         renderSectionHeader={({ section: { title } }) => (
           <Text style={styles.SectionHeader}>{title}</Text>
         )}
-      />
+      /> */}
+      
       {/* <Pressable onPress={putAllTasksDefaultActive}>
         <Text>actualizar</Text>
       </Pressable> */}
