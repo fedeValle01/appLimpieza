@@ -19,6 +19,12 @@
     },
     "ios": {
       "bundleIdentifier": "com.myreactapp"
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3c9a76c3-ce7b-4117-bfc8-5477534c06a6"
     }
   },
   "name": "my-react-app"

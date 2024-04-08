@@ -96,36 +96,36 @@ export default function TasksScreen({ navigate, route }) {
         unsuscribe = onSnapshot(q, (querySnapshot) => {
           console.log('ejectuta on snap');
           TaskQuery = querySnapshot.docs.map((doc) => ({
-            key: doc.data().task_name,
+            id: doc.id,
+            taskName: doc.data().task_name,
             defaultAssigned: doc.data().default_assigned,
           }));
           if (TaskQuery == "") {
             console.log("taskquery vacio");
           } else {
             let Tasks = [];
-            let id = [];
 
             TaskQuery.forEach((task) => {
               let objTask = {}
-              objTask.taskName = task.key;
+              objTask.taskName = task.taskName;
               objTask.defaultAssigned = task.defaultAssigned;
+              objTask.id = task.id;
+
               
-              id.push(nid);
               Tasks.push(objTask);
-              nid++;
-              console.log("id each: " + nid);
             });
 
             let singleObj = {};
             singleObj["title"] = element;
             singleObj["data"] = Tasks;
-            singleObj["id"] = id;
 
             tasksAndSector.push(singleObj);
 
             let firstTask = tasksAndSector[0]
             firstTask = firstTask.data
             firstTask = firstTask[0]
+            console.log("tasksAndSector");
+            console.log(tasksAndSector);
             setTaskAvaiable(tasksAndSector);
             setFirstTask(firstTask)
           }
@@ -187,23 +187,23 @@ export default function TasksScreen({ navigate, route }) {
     );
   };
 
-  const areYouSureDeleteTask = (item) => {
+  const areYouSureDeleteTask = (task) => {
     console.log('aresure');
-      return Alert.alert("Vas a eliminar la tarea "+item, "Estas seguro?", [
+      return Alert.alert("Vas a eliminar la tarea "+task.taskName, "Estas seguro?", [
         {
           text: "Cancelar",
           onPress: () => console.log("Cancel Pressed"),
           style: "cancel",
         },    
-        { text: "OK", onPress: () => deleteTask(item) },
+        { text: "OK", onPress: () => deleteTask(task) }
       ]);
   }
   
-  const deleteTask = async (item) =>{
+  const deleteTask = async (task) =>{
     console.log('llego aca');
 
-    deleteDoc(doc(db, "tasks", item)).then(() => {
-      Alert.alert('Se elimino la tarea '+ item+' con exito')
+    deleteDoc(doc(db, "tasks", task.id)).then(() => {
+      Alert.alert('Se elimino la tarea '+ task.taskName+' con exito')
     });
   }
 
@@ -352,29 +352,34 @@ export default function TasksScreen({ navigate, route }) {
   const TaskView = ({ task }) => {
     let taskName = task.taskName
     let defaultAssigned = task.defaultAssigned
+    console.log("key");
+    console.log(task.id);
 
     return(
         <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>
-          <View style={[styles.itemSectionlist, {width:"50%"}]}>
+          <View style={[styles.itemSectionlist, {width:"60%"}]}>
             <Text style={styles.titleSectionlist}>{taskName}</Text>
           </View>
-            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-              {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
-              {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
+          <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", position: "absolute", right: 10}}>
+            {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
+            {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
+            <View>
+              <TouchableOpacity onPress={() => areYouSureDeleteTask(task)}>
+                <DeleteImg />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={() => areYouSureDeleteTask(taskName)}>
-              <DeleteImg />
-            </TouchableOpacity>
-            <View style={{marginRight: 5}} />
           </View>
+        </View>
     )
   }
-  const ListTasks = ( {data, id} ) => {
-
+  const ListTasks = ( {data} ) => {
+    
+    
+    
     return (
       <View>
         {data && (
-          data.map((task, i) => (<TaskView key="{i}" task={task}/>))
+          data.map((task) => (<TaskView key={task.id} task={task}/>))
         )}
       </View>
     )
@@ -415,12 +420,12 @@ export default function TasksScreen({ navigate, route }) {
 
       <ScrollView>
           {tasks.map((sector, i) => {
-            let id = i
             let data = sector.data
+
             return(
               <View>
                 <Text style={styles.SectionHeader}>{sector.title}</Text>
-                <ListTasks key="{i}" id={id} data={data} />
+                <ListTasks key={i} data={data} />
               </View>
               )
             })
