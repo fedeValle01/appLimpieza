@@ -1,6 +1,6 @@
 import React, { memo, useEffect, useState } from "react";
 import { Text, SafeAreaView, TouchableOpacity, Alert, View, ScrollView, Image} from "react-native";
-import { doc, setDoc, getFirestore, collection, onSnapshot, query, where, serverTimestamp, updateDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, setDoc, getFirestore, collection, onSnapshot, query, where, serverTimestamp, updateDoc, getDoc, getDocs} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import { Checkbox } from "react-native-paper";
@@ -388,20 +388,18 @@ const deepCopy = (obj) => {
   
   const getHistoryOfAllUsers = async () => {
 
-    let collectionRef = collection(db, "assigned_tasks");
-    let q = query (collectionRef, where("history", "!=", null));
-    
-    let unsuscribe = onSnapshot(q, (querySnapshot) => {
-      getRecords = querySnapshot.docs.map((doc) => ({
-        history: doc.data().history,
-      }));
-      
-      getRecords.forEach((history, i) => {
-        tasks[i] = task.task_name;
-      });
-    });
-    
-    return unsuscribe
+    let q = query(collection(db, "assigned_tasks"));
+    const querySnapshot = await getDocs(q);
+    let records = {}
+
+    querySnapshot.forEach((doc) => {
+      let id = doc.id
+      records[id] = doc.data().history
+    })
+    console.log(querySnapshot.size);
+    console.log(records.size);
+
+    return records
   }
   
   const createHistoryStat = async () => {
@@ -410,9 +408,17 @@ const deepCopy = (obj) => {
       Alert.alert('No hay historial guardado de ningun usuario')
       return
     }
-    
 
-    
+    let totalNumberSectorsAssigned = 0
+    let totalCountSectorsAssigned = {} //ej {cocina: 7, baño 1: 5 }
+    let countTotalWeeks = 0
+      for (id in historyOfAllUsers) {
+        let history = historyOfAllUsers[id]
+        let countUserWeeks = 0
+        history.forEach(week => {
+          console.log(week);
+        });
+      }
 
   }
 
@@ -430,8 +436,6 @@ const deepCopy = (obj) => {
     if(!HistoryStat){
       createHistoryStat()
     }
-  
-    
 
   }
 

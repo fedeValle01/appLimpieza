@@ -261,10 +261,6 @@ export default function AdminScreen({ navigation, route }) {
   }
 
   const saveAssignedTasks = () => {
-    //foreach assigned_tasks
-
-
-    
     
     const commitBatch = async () => {
       await batch.commit().then(() => {

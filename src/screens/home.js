@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import LoadingGif from '../components/Loading'
-import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Button, ScrollView } from "react-native";
+import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Button, ScrollView, Modal, Pressable } from "react-native";
 import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
@@ -10,8 +10,13 @@ import { Checkbox } from "react-native-paper";
 import { Tooltip } from '@rneui/themed';
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
-
+import { useForm, Controller } from 'react-hook-form';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
+import { BlurView } from "expo-blur";
+import styleModal from "./styleModal";
+import stylesStock from "./stock/stylesStock";
+import TextInput from "../components/TextInput";
+import FormComment from "../components/FormComment"
 
 const ControlledTooltip = (props) => {
   const [open, setOpen] = React.useState(false);
@@ -43,11 +48,23 @@ const HomeScreen = ({ navigation, route }) => {
     const [sectors, setSectors] = useState([]);
     const [user, setUser] = useState([]);
     const [taskUser, setTaskUser] = useState(null);
+    
     const [loading, setLoading] = useState(false);
-  
+    const [modalLeaveComment, setModalLeaveComment] = useState(false);
+    
     const [hasAssignedTasks, setHasAssignedTasks] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [refresh, setRefresh] = useState(false);
+
+
+    const { control, handleSubmit, formState: { errors } } = useForm();
+    const [submittedData, setSubmittedData] = useState(null);
+
+    const onSubmit = (data) => {
+      // Simulate form submission
+      console.log('Submitted Data:', data);
+      setSubmittedData(data);
+    };
 
     const onRefresh = useCallback(() => {
       setRefreshing(true);
@@ -192,11 +209,11 @@ const HomeScreen = ({ navigation, route }) => {
       contador++;
       if (firsTask==item){
         contador = 0
-        console.log('i = 0');
+        console.log('firsTask==item i = 0');
         }
       if (contador == nTasks){
         contador = 0
-        console.log('i = 0');
+        console.log('contador == nTasks i = 0');
       }
       let i = contador;
       nTasks
@@ -268,7 +285,7 @@ const HomeScreen = ({ navigation, route }) => {
 
     const HouseImg = memo(() => (
       <Image
-        style={{ width: 170, height: 170 }}
+        style={{ width: 130, height: 130 }}
         source={require("../assets/casaLaCosta.png")}
       />
     ));
@@ -294,41 +311,67 @@ const HomeScreen = ({ navigation, route }) => {
         />
     ))
 
+  const BtnComponents =  () => (
+    <View style={{  flexDirection: "row", flexWrap: "wrap", opacity: 0.8, alignItems: "center", justifyContent: "space-between", position: "absolute", bottom: 50, alignSelf: "center"}}>
+      <BtnSelectAll/>
+        <View style = {{marginRight: 5}} />
+      <BtnControlAll/>
+    </View>
+  )
 
-  const SectionComponent =  () => {
+  
+
+  const closeModal = () => {
+    setModalLeaveComment(false)
+  };
+
+  const SectionLeaveComment =  () => {
+
+    
 
 
     return(
-  <View style={{ height: "55%"}}>
+      <BlurView tint="dark" intensity={80} style={[styleModal.centeredView, {marginTop: -50}]}>
+        <View style={styleModal.modalView}>
 
-  <SectionList
-    sections={activeTasks}
-    renderItem={(props) =>
-      renderAssignedTasks(props, checkList, controlCheckList)
-    }
-    renderSectionHeader={({ section: { sector } }) => (
-      <Text style={styles.SectionHeader}>{sector}</Text>
-    )}
-  />
+        <View style={{marginTop: 20}}>
+              <FormComment uid={route.params.uidTask} closeModal={closeModal}/>
+        </View>
+        </View>
+      </BlurView>
+    )
+  }
 
-  <View style={{ flexDirection: "row-reverse", marginTop:20, marginBottom: 10 }}>
-    <BtnControlAll/>
-      <View style = {{marginLeft: 5}} />
-    <BtnSelectAll/>
-  </View>
+  const SectionTasks =  () => {
 
 
-  {/* <TouchableOpacity onPress={() => {
-        navigation.navigate("TestScreen", {
-          uid: route.params.uid,
-          uidTask: route.params.uidTask,
-          taskUser: taskUser,
-        });
-      }}>
-    <Text>TestScreen</Text>
-  </TouchableOpacity> */}
-
-  </View>
+    return(
+      <View>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalLeaveComment}
+          onRequestClose={() => {
+            setModalLeaveComment(false)
+          }}>
+          <SectionLeaveComment />
+        </Modal>
+      <SectionList
+        sections={activeTasks}
+        renderItem={(props) =>
+          renderAssignedTasks(props, checkList, controlCheckList)
+        }
+        renderSectionHeader={({ section: { sector } }) => (
+          <Text style={styles.SectionHeader}>{sector}</Text>
+        )}
+      />
+          <Pressable
+            style={[styleModal.button, styleModal.buttonOpen]}
+            onPress={() => setModalLeaveComment(true)}>
+            <Text style={styleModal.textStyle}>Dejar observación</Text>
+          </Pressable>
+          <BtnComponents />
+      </View>
 
   )
 };
@@ -602,6 +645,7 @@ const HomeScreen = ({ navigation, route }) => {
         
         unsuscribe = onSnapshot(q, (querySnapshot) => {
           taskInSector = querySnapshot.docs.map((doc) => ({
+            task_id: doc.id,
             task_name: doc.data().task_name,
             task_description: doc.data().task_description,
             task_sector: doc.data().task_sector,
@@ -731,22 +775,20 @@ const HomeScreen = ({ navigation, route }) => {
     const BtnSelectAll = () => {
       if (firsTask && canCheckTask){
         return(
-          <View>
-              <View style={{flex: 1}}>
+              <View>
                 <Button onPress={setAllMarked}
                   title='Marcar Hechas'
                   color='#746ab0'
                   >
                 </Button>
               </View>
-          </View>
         )
       }
     }
   const BtnControlAll = () => {
     if (firsTask && canControl){
       return(
-            <View style={{flex: 1}}>
+            <View>
               <Button onPress={setAllChecked}
                 title='Marcar control'
                 color='#E3682C'
@@ -771,6 +813,8 @@ const HomeScreen = ({ navigation, route }) => {
       ]);
     }
   }
+
+  
 
 
   const deleteAllAssignedTasks = async () => {
@@ -889,36 +933,18 @@ const HomeScreen = ({ navigation, route }) => {
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true);}} />
             }>
-          <View
-            style={{
-              marginTop: 30,
-              marginBottom: 30,
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-              <HouseImg/>
-          </View>
+          
 
-          {/* <TouchableOpacity
-            onPress={() => {
-              navigation.navigate("Tasks", { uid: route.params.uid });
-            }}
-          >
-            <Text>Ir a Tasks</Text>
-          </TouchableOpacity>
-
-
+          {/*
           <TouchableOpacity onPress={irACrearSector}>
             <Text>Ir a Crear Sector</Text>
           </TouchableOpacity>
            */}
           
           <View
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 5 }}
+            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center",  marginVertical: 12 }}
           >
-            <Text style={styles.subtitleSection}>
+            <Text style={styles.titleMain}>
               Tareas de {taskUser} asignadas esta semana: {nTasks}{" "} 
               
               {canControl && 
@@ -953,7 +979,11 @@ const HomeScreen = ({ navigation, route }) => {
                 {!firsTask ? (
                     <View style={{ position: "absolute", bottom: 150 }}><LoadingGif /></View>
                 ) : (
-                    <SectionComponent/>
+                    <View style={{ height: "80%"}}>
+                      <SectionTasks/>
+                      
+                      
+                    </View>
                 )}
               </>
             ) : null}

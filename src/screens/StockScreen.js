@@ -463,7 +463,7 @@ export default function StockScreen({ navigation, route }) {
     <View style={[styles.container]}>
       <ScrollView>
         <View style={{ marginTop: 20 }}>
-          <Text style={{ color: '#3e3944', fontSize: 35, fontWeight: '40', textAlign: 'center' }}>
+          <Text style={styles.titleMain}>
             Control de Stock
           </Text>
         </View>

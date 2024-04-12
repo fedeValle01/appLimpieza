@@ -14,7 +14,7 @@ export default function TaskScreen({ navigation, route }) {
   const [usersOutHome, setUsersOutHome] = useState([]);
   
   
-  const changeOnHome = async (uid, inHome) =>{
+  const changeOnHome = async (uid, inHome) => {
     console.log('uid: '+ uid);
     await updateDoc(doc(db, "user", uid), {
       in_home: !inHome,
@@ -159,16 +159,16 @@ export default function TaskScreen({ navigation, route }) {
           {cantUsersInhome==0 && <Text style={styles.inHouseTitle}>No hay usuarios en casa</Text>}
           <Text>
             {namesInHome.map((nombre, i) => (
-              <ListItem
-                key={nombre.toString()}
-                value={nombre}
-                inHome={true}
-                uid={UidsInHome[i]}
-                sectors={sectorsInHome[i]}
-                states={statesInHome[i]}
-                canControl={canControlInHome[i]}
-
-              />
+              <View key={nombre.toString()}>
+                <ListItem
+                  value={nombre}
+                  inHome={true}
+                  uid={UidsInHome[i]}
+                  sectors={sectorsInHome[i]}
+                  states={statesInHome[i]}
+                  canControl={canControlInHome[i]}
+                />
+              </View>
             ))}
           </Text>
 
@@ -178,15 +178,17 @@ export default function TaskScreen({ navigation, route }) {
 
           <Text>
             {namesOutHome.map((nombre, i) => (
-              <ListItem
-                key={nombre.toString()}
-                value={nombre}
-                inHome={false}
-                uid={UidsOutHome[i]}
-                sectors={sectorsOutHome[i]}
-                states={statesOutHome[i]}
-                canControl={canControlOutHome[i]}
-              />
+              <View key={nombre.toString()}>
+                <ListItem
+                  value={nombre}
+                  inHome={false}
+                  uid={UidsOutHome[i]}
+                  sectors={sectorsOutHome[i]}
+                  states={statesOutHome[i]}
+                  canControl={canControlOutHome[i]}
+                />
+              </View>
+
             ))}
           </Text>
         </View>

@@ -29,7 +29,6 @@ function LogoTitle() {
 }
 
 export default function App() {
-  console.log(process.env.EXPO_PUBLIC_API_KEY);
 
   const [expoPushToken, setExpoPushToken] = useState('');
   const [notification, setNotification] = useState(false);

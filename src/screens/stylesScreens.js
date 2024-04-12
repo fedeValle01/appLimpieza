@@ -214,6 +214,21 @@ const styles = StyleSheet.create({
     fontWeight: "40",
     color: "#27a4f2",
   },
+  input: {
+    height: 150,
+    margin: 12,
+    borderWidth: 1,
+    padding: 10,
+    width: 200,
+    alignContent: 'flex-start',
+    textAlignVertical: 'top'
+  },
+  titleMain: {
+    color: '#3e3944',
+    fontSize: 32,
+    fontWeight: '40',
+    textAlign: 'center'
+  },
   subtitleSection: {
     fontSize: 25,
     fontWeight: "45",

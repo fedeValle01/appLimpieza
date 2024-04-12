@@ -352,8 +352,6 @@ export default function TasksScreen({ navigate, route }) {
   const TaskView = ({ task }) => {
     let taskName = task.taskName
     let defaultAssigned = task.defaultAssigned
-    console.log("key");
-    console.log(task.id);
 
     return(
         <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>

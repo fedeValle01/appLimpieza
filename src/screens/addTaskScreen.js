@@ -130,7 +130,7 @@ export default function AddTasks ({navigate, route}){
                   numberOfLines={4}
                   value = {task_description}
                   placeholder={'Descripción'}
-                  style={txtInputMultiline.input} 
+                  style={styles.input} 
                   editable
                   maxLength={200}
                 />
@@ -162,15 +162,3 @@ const txtInput = StyleSheet.create({
     width: 200
   },
 });
-
-const txtInputMultiline = StyleSheet.create({
-    input: {
-      height: 150,
-      margin: 12,
-      borderWidth: 1,
-      padding: 10,
-      width: 200,
-      alignContent: 'flex-start',
-      textAlignVertical: 'top'
-    },
-  });
