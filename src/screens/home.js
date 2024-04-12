@@ -6,7 +6,6 @@ import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import { Checkbox } from "react-native-paper";
 import { Tooltip } from '@rneui/themed';
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
@@ -16,23 +15,10 @@ import { BlurView } from "expo-blur";
 import styleModal from "./styleModal";
 import stylesStock from "./stock/stylesStock";
 import TextInput from "../components/TextInput";
+import Task from './components/Task'
 import FormComment from "../components/FormComment"
 
-const ControlledTooltip = (props) => {
-  const [open, setOpen] = React.useState(false);
-  return (
-        <Tooltip
-          visible={open}
-          onOpen={() => {
-            setOpen(true);
-          }}
-          onClose={() => {
-            setOpen(false);
-          }}
-          {...props}
-        />
-  );
-}
+
 
 const auth = getAuth(app);
 const app = initializeApp(firebaseConfig);
@@ -143,25 +129,8 @@ const HomeScreen = ({ navigation, route }) => {
       });
     }
 
-    const handleCheck = async (i) => {
-      
-      let check = [...checkList];
-      if (check.length > 0) {
-        if (check[i] == "unchecked") {
-          check[i] = "checked";
-        } else {
-          check[i] = "unchecked";
-        }
-      }
-
-      setCheckList(check);
-      //Add markedTask
-      await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
-        marked_tasks: check,
-        timestamp_marked_tasks: serverTimestamp(),
-      });
-
-    }
+    
+    
 
     const setAllMarked = async () => {
       let checks = checkList;
@@ -203,7 +172,6 @@ const HomeScreen = ({ navigation, route }) => {
       
     }
 
-  
     const renderAssignedTasks = ({ item, index }, checkList, controlCheckList) => {
 
       contador++;
@@ -216,50 +184,20 @@ const HomeScreen = ({ navigation, route }) => {
         console.log('contador == nTasks i = 0');
       }
       let i = contador;
-      nTasks
 
-      // console.log('render item: '+item+'con index: '+i);
+      let props = {
+        uidTask: route.params.uidTask,
+        item: item,
+        allDescTasks: allDescTasks,
+        i: i,
+        canControl: canControl,
+        canCheckTask: canCheckTask,
+        checkList: checkList,
+        controlCheckList: controlCheckList,
+      }
       
-        return (
-          <TouchableOpacity style={styles.viewSeccion} disabled={!canControl} onLongPress={() => AreYouSureDeleteTask(item)}>
-              <Item title={item} i = {i}/>
-    
-    
-              <View style={{ flexDirection: "row", alignItems: "center", position: "absolute", right: 0 }}>
-                <View>
-                  {/* user checkbox */}
-                  <Checkbox
-                    disabled={!canCheckTask}
-                    status={checkList[i]}
-                    onPress={() => {
-                      handleCheck(i);
-                      if (checked == "unchecked") {
-                        setChecked("checked");
-                      } else {
-                        setChecked("unchecked");
-                      }
-                    }}
-                  />
-                </View>
-                <View>
-                  {/* control checkbox */}
-                  <Checkbox
-                    color="#39ff14"
-                    status={controlCheckList[i]}
-                    disabled={!canControl}
-                    onPress={() => {
-                      handleControlCheck(i);
-                      if (checked == "unchecked") {
-                        setChecked("checked");
-                      } else {
-                        setChecked("unchecked");
-                      }
-                    }}
-                  />
-                </View>
-            </View>
-          </TouchableOpacity>
-        );
+      return (<Task props={props}/>)
+
   }
 
     const AreYouSureLogOut = () => {
@@ -283,12 +221,6 @@ const HomeScreen = ({ navigation, route }) => {
         });
     };
 
-    const HouseImg = memo(() => (
-      <Image
-        style={{ width: 130, height: 130 }}
-        source={require("../assets/casaLaCosta.png")}
-      />
-    ));
 
     const ConfigImg = memo(() => (
       <Image
@@ -326,8 +258,6 @@ const HomeScreen = ({ navigation, route }) => {
   };
 
   const SectionLeaveComment =  () => {
-
-    
 
 
     return(
@@ -385,15 +315,7 @@ const HomeScreen = ({ navigation, route }) => {
       );
     }
 
-    const HomeImg = memo(() => (
-      
-        <Image
-          style={{ width: 45, height: 45 }}
-          source={require("../assets/home.png")}
-        />
-      
-      )
-    );
+    
     const EditImg = memo(() => (
         <Image
               style={{ width: 23, height: 23 }}
@@ -415,13 +337,7 @@ const HomeScreen = ({ navigation, route }) => {
         />
       )
     );
-    const IconInfo = memo(() => (
-        <Image
-          style={{ width: 17, height: 17 }}
-          source={require("../assets/info-circle.png")}
-        />
-      )
-    );
+    
     
 
     // memo optimiza carga de imagenes
@@ -433,70 +349,9 @@ const HomeScreen = ({ navigation, route }) => {
     ));
 
 
-    const calculeHeight = (desc) => {
-      let h = 100;
-      let haveDesc = false;
-      if(desc!=null){
-        haveDesc = true;
-        let descLength = desc.length;
-        if(descLength<=28){ // one line
-          h = 40
-        }else if(descLength>28 &&descLength<45){// two lines
-          h = 60
-        }else if(descLength>=45 && descLength<65){// three lines
-          h = 80
-        }else if(descLength>=65 && descLength<100){ //four lines
-          h = 100
-        }else if(descLength>=100 && descLength<120){ //five lines
-          h = 130;
-        }else{
-          h = 180;
-        }
-      }
-      return(h)
-    }
     
-    const Item = ({ title, i }) => { // RENDER ITEM TASK
-    let haveDesc = false;
-    let h = 0
-    let desc = allDescTasks[i]
-    if(desc!=null){
-      haveDesc = true;
-      h = calculeHeight(desc)
-    }
-
-    title = title.trim()
     
-      return(
-        <View style={[styles.itemSectionlist, {maxWidth: '60%'}] }>
-          {haveDesc &&
-
-            <ControlledTooltip
-                  popover={<Text>{desc}</Text>}
-                  containerStyle={{ width: 200, height: h }}
-                  backgroundColor={"#f6cb8e"}
-                >
-
-                  <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
-                    <View>
-                      <Text numberOfLines={2} style={[styles.titleSectionlist ]}>{title}</Text>
-                    </View>
-                    <View style={{marginLeft: 10}}>
-                      <IconInfo/>
-                    </View>
-                  </View>
-                  
-            </ControlledTooltip>
-
-          }
-          {!haveDesc &&
-                  <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
-                    <Text numberOfLines={2} style={[styles.titleSectionlist]}>{title}</Text>
-                  </View>
-          }
-        </View>
-      );
-    }
+    
 
 
 
@@ -824,59 +679,7 @@ const HomeScreen = ({ navigation, route }) => {
       });
       setActiveTasks([])
   }
-
     
-  const AreYouSureDeleteTask = (item) => {
-    return Alert.alert("Vas a eliminar la tarea: "+item, "Estas seguro?", [
-      {
-        text: "Cancelar",
-        onPress: () => console.log("Cancel Pressed"),
-        style: "cancel",
-      },    
-      { text: "OK", onPress: () => {deleteTask(item)} },
-    ]);
-  }
-
-    const deleteTask = async (item) => {
-
-      let updateActiveTasks = activeTasks
-      let findTask = false
-      let i = 0
-      let indexToDelete = 0
-      while (!findTask) {
-        let activeTask = updateActiveTasks[i]
-        let sector = activeTask.data
-        for (let j = 0; j < sector.length; j++) {
-          let task = sector[j];
-          if (task == item){
-            console.log('lo encontro');
-            findTask = true
-            sector.splice(j, 1)
-            break
-          }
-          indexToDelete++
-        }
-        i++
-        if (i > sector.length){
-          findTask = true
-        }
-      }
-
-      let ref = doc(db, "assigned_tasks", route.params.uidTask);
-
-      let updateCheckList = checkList
-      let updateControlCheckList = controlCheckList
-      updateCheckList.splice(indexToDelete, 1)
-      updateControlCheckList.splice(indexToDelete, 1)
-      
-      await updateDoc(ref, {
-        active_tasks: updateActiveTasks,
-        marked_tasks: updateCheckList,
-        control_marked_tasks: updateControlCheckList,
-      });
-      setRefresh(refresh ? false : true);
-      
-    }
 
   const loadAllOrderedTasks = () => {
     if(!chargedOrderedTasks){
@@ -981,7 +784,6 @@ const HomeScreen = ({ navigation, route }) => {
                 ) : (
                     <View style={{ height: "80%"}}>
                       <SectionTasks/>
-                      
                       
                     </View>
                 )}

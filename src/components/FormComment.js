@@ -69,7 +69,8 @@ const FormComment = ({uid, closeModal}) => {
       padding: 10,
       width: 230,
       alignContent: 'flex-start',
-      textAlignVertical: 'top'
+      textAlignVertical: 'top',
+      numberOfLines: 6,
     },
     container: {
       alignItems: 'center',
