@@ -19,11 +19,16 @@ const Task = ( {props} ) => {
     let controlCheckList = props.controlCheckList
     let checkList = props.checkList
     const canControl = props.canControl
-    const canCheckTask = props.canControl
+    const canCheckTask = props.canCheckTask
     const allDescTasks = props.allDescTasks
+    const activeTasks = props.activeTasks
 
     const [taskCheck, setTaskCheck] = useState(checkList[i])
     const [taskControlCheck, setTaskControlCheck] = useState(controlCheckList[i])
+    const [showTask, setShowTask] = useState(true)
+
+
+    
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
@@ -39,14 +44,14 @@ const Task = ( {props} ) => {
       )
     );
 
-    const AreYouSureDeleteTask = (item) => {
-        return Alert.alert("Vas a eliminar la tarea: "+item, "Estas seguro?", [
+    const AreYouSureDeleteTask = () => {
+        return Alert.alert("Vas a eliminar la tarea: "+item+" De las tareas asignadas", "Estas seguro?", [
           {
             text: "Cancelar",
             onPress: () => console.log("Cancel Pressed"),
             style: "cancel",
           },    
-          { text: "OK", onPress: () => {deleteTask(item)} },
+          { text: "OK", onPress: deleteTask },
         ]);
       }
     
@@ -89,7 +94,7 @@ const Task = ( {props} ) => {
     }
 
 
-    const deleteTask = async (item) => {
+    const deleteTask = async () => {
 
         let updateActiveTasks = activeTasks
         let findTask = false
@@ -114,7 +119,7 @@ const Task = ( {props} ) => {
         }
         }
 
-        let ref = doc(db, "assigned_tasks", route.params.uidTask);
+        let ref = doc(db, "assigned_tasks", uidTask);
 
         let updateCheckList = checkList
         let updateControlCheckList = controlCheckList
@@ -125,8 +130,9 @@ const Task = ( {props} ) => {
             active_tasks: updateActiveTasks,
             marked_tasks: updateCheckList,
             control_marked_tasks: updateControlCheckList,
-        });
-        setRefresh(refresh ? false : true);
+        }).then(()=> {
+          setShowTask(false)
+        })
         
     }
 
@@ -214,8 +220,8 @@ const Task = ( {props} ) => {
         }
 
 
-    return (
-        <TouchableOpacity style={styles.viewSeccion} disabled={!canControl} onLongPress={() => AreYouSureDeleteTask(item)}>
+    if (showTask) return (
+        <TouchableOpacity style={styles.viewSeccion} disabled={!canControl} onLongPress={AreYouSureDeleteTask}>
             <Item title={item} i={i}/>
 
             <View style={{ flexDirection: "row", alignItems: "center", position: "absolute", right: 0 }}>

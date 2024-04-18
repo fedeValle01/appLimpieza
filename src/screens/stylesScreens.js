@@ -209,6 +209,11 @@ const styles = StyleSheet.create({
   titleSectionlist: {
     fontSize: 19,
   },
+  titleSectionlistDisabled: {
+    fontSize: 19,
+    color: "#222",
+    fontStyle: 'italic',
+  },
   titleHeader: {
     fontSize: 40,
     fontWeight: "40",

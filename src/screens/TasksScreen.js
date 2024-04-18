@@ -7,7 +7,7 @@ doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/fires
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { MultiSelect } from "react-native-element-dropdown";
-
+import TaskView from './components/TaskView'
 export default function TasksScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -31,20 +31,13 @@ export default function TasksScreen({ navigate, route }) {
   const [cond, setCond] = useState(false);
   
   const [checkList, setCheckList] = useState([]);
-  const [firstTask, setFirstTask] = useState('');
 
   
   const [markAll, setMarkAll] = useState(false);
 
   const [checked, setChecked] = useState("unchecked");
 
-  const DeleteImg = memo(() => (
-    <Image
-          style={{ width: 25, height: 25 }}
-          source={require("../assets/tachoBasura.png")}
-    />
-  )
-);
+  
 
   let contador = -1;
 
@@ -84,6 +77,9 @@ export default function TasksScreen({ navigate, route }) {
   }
   
   const ejecuteQuery = (item) => {
+    console.log('HACE QUERY');
+    console.log('HACE QUERY');
+    console.log('HACE QUERY');
     let collectionRef = collection(db, "tasks");
     let unsuscribe;
     let TaskQuery = [];
@@ -91,10 +87,12 @@ export default function TasksScreen({ navigate, route }) {
     let nid = 0;
 
     if (item) {
-      item.forEach((element) => {
+      item.forEach(async (element) => {
         let q = query(collectionRef, where("task_sector", "==", element));
-        unsuscribe = onSnapshot(q, (querySnapshot) => {
-          console.log('ejectuta on snap');
+
+        const querySnapshot = await getDocs(q);
+       
+
           TaskQuery = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             taskName: doc.data().task_name,
@@ -110,7 +108,6 @@ export default function TasksScreen({ navigate, route }) {
               objTask.taskName = task.taskName;
               objTask.defaultAssigned = task.defaultAssigned;
               objTask.id = task.id;
-
               
               Tasks.push(objTask);
             });
@@ -124,19 +121,13 @@ export default function TasksScreen({ navigate, route }) {
             let firstTask = tasksAndSector[0]
             firstTask = firstTask.data
             firstTask = firstTask[0]
-            console.log("tasksAndSector");
-            console.log(tasksAndSector);
             setTaskAvaiable(tasksAndSector);
-            setFirstTask(firstTask)
           }
-        });
       });
     } else {
       console.log("se setea vacio");
       setTasks([]);
     }
-
-    return unsuscribe;
   };
 
   const renderItem = ({ item }) => {
@@ -158,7 +149,6 @@ export default function TasksScreen({ navigate, route }) {
 
   
   const cleanTasks = () => {
-    setFirstTask('')
     contador=-1;
     setCheckList([])
     setTaskAvaiable([])
@@ -187,105 +177,12 @@ export default function TasksScreen({ navigate, route }) {
     );
   };
 
-  const areYouSureDeleteTask = (task) => {
-    console.log('aresure');
-      return Alert.alert("Vas a eliminar la tarea "+task.taskName, "Estas seguro?", [
-        {
-          text: "Cancelar",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },    
-        { text: "OK", onPress: () => deleteTask(task) }
-      ]);
-  }
   
-  const deleteTask = async (task) =>{
-    console.log('llego aca');
-
-    deleteDoc(doc(db, "tasks", task.id)).then(() => {
-      Alert.alert('Se elimino la tarea '+ task.taskName+' con exito')
-    });
-  }
 
   
-  const getIndexTask = (task) => {
+  
 
-    let pos = 0
-    let findIndex = false
-    let updateTasks = tasks
-    while (!findIndex) {
-      for (let i = 0; i < updateTasks.length; i++) {
-        let sector = updateTasks[i];
-        let data = sector.data
-        for (let j = 0; j < data.length; j++) {
-          let taskOriginal = data[j]
-          if (task.taskName == taskOriginal.taskName){
-            findIndex = true
-            taskOriginal.defaultAssigned = !taskOriginal.defaultAssigned
-            break
-          }
-          pos++
-        }
-        if (findIndex) break
-      }
-    }
-    setTasks([updateTasks])
-  }
-
-  const changeDefault = async (task) => {
-    const ref = doc(db, "tasks", task.taskName);
-    await updateDoc(ref, {default_assigned: !task.defaultAssigned})
-    getIndexTask(task)
-  }
-
-  const renderSectionList = ({ item }) => {
-    contador++;
-    if (firstTask == item.taskName){
-      contador = 0;
-    }
-    let checkIndex = 0;
-    //  si no hay checklist, la setea unchecked
-    if (checkList.length == 0) {
-      tasks.forEach((s) => {
-        s.data.forEach((task) => {
-          checkList[checkIndex] = "unchecked";
-          checkIndex++;
-        });
-      });
-    }
-    let i = contador;
-    console.log("se renderiza con item " + item.taskName + " index: " + i);
-    let defaultAssigned = item.defaultAssigned
-    return (
-      <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>
-        <View>
-          <Item title={item.taskName} />
-        </View>
-        <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
-          <View>
-            {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(item)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
-            {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(item)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
-          </View>
-          <TouchableOpacity onPress={() => areYouSureDeleteTask(item.taskName)}>
-            <DeleteImg />
-          </TouchableOpacity>
-          <View style={{marginRight: 5}} />
-        </View>
-      </View>
-    );
-  };
-  const handleCheck = (i) => {
-    let check = checkList;
-    if (check.length > 0) {
-      if (check[i] == "unchecked") {
-        check[i] = "checked";
-      } else {
-        check[i] = "unchecked";
-      }
-    }
-    setCheckList(check);
-  };
-
+  
 
 
   useEffect(() => {
@@ -349,30 +246,15 @@ export default function TasksScreen({ navigate, route }) {
       commitBatch();
 
   }
-  const TaskView = ({ task }) => {
-    let taskName = task.taskName
-    let defaultAssigned = task.defaultAssigned
-
-    return(
-        <View style={[styles.viewSeccion, {backgroundColor: !defaultAssigned ? "#cecece" : ""}]}>
-          <View style={[styles.itemSectionlist, {width:"60%"}]}>
-            <Text style={styles.titleSectionlist}>{taskName}</Text>
-          </View>
-          <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center", position: "absolute", right: 10}}>
-            {defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>desactivar</Text></TouchableOpacity>}
-            {!defaultAssigned && <TouchableOpacity onPress={() => changeDefault(task)}><Text style={styles.pActive}>activar</Text></TouchableOpacity>}
-            <View>
-              <TouchableOpacity onPress={() => areYouSureDeleteTask(task)}>
-                <DeleteImg />
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-    )
+  
+  const changeDefault = async (task) => {
+    const ref = doc(db, "tasks", task.taskName);
+    await updateDoc(ref, {default_assigned: !task.defaultAssigned})
+    getIndexTask(task)
   }
   const ListTasks = ( {data} ) => {
     
-    
+    console.log('PASA LISTTASK');
     
     return (
       <View>
@@ -423,7 +305,7 @@ export default function TasksScreen({ navigate, route }) {
             return(
               <View>
                 <Text style={styles.SectionHeader}>{sector.title}</Text>
-                <ListTasks key={i} data={data} />
+                <ListTasks key={sector.title} data={data} />
               </View>
               )
             })

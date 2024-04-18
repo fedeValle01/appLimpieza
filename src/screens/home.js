@@ -111,24 +111,6 @@ const HomeScreen = ({ navigation, route }) => {
       });
     };
 
-
-    const handleControlCheck = async (i) => {
-      let check = controlCheckList;
-      if (check.length > 0) {
-        if (check[i] == "unchecked") {
-          check[i] = "checked";
-        } else {
-          check[i] = "unchecked";
-        }
-      }
-
-      //Add markedTask
-      await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
-        control_marked_tasks: check,
-        timestamp_control_marked_tasks: serverTimestamp(),
-      });
-    }
-
     
     
 
@@ -194,6 +176,7 @@ const HomeScreen = ({ navigation, route }) => {
         canCheckTask: canCheckTask,
         checkList: checkList,
         controlCheckList: controlCheckList,
+        activeTasks: activeTasks
       }
       
       return (<Task props={props}/>)
@@ -295,11 +278,14 @@ const HomeScreen = ({ navigation, route }) => {
           <Text style={styles.SectionHeader}>{sector}</Text>
         )}
       />
+        {canControl &&(
           <Pressable
             style={[styleModal.button, styleModal.buttonOpen]}
             onPress={() => setModalLeaveComment(true)}>
             <Text style={styleModal.textStyle}>Dejar observación</Text>
           </Pressable>
+        )}
+          
           <BtnComponents />
       </View>
 
