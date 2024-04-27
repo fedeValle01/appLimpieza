@@ -5,16 +5,13 @@ import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSna
  updateDoc, getDoc } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
 
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
 import DatePicker from "react-native-date-picker";
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function AssignTaskScreen({ navigate, route }) {
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
 
   //datepicker
   const [date, setDate] = useState(new Date());

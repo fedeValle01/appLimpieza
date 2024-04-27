@@ -18,10 +18,7 @@ import {
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function AddSector({ navigation, route }) {
   const [sector, setSector] = useState("");

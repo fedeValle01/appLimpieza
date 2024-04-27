@@ -3,8 +3,8 @@ import { Text, SafeAreaView, TouchableOpacity, Alert, View} from "react-native";
 import { doc, writeBatch, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, deleteField, updateDoc, addDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
+import { app, auth, db } from '../helpers/getFirebase'
 
 // Get a new write batch
 
@@ -12,9 +12,6 @@ console.log("Refresh AutoAssignTaskScreen");
 
 export default function AdminScreen({ navigation, route }) {
   console.log("render AutoAssignTask");
-  const auth = getAuth(app);
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
   const batch = writeBatch(db);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);

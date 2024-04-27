@@ -9,10 +9,7 @@ import { initializeApp } from "firebase/app";
 
 import { TextInput } from "react-native-paper";
 import { getProducts } from "./getProducts";
-
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import { db, app, auth } from "../../helpers/getFirebase";
 
 export default function ProductsScreen({ navigation, route }){
 

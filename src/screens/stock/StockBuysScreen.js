@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker'
 import { TextInput } from 'react-native-paper'
 
 import { getProducts } from './getProducts'
+import { db, auth, app } from '../../helpers/getFirebase'
 function copyOfScriptStock() {
 
   const productos = ['Lavandina', 'Lavandina en gel', 'Desodorante piso lisoform', 'Desodorante piso pino', 'Desodorante piso limon', 'Detergente magistral', 'Jabón manos dove', 'Jabón manos melón', 'Jabón manos uva']
@@ -44,9 +45,6 @@ function copyOfScriptStock() {
   })
 }
 
-
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
 
 export default function StockBuysScreen({ navigation, route }) {
 

@@ -4,10 +4,9 @@ import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot } from 'firebase/firestore'
 import firebaseConfig from '../firebase-config' 
 import styles from '../screens/stylesScreens'
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function Sector({navigation, route})  {
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const numbers = [1, 2, 3, 4, 5];
     const [sectors, setSectors ] = useState([]);
     

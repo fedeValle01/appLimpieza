@@ -3,25 +3,18 @@ import Logo from '../components/Logo'
 import Header from '../components/Header'
 import Button from '../components/Button'
 import Paragraph from '../components/Paragraph'
-import { Alert, SafeAreaView, Text, View } from 'react-native';
-import { getAuth } from 'firebase/auth'
-import { initializeApp } from 'firebase/app'
-import firebaseConfig from '../firebase-config';
+import { Alert, Platform, SafeAreaView, Text, View } from 'react-native';
 import styles from '../screens/stylesScreens';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from "expo-constants";
-import { doc, getFirestore, updateDoc } from 'firebase/firestore'
+import { doc, updateDoc } from 'firebase/firestore'
+import { auth, db } from '../helpers/getFirebase'
 
-
-const db = getFirestore(app);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
 export default function StartScreen({ navigation }) {
   const [notification, setNotification] = useState(false);
   const notificationListener = useRef();
   const responseListener = useRef();
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -49,6 +42,8 @@ async function registerForPushNotificationsAsync() {
       projectId: Constants.expoConfig.extra.eas.projectId,
     });
     token = token.data
+    console.log("token.data");
+    console.log(token);
   } else {
     alert('Must use physical device for Push Notifications');
   }
@@ -71,7 +66,7 @@ async function registerForPushNotificationsAsync() {
     auth.onAuthStateChanged(async (user) => {
       if (user) {
         let t = ""
-        await registerForPushNotificationsAsync().then(token => t = token);
+        await registerForPushNotificationsAsync().then(token => { console.log(token); t = token});
 
         const saveToken = async (token) => {
           let ref = doc(db, "user", user.uid);
@@ -81,6 +76,9 @@ async function registerForPushNotificationsAsync() {
         }
         if (t){
           saveToken(t)
+          console.log("token");
+          console.log(token);
+          Alert.alert('tu token: '+t)
         }
         navigation.navigate('appLimpieza', {uid: user.uid, uidTask: user.uid, loading: true})
     }

@@ -7,6 +7,7 @@ import { initializeApp } from 'firebase/app';
 import { doc, getFirestore, updateDoc } from 'firebase/firestore';
 import * as TaskManager from 'expo-task-manager';
 import Constants from "expo-constants";
+import { app, auth, db } from '../helpers/getFirebase'
 
 
 Notifications.setNotificationHandler({
@@ -17,8 +18,6 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK';
 
 TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, ({ data, error, executionInfo }) => {

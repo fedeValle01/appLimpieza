@@ -4,10 +4,9 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function TaskScreen({ navigation, route }) {
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
   const [user, setUser] = useState([]); //user who see their own tasks
   const [users, setUsers] = useState([]); //all the users
   const [usersInHome, setUsersInHome] = useState([]);

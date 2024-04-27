@@ -1,19 +1,15 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, Image, TouchableOpacity, Button, Pressable } from 'react-native';
-import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, addDoc } from 'firebase/firestore'
-import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
 import DropDownPicker from 'react-native-dropdown-picker';
 import * as Notifications from 'expo-notifications';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from "react-native-paper";
+import { app, auth, db } from '../helpers/getFirebase'
 
 
 export default function AddTasks ({navigate, route}){
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
 
     const [checked, setChecked] = useState('checked');
     const [value, setValue] = useState(null);

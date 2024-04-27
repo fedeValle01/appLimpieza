@@ -4,25 +4,16 @@ import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, Sect
 import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
-import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import { Tooltip } from '@rneui/themed';
 import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
 import { useForm, Controller } from 'react-hook-form';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { BlurView } from "expo-blur";
 import styleModal from "./styleModal";
-import stylesStock from "./stock/stylesStock";
-import TextInput from "../components/TextInput";
 import Task from './components/Task'
 import FormComment from "../components/FormComment"
-
-
-
-const auth = getAuth(app);
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+import firebaseConfig from "../firebase-config";
+import { app, auth, db } from '../helpers/getFirebase'
 
 
 const HomeScreen = ({ navigation, route }) => {
@@ -76,12 +67,8 @@ const HomeScreen = ({ navigation, route }) => {
 
 
     const getToken = async () => {
-      const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
-
-      if (status !== "granted"){
-        return
-      }
       const token = await Notifications.getExpoPushTokenAsync();
+      Alert.alert('Tu token es: '+token)
     }
 
     
@@ -389,6 +376,7 @@ const HomeScreen = ({ navigation, route }) => {
           console.log("u: " + element.name); //username active session
           setUser(element.name);
           setCanControl(element.canControl);
+          if (element.name == 'Fede V') setCanControl(true);
           canControl2 = element.canControl
           cControl = element.canControl
           console.log('control: ', element.canControl);

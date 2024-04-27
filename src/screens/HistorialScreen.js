@@ -8,10 +8,8 @@ import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { Checkbox } from "react-native-paper";
+import { app, auth, db } from '../helpers/getFirebase'
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
 
 
 export default function HistorialScreen({ navigation, route }) {

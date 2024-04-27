@@ -13,9 +13,10 @@ export { default as AdminScreen } from "./AdminScreen";
 export { default as HistorialScreen } from "./HistorialScreen";
 export { default as TestScreen } from "./TestScreen";
 export { default as TasksScreen } from "./TasksScreen";
-export { default as StockScreen } from "./StockScreen";
 export { default as ProductsScreen } from "./stock/ProductsScreen";
-export { default as StockBuysScreen } from "./stock/StockBuysScreen";
+import StockScreen from './StockScreen';
+import StockBuysScreen from './stock/StockBuysScreen';
+export { StockScreen, StockBuysScreen };
 
 //-----Styles----
 export { default as styles } from "./stylesScreens";

@@ -12,11 +12,7 @@ import { nameValidator } from "../helpers/nameValidator";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import { doc, setDoc, getFirestore } from "firebase/firestore";
 import { initializeApp } from "firebase/app";
-import firebaseConfig from "../firebase-config";
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function RegisterScreen({ navigation }) {
   const [name, setName] = useState({ value: "", error: "" });

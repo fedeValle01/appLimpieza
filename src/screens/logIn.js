@@ -5,11 +5,9 @@ import { doc, setDoc, getFirestore, collection, query, onSnapshot, orderBy, wher
 import { initializeApp } from 'firebase/app'
 import firebaseConfig from '../firebase-config';
 import styles from '../screens/stylesScreens';
+import { db, app, auth } from '../helpers/getFirebase';
 
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getFirestore(app);
 
 
 

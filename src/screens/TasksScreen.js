@@ -3,14 +3,12 @@ import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, B
 import { initializeApp } from "firebase/app";
 import { getFirestore, writeBatch, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
 doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
-
+import { app, auth, db } from '../helpers/getFirebase'
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { MultiSelect } from "react-native-element-dropdown";
 import TaskView from './components/TaskView'
 export default function TasksScreen({ navigate, route }) {
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
 
   //datepicker
   const [date, setDate] = useState(new Date());

@@ -9,10 +9,7 @@ import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { initializeApp } from "firebase/app";
-import firebaseConfig from "../firebase-config";
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+import { auth, app, db } from "../helpers/getFirebase";
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState({ value: "", error: "" });

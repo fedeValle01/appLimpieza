@@ -6,15 +6,10 @@ import { initializeApp } from "firebase/app";
 import { Checkbox } from "react-native-paper";
 import LoadingGif from '../components/Loading'
 import Separator from '../components/Separator'
-import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
-
-console.log("Refresh AutoAssignTaskScreen");
+import { app, auth, db } from '../helpers/getFirebase'
 
 export default function AutoAssignTaskScreen({ navigation, route }) {
-  const auth = getAuth(app);
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
   const [loading, setLoading] = useState(true)
   const [usersInHome, setUsersInHome] = useState([]);
   const [assigned_tasks, setAssignedTasks] = useState([]);

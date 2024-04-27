@@ -11,6 +11,7 @@ import { initializeApp } from 'firebase/app'
 import { getDownloadURL, getStorage, listAll, ref, uploadBytes } from 'firebase/storage'
 import * as ImagePicker from 'expo-image-picker'
 import { TextInput } from 'react-native-paper'
+import { app, auth, db } from '../helpers/getFirebase'
 
 import { getProducts } from './stock/getProducts'
 function copyOfScriptStock() {
@@ -45,9 +46,6 @@ function copyOfScriptStock() {
   })
 }
 
-
-const app = initializeApp(firebaseConfig)
-const db = getFirestore(app)
 
 export default function StockScreen({ navigation, route }) {
 

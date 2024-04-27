@@ -150,7 +150,7 @@ const styles = StyleSheet.create({
   textHeader: {
     color: "#fff",
     fontSize: 20,
-    fontWeight: "440",
+    fontWeight: "400",
     alignContent: "center",
     alignItems: "center",
     textAlignVertical: "center",
@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   },
   titleHeader: {
     fontSize: 40,
-    fontWeight: "40",
+    fontWeight: "300",
     color: "#27a4f2",
   },
   input: {
@@ -230,13 +230,13 @@ const styles = StyleSheet.create({
   },
   titleMain: {
     color: '#3e3944',
-    fontSize: 32,
-    fontWeight: '40',
+    fontSize: 30,
+    fontWeight: '400',
     textAlign: 'center'
   },
   subtitleSection: {
     fontSize: 25,
-    fontWeight: "45",
+    fontWeight: "400",
     color: "#4b0081",
     textAlign: "center"
   },
