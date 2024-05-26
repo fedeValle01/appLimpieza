@@ -7,7 +7,7 @@ import { doc, setDoc, getFirestore } from "firebase/firestore"; // Follow this p
 import firebaseConfig from "./src/firebase-config";
 import { Sectors, AddSector, LoginScreen, HomeScreen, UserScreen,
 AdminScreen, RegisterScreen, AddTasks, AssignTaskScreen, AutoAssignTaskScreen, StartScreen, HistorialScreen,
- TestScreen, TasksScreen, StockScreen, ProductsScreen, StockBuysScreen
+ TestScreen, TasksScreen, StockScreen, ProductsScreen, StockBuysScreen, GroupScreen
 } from "./src/screens";
 import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
@@ -75,6 +75,8 @@ export default function App() {
           <Stack.Screen name="StartScreen" component={StartScreen} />
           <Stack.Screen name="Iniciar Sesion" component={LoginScreen} />
           <Stack.Screen name="Registrarte" component={RegisterScreen} />
+          <Stack.Screen name="Grupo" component={GroupScreen} />
+          
           <Stack.Screen 
             name="appLimpieza"
             component={HomeScreen}

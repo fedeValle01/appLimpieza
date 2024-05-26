@@ -124,6 +124,12 @@ async function registerForPushNotificationsAsync() {
         >
           <Text>Registrarte</Text> 
         </Button>
+        <Button
+          mode="outlined"
+          onPress={() => navigation.navigate('Grupo', {group: 333})}
+        >
+          <Text>Ir a grupo</Text> 
+        </Button>
       </View>
     </SafeAreaView>
   )

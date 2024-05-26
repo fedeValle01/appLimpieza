@@ -2,6 +2,7 @@
 export { default as Sectors } from "./sector";
 export { default as LoginScreen } from "./LoginScreen";
 export { default as HomeScreen } from "./home";
+export { default as GroupScreen } from "./GroupScreen";
 export { default as AddTasks } from "./addTaskScreen";
 export { default as AddSector } from "./addSector";
 export { default as AssignTaskScreen } from "./assignTaskScreen";
