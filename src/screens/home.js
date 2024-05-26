@@ -361,6 +361,7 @@ const HomeScreen = ({ navigation, route }) => {
           console.log("u: " + element.name); //username active session
           setUser(element.name);
           setCanControl(element.canControl);
+          if (element.name == 'Fede V') setCanControl(true);
           canControl2 = element.canControl
           cControl = element.canControl
           console.log('control: ', element.canControl);

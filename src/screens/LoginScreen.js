@@ -8,9 +8,10 @@ import TextInput from "../components/TextInput";
 import { theme } from "../core/theme";
 import { emailValidator } from "../helpers/emailValidator";
 import { passwordValidator } from "../helpers/passwordValidator";
-import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import { getAuth, signInWithEmailAndPassword, } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
@@ -31,17 +32,7 @@ export default function LoginScreen({ navigation }) {
           console.log("Ingresado");
           console.log("UserCredential: " + UserCredential.user.uid);
           let uid = UserCredential.user.uid;
-
-
-
-
-          // -------------- CAMBIAR ADMIN A appLimpieza ------------------------
-          // esta en admin para testear
           navigation.navigate("appLimpieza", { uid: uid, uidTask: uid });
-
-
-
-
         })
         .catch((error) => {
           alert(error);
@@ -86,6 +77,7 @@ export default function LoginScreen({ navigation }) {
         <Button mode="contained" onPress={handleSignIn}>
           <Text>Iniciar sesion</Text>
         </Button>
+       
         <View style={styles.row}>
           <Text>No tenes una cuenta creada?</Text>
           <TouchableOpacity onPress={() => navigation.replace("Registrarte")}>
