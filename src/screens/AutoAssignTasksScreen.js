@@ -9,8 +9,6 @@ import Separator from '../components/Separator'
 import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
 
-console.log("Refresh AutoAssignTaskScreen");
-
 export default function AutoAssignTaskScreen({ navigation, route }) {
   const auth = getAuth(app);
   const app = initializeApp(firebaseConfig);

@@ -85,12 +85,7 @@ const HomeScreen = ({ navigation, route }) => {
     }
 
     
-    const irACrearSector = () => {
-      if (canControl) {
-        navigation.navigate("AddSector", { uid: route.params.uid });
-      } else  Alert.alert("Solo admin puede crear sector");
     
-    };
     
 
     const logActiveTasks = () => {
@@ -497,7 +492,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2) })
+                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2), groupCode: route.params.groupCode })
               }
             >
               <View style={{ alignContent: "center" }}>
@@ -522,7 +517,7 @@ const HomeScreen = ({ navigation, route }) => {
             <TouchableOpacity
               onPress={() =>{
                 if (canControl || cControl) {
-                  navigation.navigate("Agregar Tarea", { uid: route.params.uid })
+                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, canControl: true })
               }else{
                 Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
               }
@@ -670,7 +665,32 @@ const HomeScreen = ({ navigation, route }) => {
     console.log('return homescreeen');
     console.log('-----------');
 
-    
+    const Tutorial = () => {
+      return(
+        <View>
+
+        <Text>Primera vez</Text>
+
+          <TouchableOpacity
+              onPress={() =>{
+                if (canControl || cControl) {
+                  navigation.navigate("Agregar Tarea", { uid: route.params.uid })
+              }else{
+                Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
+              }
+              }
+            }
+            >
+              <View style={{ alignContent: "center", marginLeft:5 }}>
+                <AgregarTareaImg />
+              </View>
+          </TouchableOpacity>
+        </View>
+      )
+    }
+    if (route.params.firstTime) return (
+      <Tutorial />
+    )
     return (
       <SafeAreaView style={styles.container}>
         
