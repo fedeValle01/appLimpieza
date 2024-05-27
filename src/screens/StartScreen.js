@@ -81,7 +81,7 @@ async function registerForPushNotificationsAsync() {
         if (t){
           saveToken(t)
         }
-        navigation.navigate('appLimpieza', {uid: user.uid, uidTask: user.uid, loading: true})
+        navigation.navigate('appLimpieza', {uid: user.uid, uidTask: user.uid, loading: true, groupCode: "gP56l2GQhxeSC9VLDQhp"})
     }
         
     });
@@ -126,7 +126,7 @@ async function registerForPushNotificationsAsync() {
         </Button>
         <Button
           mode="outlined"
-          onPress={() => navigation.navigate('Grupo', {group: 333})}
+          onPress={() => navigation.navigate('Grupo', {group: "x6yV2DI7AdHlgyf5b7qF"})}
         >
           <Text>Ir a grupo</Text> 
         </Button>

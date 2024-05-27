@@ -1,15 +1,16 @@
 import React, { memo, useEffect, useState } from "react";
 import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert, ScrollView, Image } from "react-native";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc, getDoc, runTransaction } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
+import { getState } from "../helpers/getStates";
 
 export default function TaskScreen({ navigation, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const [user, setUser] = useState([]); //user who see their own tasks
-  const [users, setUsers] = useState([]); //all the users
+  const [groupUsers, setGroupUsers] = useState([]); //all the users
   const [usersInHome, setUsersInHome] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
   
@@ -200,7 +201,6 @@ export default function TaskScreen({ navigation, route }) {
 
   useEffect(() => {
 
-
     let collectionRef = collection(db, "assigned_tasks");
     let q = query(collectionRef);
     let assignedTasks = []
@@ -216,65 +216,52 @@ export default function TaskScreen({ navigation, route }) {
       );
     });
 
-    //set my username
-    let u;
-    collectionRef = collection(db, "user");
-    q = query(collectionRef, where("uid", "==", route.params.uid));
-    unsuscribe = onSnapshot(q, (querySnapshot) => {
-      u = querySnapshot.docs.map((doc) => ({
-        name: doc.data().username,
-      }));
-
-      u.forEach((element) => {
-        setUser(element.name);
-      });
-    });
-
-    //set users
-    collectionRef = collection(db, "user");
-    q = query(collectionRef);
-    unsuscribe = onSnapshot(q, (querySnapshot) => {
-      u = querySnapshot.docs.map((doc) => ({
-        in_home: doc.data().in_home,
-        username: doc.data().username,
-        uid: doc.data().uid,
-        canControl: doc.data().can_control,
-        sectors: [],
-      }));
-
-      
-
-
-      const getState = (marked, control, haveTasks) => {
-        if(!haveTasks) return('none')
-
-        let haveAllControlCheck = true;
-        let i = 0
-        while (haveAllControlCheck && i < control.length) {
-          if (control[i] == 'unchecked'){
-            haveAllControlCheck = false
-          }
-          i++
-        }
-        if (haveAllControlCheck){
-          return('finished')
-        }else{
-        let haveSomeCheck = false;
-        let j = 0
-        while (!haveSomeCheck && j < marked.length) {
-          if (marked[j] == 'checked'){ // if have one or more tasks mark as completed
-            haveSomeCheck = true
-          }
-          j++
-        }
-        if (haveSomeCheck){
-          return('completed')
-        }else{
-          return('active')
-        }
-      }
+    const getUsersAndSectors = async () => {
+    //get users
+    const docRef = doc(db, "groups", route.params.groupCode);
+    const group = await getDoc(docRef);
+    let users = []
+    if (group.exists()) {
+      users = group.data().users
+      console.log("Document data:", users);
+    } else {
+      console.log("No such document!");
+      return (Alert.alert("No hay usuarios"))
     }
-    
+
+    let u = []
+    try {
+      await runTransaction(db, async (transaction) => {
+        users.forEach(async user => {
+          console.log('foreac');
+          const docRef = doc(db, "user", user);
+          const sfDoc = await transaction.get(docRef);
+          
+          if (!sfDoc.exists()) {
+            throw "Document does not exist!";
+          }else{
+            let objUser = {}
+            console.log(sfDoc.data().username)
+            objUser.username = sfDoc.data().username
+            objUser.in_home = sfDoc.data().in_home,
+            objUser.usernam = sfDoc.data().username,
+            objUser.uid = sfDoc.data().uid,
+            objUser.canControl = sfDoc.data().can_control,
+            objUser.sectors = [],
+            u.push(objUser)
+          }
+        });
+        
+      });
+     } catch (e) {
+      console.log("err");
+      console.log(e);
+     }
+     console.log('userFinal',u);
+
+    collectionRef = collection(db, "groups", "gP56l2GQhxeSC9VLDQhp", "users");
+    q = query(collectionRef);
+      
       u.forEach((user, i) => { //binding sectors to users
         let uid = user.uid
         let sectors = []
@@ -317,9 +304,12 @@ export default function TaskScreen({ navigation, route }) {
       });
       setUsersOutHome(usersOutHome)
       setUsersInHome(usersInHome)
-      setUsers(u);
-    });
+      setGroupUsers(u);
 
+    }
+    getUsersAndSectors()
+
+    
     return unsuscribe;
   }, []);
 
@@ -350,7 +340,7 @@ export default function TaskScreen({ navigation, route }) {
                   Tareas asignadas de los usuarios
                 </Text>
               </View>
-            <SectorList users={users} />
+            <SectorList users={groupUsers} />
 
       </ScrollView>
 

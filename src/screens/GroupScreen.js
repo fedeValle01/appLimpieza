@@ -1,61 +1,95 @@
 import React, {useEffect, useState, Component} from 'react';
-import { StyleSheet, Text, SafeAreaView, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, Text, SafeAreaView, TouchableOpacity, View, Alert } from 'react-native';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, setUserCredential, signInWithCredential, getIdToken} from 'firebase/auth'
-import { doc, setDoc, getFirestore, collection, query, onSnapshot, orderBy, where, getDocs } from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import { doc, setDoc, getFirestore, collection, query, onSnapshot, orderBy, where, getDocs, addDoc, getDoc, writeBatch, updateDoc } from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { initializeApp } from 'firebase/app'
 import TextInput from "../components/TextInput";
 
 import firebaseConfig from '../firebase-config';
 import Button from '../components/Button';
 import Header from '../components/Header';
+import { BlurView } from 'expo-blur';
+import styleModal from './styleModal';
+import { Modal } from 'react-native';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const batch = writeBatch(db);
 
 
 
 export default function GroupScreen({navigation, route}) {
-
     
-
-    const [uid, setUid] = useState([]);
+    // const [uid, setUid] = useState(route.params.uid);
+    const [uid, setUid] = useState("UDUaYCyuVJYCTP7Y21DJ7ylD8aO2");
+    
     const [haveGroup, setHaveGroup] = useState(false);
-    const [UserCredential, setUserCredential] = useState([]);
+    const [modalCreateGroup, setModalCreateGroup] = useState(false);
     
 
     useEffect(() =>{
         if (!route.params.group){
             console.log('no tiene grupo');
         }
+        console.log(route.params.group);
     },[])
 
-    
-    const createUser = async (uid) =>{
-        await setDoc(doc(db, 'user', uid), {
-        username: name,
-        uid: uid,
-        });
-    }
 
     const handleJoinGroup = async (code) => {
-        console.log(code);
+        const docRef = doc(db, "groups", code);
+        const group = await getDoc(docRef);
+        if (!group.exists()) return (Alert.alert(`El grupo con codigo: "${code}" no existe `))
+
+            const success = await addUserToGroup(uid, code)
+            if (success) navigation.navigate("appLimpieza", { uid: uid, uidTask: uid, groupCode: code, firstTime: true })
+        
     }
 
-    const handleCreateGroup = async () => {
-        console.log('crear grupo');
+    const createGroup = async (name) => {
+        let id = ''
+        const group = await addDoc(collection(db, "groups"), {
+            name: name,
+            owner: uid
+            }).then((res)=> id = res.id)
+        return id
     }
 
-const viewName = () => {
-    if(uid!=""){
-      uid.forEach((uid) => {
-        setName(uid.username);
-        // console.log('name: '+name);
-      });
-  }
-}
+    const addUserToGroup = async (uid, idGroup) => {
+        let success = false
+        let newUsersInGroup = []
+        const group = doc(db, 'groups', idGroup)
+        const groupSnap = await getDoc(group);
+        let usersInGroup = groupSnap.data().users
+        
+        if (!usersInGroup) {
+            newUsersInGroup.push(uid)
+        }else{
+            usersInGroup.push(uid)
+            newUsersInGroup = usersInGroup
+        }
+        console.log("Document data:", groupSnap.data().users);
+        console.log("newUsersInGroup");
+        console.log(newUsersInGroup);
+        await updateDoc(doc(db, "groups", idGroup), {
+            users: newUsersInGroup
+        }).then(() => success = true)
+        return success
+    }
+    
+    const handleCreateGroup = async (name) => {
 
-const InputGroup = () => {
+        const groupCode = await createGroup(name)
+        if (!groupCode) return (Alert.alert(`Fallo al crear el grupo, intente de nuevo`))
+
+        const success = await addUserToGroup(uid, groupCode)
+        if (!success) return Alert.alert(`Fallo al agregar usuario al grupo`)
+
+        Alert.alert(`El grupo ${name} fue creado exitosamente!`)
+        navigation.navigate("appLimpieza", { uid: uid, uidTask: uid, groupCode: groupCode, firstTime: true })
+        
+    }
+  const InputGroup = () => {
     const [code, setCode] = useState('');
     
     return(
@@ -77,29 +111,40 @@ const InputGroup = () => {
         </View>
     )
 }
-  useEffect(() => {
-    auth.onAuthStateChanged((user) => {
-      if (user) {
-        console.log("ya tienes sesión iniciada con: "+name+', UID: '+user.uid);
-        
-        const collectionRef = collection(db, 'user');
-        const q = query(collectionRef, where("uid", "==", user.uid));
-        const unsuscribe = onSnapshot(q, querySnapshot =>{
-          setUid(
-            querySnapshot.docs.map(doc =>({
-              username: doc.data().username,
-            }
-            ))
-          )
-          
-        })
-        navigation.navigate('appLimpieza', {uid: user.uid})
-        
-        return unsuscribe;
-    }
-        
-    });
-  }, []);
+
+const FormCreateGroup = () => {
+    const [name, setName] = useState('')
+    return(
+        <View  style={{width: 200}}>
+            <TextInput
+                label="Nombre del grupo"
+                returnKeyType="done"
+                value={name}
+                onChangeText = {(text) => setName(text)}
+            />
+            <Button style={{marginTop: 50}} mode="contained" onPress={() => handleCreateGroup(name)}>
+                <Text>Crear Grupo</Text>
+            </Button>
+        </View>
+    )
+}
+
+const closeModal = () => {
+    setModalCreateGroup(false)
+}
+
+const SectionCreateGroup = () => {
+    
+    return(
+        <BlurView tint="dark" intensity={80} style={[styleModal.centeredView, {marginTop: -50}]}>
+            <View style={styleModal.modalView}>
+            <View style={{marginTop: 20}}>
+                <FormCreateGroup />
+            </View>
+            </View>
+        </BlurView>
+    )
+}
 
   return (
     
@@ -107,12 +152,22 @@ const InputGroup = () => {
       
       {(!haveGroup) && (
         <View style={{width: 200}}>
-            <Header><Text style={{color: "#222"}}> No tenes un grupo</Text></Header>
 
+            <Header><Text style={{color: "#222"}}>No estas en ningun grupo</Text></Header>
             <InputGroup />
-            <Button style={{marginTop: 50}} mode="contained" onPress={() => handleJoinGroup(code)}>
+
+            <Button style={{marginTop: 50}} mode="contained" onPress={() => setModalCreateGroup(true)}>
                 <Text>Crear Grupo</Text>
             </Button>
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={modalCreateGroup}
+                onRequestClose={() => {
+                    setModalCreateGroup(false)
+            }}>
+                <SectionCreateGroup />
+            </Modal>
         </View>
       )}
     </SafeAreaView>

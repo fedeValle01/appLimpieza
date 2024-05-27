@@ -8,9 +8,10 @@ import DropDownPicker from 'react-native-dropdown-picker';
 import * as Notifications from 'expo-notifications';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from "react-native-paper";
+import { getSectors } from '../helpers/getSectors';
 
 
-export default function AddTasks ({navigate, route}){
+export default function AddTasks ({navigation, route}){
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
@@ -57,39 +58,32 @@ export default function AddTasks ({navigate, route}){
     }
   
     
-    
-    
-    
-  
-    
-
 
     useEffect(() =>{
-        const collectionRef = collection(db, 'sectors');
-        const q = query(collectionRef, orderBy('sector_name', 'desc'))
-        const unsuscribe = onSnapshot(q, querySnapshot =>{
-          let sectors = [];
 
-          sectors = (
-            querySnapshot.docs.map(doc =>({
-              sector_name: doc.data().sector_name,
-              sector_description: doc.data().sector_description,
-            }))
-          )
+      const getItems = async () => {
+        const sectors = await getSectors("group1")
+        if (!sectors) return 
+        let arregloNombres = sectors.map(sector => ({
+          label: sector.sector_name,
+          value: sector.sector_name,
+        }))
+          setItems(arregloNombres);
+      }
+        
+      getItems()
 
-          let arregloNombres = [];
-          if(sectors){
-              sectors.forEach((sector) => {
-                  let singleObj = {};
-                  singleObj['label'] = sector.sector_name;
-                  singleObj['value'] = sector.sector_name;
-                  arregloNombres.push(singleObj);
-            });
-            setItems(arregloNombres);
-          }else console.log('No hay sectores');
-          })
-        return unsuscribe;
+
+    
       }, [])
+
+
+      const irACrearSector = () => {
+        if (route.params.canControl) {
+          navigation.navigate("AddSector", { uid: route.params.uid, groupCode: route.params.groupCode });
+        } else  Alert.alert("Solo admin puede crear sector");
+      
+      };
 
     return (
         <SafeAreaView style = {styles.container}>
@@ -122,6 +116,9 @@ export default function AddTasks ({navigate, route}){
               renderItem={item => _renderItem(item)}
               textError="Error"
           />
+          <TouchableOpacity onPress={irACrearSector}>
+            <Text>Ir a Crear Sector</Text>
+          </TouchableOpacity>
             <View style={{marginTop: 20}}>
               <Text style = {{textAlign: 'center'}} >Descripción</Text>
               <TextInput
