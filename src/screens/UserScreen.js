@@ -337,9 +337,14 @@ export default function TaskScreen({ navigation, route }) {
                 <Text style={styles.subtitleSection}>
                   {" "}
                   Grupo {groupName}
-                  Tareas asignadas de los usuarios
                 </Text>
               </View>
+              <Text style={{color: '#3e3944', fontSize: 20, fontWeight: '40', textAlign: 'center'}}>
+                  Codigo:  {route.params.groupCode}
+              </Text>
+              <Text style={styles.titleMain}>
+                  Tareas asignadas de los usuarios
+              </Text>
             <SectorList />
 
       </ScrollView>
