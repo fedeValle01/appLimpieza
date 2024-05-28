@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, ScrollView } from "react-native";
+import React, { memo, useEffect, useRef, useState } from "react";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, ScrollView, Pressable } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp,
  updateDoc, getDoc } from "firebase/firestore";
@@ -140,15 +140,28 @@ export default function AssignTaskScreen({ navigate, route }) {
     return unsuscribe;
   };
 
+  const CheckImg = memo(() => (
+    <Image
+      style={{ width: 25, height: 25 }}
+      source={require("../assets/check.png")}
+    />
+  ));
+
+  const SelectDateImg = memo(() => (
+    <Image
+      style={{ width: 25, height: 25 }}
+      source={require("../assets/clock.png")}
+    />
+  ));
+
+  
 const BtnSelectAll = () => {
   if (task_name.length > 0) {
   return(
-    <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
-      <Button onPress={setAllChecked}
-        title='Seleccionar todas'
-        color='#E3682C'
-        >
-      </Button>
+    <View style={{ width: 25, height: 25, opacity: 0.8 }}>
+      <TouchableOpacity onPress={setAllChecked}>
+        <CheckImg />
+      </TouchableOpacity>
     </View>
   )
 }
@@ -156,23 +169,25 @@ const BtnSelectAll = () => {
   const SelectDate = () => {
     if (task_name.length > 0) {
       return (
-        <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
-          <Button title="Plazo hasta" onPress={() => setOpen(true)} />
-          <DatePicker
-            title={"Seleccionar fecha"}
-            confirmText={"Confirmar"}
-            cancelText={"Cancelar"}
-            modal
-            open={open}
-            date={date}
-            onConfirm={(date) => {
-              setOpen(false);
-              setDate(date);
-            }}
-            onCancel={() => {
-              setOpen(false);
-            }}
+        <View style={{ width: 50, opacity: 0.8, alignItems: "center", justifyContent: "center" }}>
+          <TouchableOpacity onPress={() => setOpen(true)}>
+            <SelectDateImg />
+            <DatePicker
+              title={"Seleccionar fecha"}
+              confirmText={"Confirmar"}
+              cancelText={"Cancelar"}
+              modal
+              open={open}
+              date={date}
+              onConfirm={(date) => {
+                setOpen(false);
+                setDate(date);
+              }}
+              onCancel={() => {
+                setOpen(false);
+              }}
           />
+          </TouchableOpacity>
         </View>
       );
     }
@@ -180,7 +195,7 @@ const BtnSelectAll = () => {
   const AssignTaskButton = () => {
     if (task_name.length > 0) {
       return (
-        <View style={{ width: 200, marginTop: 15, opacity: 0.8 }}>
+        <View style={{ width: 160, opacity: 0.8 }}>
           <Button
             title="Asignar Tareas"
             color="#43c6ac"
@@ -509,12 +524,19 @@ const BtnSelectAll = () => {
       </ScrollView>
 
       <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", position: "absolute", bottom: 20 }}>
-        <BtnSelectAll/>
 
+        <View style={{ alignSelf: "center", flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+ 
+        <AssignTaskButton />
+        
         {/* doesn't work on android emulator */}
         <SelectDate />
-          
-        <AssignTaskButton />
+        <BtnSelectAll/>
+        
+        </View>
+
+         
+
       </View>
     </SafeAreaView>
   );

@@ -117,7 +117,7 @@ const Task = ( {props} ) => {
         }
         }
 
-        let ref = doc(db, "assigned_tasks", uidTask);
+        let ref = doc(db, "groups", groupCode, "assigned_tasks", uidTask);
 
         let updateCheckList = checkList
         let updateControlCheckList = controlCheckList

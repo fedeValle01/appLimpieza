@@ -606,7 +606,7 @@ const HomeScreen = ({ navigation, route }) => {
 
 
   const deleteAllAssignedTasks = async () => {
-      let ref = doc(db, "assigned_tasks", route.params.uidTask);
+      let ref = doc(db, "groups", groupCode, "assigned_tasks", route.params.uidTask);
       await updateDoc(ref, {
         active_tasks: deleteField(),
       });
