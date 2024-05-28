@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useState } from "react";
 import LoadingGif from '../components/Loading'
 import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Button, ScrollView, Modal, Pressable } from "react-native";
-import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
+import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs, getDoc,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
@@ -27,6 +27,7 @@ const db = getFirestore(app);
 
 const HomeScreen = ({ navigation, route }) => {
   console.log('HomeSceeen');
+    const [groupCode, setGroupCode] = useState(route.params.groupCode);
     const [chargedOrderedTasks, setChargedOrderedTasks] = useState(false);
     const [allDescTasks, setAllDescTasks] = useState([]);//contains all descriptions from tasks assigned
     const [orderedTasks, setOrderedTasks] = useState([]);//contains only tasks names of tasks assigned
@@ -171,7 +172,8 @@ const HomeScreen = ({ navigation, route }) => {
         canCheckTask: canCheckTask,
         checkList: checkList,
         controlCheckList: controlCheckList,
-        activeTasks: activeTasks
+        activeTasks: activeTasks,
+        groupCode: groupCode
       }
       
       return (<Task props={props}/>)
@@ -353,6 +355,7 @@ const HomeScreen = ({ navigation, route }) => {
         console.log('NO tiene parametro loading');
         setLoading(false)
       }
+      // if (!groupCode) setGroupCode(prev => groupCode)
 
       if (route.params.fromUserScreen) {
         setHasAssignedTasks(undefined)
@@ -366,52 +369,36 @@ const HomeScreen = ({ navigation, route }) => {
         setCanCheckTask(false);
       }
       contador = -1
-      let taskUser
-      let q;
       let unsuscribe;
       setAllDescTasks([]);
-      let u;
       let canControl2 = false;
-      let collectionRef = collection(db, "user");
-      q = query(collectionRef, where("uid", "==", route.params.uid));
-      unsuscribe = onSnapshot(q, (querySnapshot) => {
-        u = querySnapshot.docs.map((doc) => ({
-          name: doc.data().username,
-          canControl: doc.data().can_control,
-        }));
 
-        u.forEach((element) => {
-          console.log("u: " + element.name); //username active session
-          setUser(element.name);
-          setCanControl(element.canControl);
-          if (element.name == 'Fede V') setCanControl(true);
-          canControl2 = element.canControl
-          cControl = element.canControl
-          console.log('control: ', element.canControl);
-        });
-      });
 
-      collectionRef = collection(db, "user");
-      q = query(collectionRef, where("uid", "==", route.params.uidTask));
-      unsuscribe = onSnapshot(q, (querySnapshot) => {
-        u = querySnapshot.docs.map((doc) => ({
-          name: doc.data().username,
-        }));
-
-        u.forEach((element) => {
-          taskUser = element.name
-          console.log("u: " + taskUser); //username that will show his tasks
-          setTaskUser(taskUser);
-        });
-      });
-
-     
-      let tasks = []
-      let sectorTasks = []
-      let qAssigned_tasks = []
+      
       
       const getAsign = async () =>{
-        let q = query(collection(db, "assigned_tasks"), where("uid", "==", route.params.uidTask));
+        console.log("getAsign");
+        const docOwnUserRef = doc(db, "user", route.params.uid);
+        const docOwnUser = await getDoc(docOwnUserRef);
+        const ownUser = docOwnUser.data()
+        console.log("u: " + ownUser.username); //username active session
+        setUser(ownUser.username);
+        setCanControl(ownUser.can_control);
+        if (ownUser.name == 'Fede V') setCanControl(true);
+        canControl2 = ownUser.can_control
+        cControl = ownUser.can_control
+
+        const docUserRef = doc(db, "user", route.params.uidTask);
+        const docUser = await getDoc(docUserRef);
+        const taskUser = docUser.data()
+        setTaskUser(taskUser.username);
+
+      
+        let tasks = []
+        let sectorTasks = []
+        let qAssigned_tasks = []
+
+        let q = query(collection(db, "groups", groupCode, "assigned_tasks"), where("uid", "==", route.params.uidTask));
         const querySnapshot = await getDocs(q);
         qAssigned_tasks = querySnapshot.docs.map((doc) => ({
           timestamp: doc.data().timestamp,
@@ -472,7 +459,7 @@ const HomeScreen = ({ navigation, route }) => {
             setNTasks(0);
           }
           
-          collectionRef = collection(db, "tasks");
+          let collectionRef = collection(db, "groups", groupCode, "tasks");
       let tasksInSectors = []
       let taskInSector = []
       //get tasks of the assigned sectors
@@ -520,7 +507,7 @@ const HomeScreen = ({ navigation, route }) => {
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2), groupCode: route.params.groupCode })
+                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2), groupCode: groupCode })
               }
             >
               <View style={{ alignContent: "center" }}>
@@ -545,7 +532,7 @@ const HomeScreen = ({ navigation, route }) => {
             <TouchableOpacity
               onPress={() =>{
                 if (canControl || cControl) {
-                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, canControl: true })
+                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, canControl: true, groupCode: groupCode })
               }else{
                 Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
               }
@@ -560,7 +547,7 @@ const HomeScreen = ({ navigation, route }) => {
             <TouchableOpacity
               onPress={() =>{
                 if (canControl || cControl) {
-                  navigation.navigate("Asignar Tareas", { uid: route.params.uid });
+                  navigation.navigate("Asignar Tareas", { uid: route.params.uid, groupCode: groupCode });
                 }else{
                   Alert.alert('Lo siento', 'Solo admin puede asignar tareas',  [ {text: 'ok 😭'} ]);
                 }
@@ -710,7 +697,9 @@ const HomeScreen = ({ navigation, route }) => {
           <TouchableOpacity
               onPress={() =>{
                 if (canControl || cControl) {
-                  navigation.navigate("Agregar Tarea", { uid: route.params.uid })
+                  console.log(groupCode);
+                  console.log("groupCode");
+                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, groupCode: groupCode })
               }else{
                 Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
               }

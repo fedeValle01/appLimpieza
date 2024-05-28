@@ -11,7 +11,9 @@ import * as Permissions from "expo-permissions";
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
 import DatePicker from "react-native-date-picker";
-
+import { getSectors } from "../helpers/getSectors";
+import { getUsersUID } from "../helpers/getUsersUID";
+import { getUserList } from "../helpers/getUserList";
 export default function AssignTaskScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -23,7 +25,7 @@ export default function AssignTaskScreen({ navigate, route }) {
   const [sectors, setSectors] = useState([]);
   const [task_name, setTask_name] = useState([]);
   const [task_frec, setTask_frec] = useState(1);
-  const [user, setUser] = useState([]);
+  const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [nameSelected, setNameSelected] = useState(null);
 
@@ -84,7 +86,9 @@ export default function AssignTaskScreen({ navigate, route }) {
   }
   
   const ejecuteQuery = (item) => {
-    let collectionRef = collection(db, "tasks");
+
+    console.log('ejquery');
+    let collectionRef = collection(db, "groups", route.params.groupCode, "tasks");
     let unsuscribe;
     let TaskQuery = [];
     let tasksAndSector = [];
@@ -271,12 +275,12 @@ const BtnSelectAll = () => {
 
         // check if already exist assigned task for selectedUser
 
-        const docRef = doc(db, "assigned_tasks", selectedUser);
+        const docRef = doc(db, "groups", route.params.groupCode, "assigned_tasks", selectedUser);
         const docSnap = await getDoc(docRef);
 
         // if exist update
         if (docSnap.exists()) {
-          await updateDoc(doc(db, "assigned_tasks", selectedUser), {
+          await updateDoc(doc(db, "groups", route.params.groupCode, "assigned_tasks", selectedUser), {
             active_tasks: assigned_tasks,
             marked_tasks: marked,
             control_marked_tasks: marked,
@@ -285,7 +289,7 @@ const BtnSelectAll = () => {
             time_limit: date,
           }).then(Alert.alert("Tareas asignadas"));
         } else {
-          await setDoc(doc(db, "assigned_tasks", selectedUser), {
+          await setDoc(doc(db, "groups", route.params.groupCode, "assigned_tasks", selectedUser), {
             active_tasks: assigned_tasks,
             marked_tasks: marked,
             control_marked_tasks: marked,
@@ -409,48 +413,35 @@ const BtnSelectAll = () => {
     //   },
     // });
 
-    let collectionRef = collection(db, "sectors");
-    let q = query(collectionRef, orderBy("sector_name", "desc"));
+      
+    const getUsersAndSector = async () => {
+      const sectors = await getSectors(route.params.groupCode)
+      const usersUID = await getUsersUID(route.params.groupCode)
+      const usersList = await getUserList(usersUID)
 
-    let unsuscribe = onSnapshot(q, (querySnapshot) => {
-      let sectors = [];
-
-      sectors = querySnapshot.docs.map((doc) => ({
-        sector_name: doc.data().sector_name,
-        sector_description: doc.data().sector_description,
-      }));
-
-      let arregloSectores = [];
-      if (sectors) {
-        sectors.forEach((sector) => {
-          let singleObj = {};
-          singleObj["label"] = sector.sector_name;
-          singleObj["value"] = sector.sector_name;
-          arregloSectores.push(singleObj);
-        });
-        setSectors(arregloSectores);
-      } else console.log("No hay sectores");
-    });
-
-    collectionRef = collection(db, "user");
-    q = query(collectionRef, orderBy("username", "asc"));
-
-    unsuscribe = onSnapshot(q, (querySnapshot) => {
-      let users = [];
-      users = querySnapshot.docs.map((doc) => ({
-        label: doc.data().username,
-        value: doc.data().username,
-        uid: doc.data().uid,
-      }));
-      setUser(users);
-
-      if (onUpdateCheck.current) {
-        onUpdateCheck.current = false;
-      } else {
-        console.log("updateCheck");
+      let users = []
+      for (const user of usersList) {
+        let objUser = {}
+        objUser.uid = user.uid
+        objUser.label = user.username
+        objUser.value = user.username
+        users.push(objUser)
       }
-    });
-    return unsuscribe;
+
+      let formatedSectors = []
+      for (const sector of sectors) {
+        let objSector = {}
+        objSector.label = sector.sector_name
+        objSector.value = sector.sector_name
+        formatedSectors.push(objSector)
+      }
+      
+      setUsers(users);
+      setSectors(formatedSectors)
+
+    }
+    getUsersAndSector()
+    
   }, []);
 
   return (
@@ -458,7 +449,7 @@ const BtnSelectAll = () => {
       <Dropdown
         style={styles.dropdown}
         containerStyle={styles.shadow}
-        data={user}
+        data={users}
         search
         searchPlaceholder="Buscar usuario"
         labelField="label"

@@ -1,10 +1,13 @@
-import React, { memo, useEffect, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert, ScrollView, Image } from "react-native";
+import React, { memo, useCallback, useEffect, useState } from "react";
+import { StyleSheet, Text, SafeAreaView, TextInput, TouchableOpacity, View, Alert, ScrollView, Image, RefreshControl } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, where, updateDoc, doc, getDoc, runTransaction } from "firebase/firestore";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { getState } from "../helpers/getStates";
+import { getUsersUID } from "../helpers/getUsersUID";
+import { getUserList } from "../helpers/getUserList";
+import { getAssignedTasks } from "../helpers/getAssignedTasks";
 
 export default function TaskScreen({ navigation, route }) {
   const app = initializeApp(firebaseConfig);
@@ -13,13 +16,24 @@ export default function TaskScreen({ navigation, route }) {
   const [groupUsers, setGroupUsers] = useState([]); //all the users
   const [usersInHome, setUsersInHome] = useState([]);
   const [usersOutHome, setUsersOutHome] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [refresh, setRefresh] = useState(false);
+  const [groupName, setGroupName] = useState("terr");
+
   
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 1400);
+  }, []);
   
   const changeOnHome = async (uid, inHome) => {
     console.log('uid: '+ uid);
     await updateDoc(doc(db, "user", uid), {
       in_home: !inHome,
     });
+    setRefresh(refresh ? false : true)
   }
   const CircleYellow = memo(() => (
     <View style={{marginLeft: 12}}>
@@ -156,6 +170,11 @@ export default function TaskScreen({ navigation, route }) {
 
       return (
         <View>
+          <ScrollView
+            contentContainerStyle={styles.scrollViewHome}
+            >
+
+            
           {cantUsersInhome>0 && <Text style={styles.inHouseTitle}>En casa</Text>}
           {cantUsersInhome==0 && <Text style={styles.inHouseTitle}>No hay usuarios en casa</Text>}
           <Text>
@@ -192,6 +211,7 @@ export default function TaskScreen({ navigation, route }) {
 
             ))}
           </Text>
+          </ScrollView>
         </View>
       );
     } else {
@@ -201,69 +221,26 @@ export default function TaskScreen({ navigation, route }) {
 
   useEffect(() => {
 
-    let collectionRef = collection(db, "assigned_tasks");
-    let q = query(collectionRef);
-    let assignedTasks = []
-    // get assigned_tasks
-    let unsuscribe = onSnapshot(q, (querySnapshot) => {
-      assignedTasks = (
-        querySnapshot.docs.map((doc) => ({
-          uid: doc.data().uid,
-          active_tasks: doc.data().active_tasks,
-          control_marked_tasks: doc.data().control_marked_tasks,
-          marked_tasks: doc.data().marked_tasks,
-        }))
-      );
-    });
+    console.log('useEffect');
 
     const getUsersAndSectors = async () => {
-    //get users
-    const docRef = doc(db, "groups", route.params.groupCode);
-    const group = await getDoc(docRef);
-    let users = []
-    if (group.exists()) {
-      users = group.data().users
-      console.log("Document data:", users);
-    } else {
-      console.log("No such document!");
-      return (Alert.alert("No hay usuarios"))
-    }
+    console.log('getUsersAndSectors');
+    console.log(route.params.groupCode);
 
-    let u = []
-    try {
-      await runTransaction(db, async (transaction) => {
-        users.forEach(async user => {
-          console.log('foreac');
-          const docRef = doc(db, "user", user);
-          const sfDoc = await transaction.get(docRef);
-          
-          if (!sfDoc.exists()) {
-            throw "Document does not exist!";
-          }else{
-            let objUser = {}
-            console.log(sfDoc.data().username)
-            objUser.username = sfDoc.data().username
-            objUser.in_home = sfDoc.data().in_home,
-            objUser.usernam = sfDoc.data().username,
-            objUser.uid = sfDoc.data().uid,
-            objUser.canControl = sfDoc.data().can_control,
-            objUser.sectors = [],
-            u.push(objUser)
-          }
-        });
-        
-      });
-     } catch (e) {
-      console.log("err");
-      console.log(e);
-     }
-     console.log('userFinal',u);
+    
+      let assignedTasks = await getAssignedTasks(route.params.groupCode)
+      let usersUID = await getUsersUID(route.params.groupCode)
+      console.log(usersUID);
 
-    collectionRef = collection(db, "groups", "gP56l2GQhxeSC9VLDQhp", "users");
-    q = query(collectionRef);
+      let u = await getUserList(usersUID)
+      console.log(u);
+
+      console.log('userFinal',u);
       
       u.forEach((user, i) => { //binding sectors to users
         let uid = user.uid
+        user.state = 'none'
+        user.sectors = ['No tiene tareas asignadas']
         let sectors = []
           assignedTasks.forEach(assignedTask => {
             let uidAssignedTask = assignedTask.uid
@@ -281,9 +258,6 @@ export default function TaskScreen({ navigation, route }) {
                 let stateGet = getState(marked, control, haveTasks);
                 user.state = stateGet
                 user.sectors = sectors
-              }else{
-                user.state = 'none'
-                user.sectors = ['No tiene tareas asignadas']
               }
             }
 
@@ -307,11 +281,10 @@ export default function TaskScreen({ navigation, route }) {
       setGroupUsers(u);
 
     }
-    getUsersAndSectors()
 
+    getUsersAndSectors()
     
-    return unsuscribe;
-  }, []);
+  }, [refresh]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -324,8 +297,10 @@ export default function TaskScreen({ navigation, route }) {
               height: "90%"
             }}
           >
-        <ScrollView>
-
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={() => { onRefresh(); setRefresh(refresh ? false : true)}} />
+          }>
               <View
                 style={{
                   flexDirection: "row",
@@ -337,6 +312,7 @@ export default function TaskScreen({ navigation, route }) {
               >
                 <Text style={styles.subtitleSection}>
                   {" "}
+                  Grupo {groupName}
                   Tareas asignadas de los usuarios
                 </Text>
               </View>

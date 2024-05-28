@@ -126,7 +126,7 @@ async function registerForPushNotificationsAsync() {
         </Button>
         <Button
           mode="outlined"
-          onPress={() => navigation.navigate('Grupo', {group: "x6yV2DI7AdHlgyf5b7qF"})}
+          onPress={() => navigation.navigate('Grupo', {groupCode: "x6yV2DI7AdHlgyf5b7qF"})}
         >
           <Text>Ir a grupo</Text> 
         </Button>

@@ -1,5 +1,6 @@
+import { API_KEY } from '@env'
 const firebaseConfig = {
-        apiKey: "AIzaSyDNOMA8jr3Z0gQnPrgTcdh8H4YO4UcWlFs",
+        apiKey: API_KEY,
         authDomain: "applimpieza-1e5d0.firebaseapp.com",
         projectId: "applimpieza-1e5d0",
         storageBucket: "applimpieza-1e5d0.appspot.com",

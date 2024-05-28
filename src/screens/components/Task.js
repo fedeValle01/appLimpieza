@@ -22,7 +22,8 @@ const Task = ( {props} ) => {
     const canCheckTask = props.canCheckTask
     const allDescTasks = props.allDescTasks
     const activeTasks = props.activeTasks
-
+    const groupCode = props.groupCode
+    
     const [taskCheck, setTaskCheck] = useState(checkList[i])
     const [taskControlCheck, setTaskControlCheck] = useState(controlCheckList[i])
     const [showTask, setShowTask] = useState(true)
@@ -31,9 +32,6 @@ const Task = ( {props} ) => {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-
-
 
 
     const IconInfo = memo(() => (
@@ -67,7 +65,7 @@ const Task = ( {props} ) => {
             controlCheckList[i] = 'checked'
         }
 
-        await updateDoc(doc(db, "assigned_tasks", uidTask), {
+        await updateDoc(doc(db, "groups", groupCode, "assigned_tasks", uidTask), {
             control_marked_tasks: controlCheckList,
             timestamp_control_marked_tasks: serverTimestamp(),
         });
@@ -86,7 +84,7 @@ const Task = ( {props} ) => {
             checkList[i] = 'checked'
         }
 
-        await updateDoc(doc(db, "assigned_tasks", uidTask), {
+        await updateDoc(doc(db, "groups", groupCode, "assigned_tasks", uidTask), {
             marked_tasks: checkList,
             timestamp_marked_tasks: serverTimestamp(),
         });
