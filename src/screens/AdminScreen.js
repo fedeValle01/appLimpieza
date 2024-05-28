@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { Text, SafeAreaView, TouchableOpacity, Alert, View} from "react-native";
+import React, { useEffect, useState, memo } from "react";
+import { Text, SafeAreaView, TouchableOpacity, Alert, View, Image} from "react-native";
 import { doc, writeBatch, setDoc, getFirestore, collection, orderBy, onSnapshot, query, where, serverTimestamp, deleteField, updateDoc, addDoc, getDoc} from "firebase/firestore"; // Follow this pattern to import other Firebase services
 import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
@@ -57,6 +57,34 @@ export default function AdminScreen({ navigation, route }) {
   }
 
   
+  const AreYouSureLogOut = () => {
+    return Alert.alert("Vas a cerrar sesion", "Esta seguro?", [
+      {
+        text: "Cancelar",
+        onPress: () => console.log("Cancel Pressed"),
+        style: "cancel",
+      },
+      { text: "OK", onPress: logOut },
+    ]);
+  }
+
+  const logOut = () => {
+    signOut(auth)
+      .then(() => {
+        navigation.navigate("Iniciar Sesion");
+      })
+      .catch((error) => {
+        alert(error);
+      });
+  };
+
+  const LogOutImg = memo(() =>(
+    <Image
+      style={{ width: 27, height: 27 }}
+      source={require("../assets/cerrar-sesion.png")}
+    />
+))
+
   const AreYouSureDeleteAssignedTasks = () => {
     return Alert.alert("Eliminar todas las tareas asignadas de los usuarios", "Estas seguro?", [
       {
@@ -431,6 +459,14 @@ export default function AdminScreen({ navigation, route }) {
         >
           <Text style={styles.txtUser}>Eliminar tareas asignadas</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          onPress={AreYouSureLogOut}
+          style={[styles.btnUsuario, { backgroundColor: "#111" }]}
+        >
+          <Text style={styles.txtUser}>Cerrar sesión</Text>
+
+            </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
