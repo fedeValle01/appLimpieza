@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {memo, useEffect, useState} from 'react';
 import { StyleSheet, Text, SafeAreaView, View, TextInput, Alert, Image, TouchableOpacity, Button, Pressable } from 'react-native';
 import { initializeApp } from 'firebase/app'
 import { getFirestore, collection, query, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, addDoc } from 'firebase/firestore'
@@ -28,7 +28,12 @@ export default function AddTasks ({navigation, route}){
     
 
       //Add element to objet
-    
+      const AddTaskImg = memo(() => (
+        <Image
+          style={{ width: 25, height: 25 }}
+          source={require("../assets/c.png")}
+        />
+      ));
 
       const _renderItem = item => {
         return (
@@ -94,31 +99,39 @@ export default function AddTasks ({navigation, route}){
               placeholder="Nombre Tarea"
               value={task_name}
             />
-            <Dropdown
-              style={styles.dropdown}
-              containerStyle={styles.shadow}
-              data={items}
-              search
-              searchPlaceholder="Buscar sector"
-              labelField="label"
-              valueField="value"
-              label="Dropdown"
-              placeholder="Sector"
-              value = {value}
-              onChange = {item => {
-                  setDropdown(item.value);
-                  console.log('selected', item.value);
-                  setSectorSelected(item.value)
-              }}
-              renderLeftIcon={() => (
-                  <Image style={styles.icon}  />
-              )}
-              renderItem={item => _renderItem(item)}
-              textError="Error"
-          />
-          <TouchableOpacity onPress={irACrearSector}>
-            <Text>Ir a Crear Sector</Text>
-          </TouchableOpacity>
+            <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+
+              <View>
+                <Dropdown
+                  style={styles.dropdown}
+                  containerStyle={styles.shadow}
+                  data={items}
+                  search
+                  searchPlaceholder="Buscar sector"
+                  labelField="label"
+                  valueField="value"
+                  label="Dropdown"
+                  placeholder="Sector"
+                  value = {value}
+                  onChange = {item => {
+                      setDropdown(item.value);
+                      console.log('selected', item.value);
+                      setSectorSelected(item.value)
+                  }}
+                  renderLeftIcon={() => (
+                      <Image style={styles.icon}  />
+                  )}
+                  renderItem={item => _renderItem(item)}
+                  textError="Error"
+                />
+              </View>
+              <View style={{marginTop: 20, marginLeft: 5}}>
+                <TouchableOpacity onPress={irACrearSector}>
+                  <AddTaskImg />
+                </TouchableOpacity>
+              </View>
+          </View>
+
             <View style={{marginTop: 20}}>
               <Text style = {{textAlign: 'center'}} >Descripción</Text>
               <TextInput
