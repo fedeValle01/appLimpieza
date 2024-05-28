@@ -183,27 +183,6 @@ const HomeScreen = ({ navigation, route }) => {
 
   }
 
-    const AreYouSureLogOut = () => {
-      return Alert.alert("Vas a cerrar sesion", "Esta seguro?", [
-        {
-          text: "Cancelar",
-          onPress: () => console.log("Cancel Pressed"),
-          style: "cancel",
-        },
-        { text: "OK", onPress: logOut },
-      ]);
-    }
-
-    const logOut = () => {
-      signOut(auth)
-        .then(() => {
-          navigation.navigate("Iniciar Sesion");
-        })
-        .catch((error) => {
-          alert(error);
-        });
-    };
-
 
     const ConfigImg = memo(() => (
       <Image
@@ -218,13 +197,6 @@ const HomeScreen = ({ navigation, route }) => {
         source={require("../assets/historial.png")}
       />
     ));
-
-    const LogOutImg = memo(() =>(
-        <Image
-          style={{ width: 27, height: 27 }}
-          source={require("../assets/cerrar-sesion.png")}
-        />
-    ))
 
   const BtnComponents =  () => (
     <View style={{  flexDirection: "row", flexWrap: "wrap", opacity: 0.8, alignItems: "center", justifyContent: "space-between", position: "absolute", bottom: 50, alignSelf: "center"}}>
@@ -578,15 +550,12 @@ const HomeScreen = ({ navigation, route }) => {
 
             <TouchableOpacity
               onPress={() => {
-                if (canControl || cControl) {
                   navigation.navigate("Admin", {
                     uid: route.params.uid,
                     uidTask: route.params.uidTask,
                     canControl: canControl
                   });
-                }else{
-                  Alert.alert('Lo siento', 'No tienes permiso para administrar app',  [ {text: 'ok 😢'} ]);
-                }
+                
                 
               }}
             >
@@ -595,11 +564,6 @@ const HomeScreen = ({ navigation, route }) => {
               </View>
             </TouchableOpacity>
             
-            <TouchableOpacity onPress={AreYouSureLogOut}>
-              <View style={{ marginLeft: 7 }}>
-                <LogOutImg />
-              </View>
-            </TouchableOpacity>
           </View>
         ),
         headerLeft: () => <View></View>,

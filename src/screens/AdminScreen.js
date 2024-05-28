@@ -422,43 +422,49 @@ export default function AdminScreen({ navigation, route }) {
           justifyContent: "center",
         }}
       >
+        {(route.params.canControl) && (
+          <>
+            <TouchableOpacity onPress={AreYouSureAssign} style={styles.btnUsuario}>
+              <Text style={styles.txtUser}>Asignar tareas automaticamente</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity onPress={AreYouSureAssign} style={styles.btnUsuario}>
-          <Text style={styles.txtUser}>Asignar tareas automaticamente</Text>
-        </TouchableOpacity>
+            <TouchableOpacity onPress={GoToAutoAssign} style={styles.btnUsuario}>
+              <Text style={styles.txtUser}>Pasar de semana</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity onPress={GoToAutoAssign} style={styles.btnUsuario}>
-          <Text style={styles.txtUser}>Pasar de semana</Text>
-        </TouchableOpacity>
+
+            <TouchableOpacity onPress={GoToStockScreen} style={[styles.btnUsuario, { backgroundColor: "#008fff" }]}>
+              <Text style={styles.txtUser}>Stock de limpieza ✨</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              onPress={AreYouSaveAssignedTasks}
+              style={[styles.btnUsuario, { backgroundColor: "#c0f" }]}
+            >
+              <Text style={styles.txtUser}>Guardar en el historial</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={AreYouSureDeleteHistory}
+              style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
+            >
+              <Text style={styles.txtUser}>Eliminar historial</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={AreYouSureDeleteAssignedTasks}
+              style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
+            >
+              <Text style={styles.txtUser}>Eliminar tareas asignadas</Text>
+            </TouchableOpacity>
+          </>
+        ) }
+        
 
         <TouchableOpacity onPress={GoToTasksScreen} style={styles.btnUsuario}>
           <Text style={styles.txtUser}>Ver todas las tareas</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={GoToStockScreen} style={[styles.btnUsuario, { backgroundColor: "#008fff" }]}>
-          <Text style={styles.txtUser}>Stock de limpieza ✨</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={AreYouSaveAssignedTasks}
-          style={[styles.btnUsuario, { backgroundColor: "#c0f" }]}
-        >
-          <Text style={styles.txtUser}>Guardar en el historial</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={AreYouSureDeleteHistory}
-          style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
-        >
-          <Text style={styles.txtUser}>Eliminar historial</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={AreYouSureDeleteAssignedTasks}
-          style={[styles.btnUsuario, { backgroundColor: "#cb3234" }]}
-        >
-          <Text style={styles.txtUser}>Eliminar tareas asignadas</Text>
-        </TouchableOpacity>
         
         <TouchableOpacity 
           onPress={AreYouSureLogOut}
