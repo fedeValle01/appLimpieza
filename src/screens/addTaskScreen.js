@@ -47,7 +47,7 @@ export default function AddTasks ({navigation, route}){
       }
       else{
         let defaultAssigned = (checked == 'checked') ? true : false
-        await addDoc(collection(db, 'tasks'), {
+        await addDoc(collection(db, "groups", route.params.groupCode, "tasks"), {
         task_name: task_name,
         task_description: task_description,
         task_sector: sectorSelected,
@@ -62,7 +62,7 @@ export default function AddTasks ({navigation, route}){
     useEffect(() =>{
 
       const getItems = async () => {
-        const sectors = await getSectors("group1")
+        const sectors = await getSectors(route.params.groupCode)
         if (!sectors) return 
         let arregloNombres = sectors.map(sector => ({
           label: sector.sector_name,

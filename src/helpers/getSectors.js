@@ -2,7 +2,7 @@ import { collection, getDocs, orderBy, query, where  } from 'firebase/firestore'
 import { db } from './getFirebase';
 
 export async function getSectors(group){
-    const collectionRef = collection(db, 'sectors');
+    const collectionRef = collection(db, 'groups', group, 'sectors');
     const q = query(collectionRef, orderBy('sector_name', 'asc'))
 
     let sectors = []

@@ -13,6 +13,7 @@ import { MenuProvider } from 'react-native-popup-menu';
 import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 
+console.log("process.env.EXPO_PUBLIC_API_KEY");
 console.log(process.env.EXPO_PUBLIC_API_KEY);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
