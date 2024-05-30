@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, ScrollView, Pressable } from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, ScrollView, Pressable, Modal, Dimensions } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc, doc, where, serverTimestamp,
  updateDoc, getDoc } from "firebase/firestore";
@@ -8,12 +8,15 @@ import styles from "../screens/stylesScreens";
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
 
+
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
 import { Checkbox } from "react-native-paper";
-import DatePicker from "react-native-date-picker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { getSectors } from "../helpers/getSectors";
 import { getUsersUID } from "../helpers/getUsersUID";
 import { getUserList } from "../helpers/getUserList";
+import { BlurView } from "expo-blur";
+import styleModal from "./styleModal";
 export default function AssignTaskScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -42,6 +45,8 @@ export default function AssignTaskScreen({ navigate, route }) {
   const [checkList, setCheckList] = useState([]);
   const [markAll, setMarkAll] = useState(false);
   const [checked, setChecked] = useState("unchecked");
+
+  const { width, height } = Dimensions.get('window');
 
   let contador = -1;
 
@@ -166,32 +171,110 @@ const BtnSelectAll = () => {
   )
 }
 }
-  const SelectDate = () => {
-    if (task_name.length > 0) {
+  const SelectDate = ( {setShowDatePicker}) => {
+
+    const [date, setDate] = useState(new Date(1598051730000));
+    const [mode, setMode] = useState('date');
+    const [show, setShow] = useState(false);
+
+    const onChange = (event, selectedDate) => {
+      const currentDate = selectedDate;
+      setShow(false);
+      setDate(currentDate);
+    };
+  
+    const showMode = (currentMode) => {
+      setShow(true);
+      setMode(currentMode);
+    };
+  
+    const showDatepicker = () => {
+      showMode('date');
+    };
+  
+    const showTimepicker = () => {
+      showMode('time');
+    };
+
       return (
-        <View style={{ width: 50, opacity: 0.8, alignItems: "center", justifyContent: "center" }}>
-          <TouchableOpacity onPress={() => setOpen(true)}>
-            <SelectDateImg />
-            <DatePicker
-              title={"Seleccionar fecha"}
-              confirmText={"Confirmar"}
-              cancelText={"Cancelar"}
-              modal
-              open={open}
-              date={date}
-              onConfirm={(date) => {
-                setOpen(false);
-                setDate(date);
-              }}
-              onCancel={() => {
-                setOpen(false);
-              }}
-          />
-          </TouchableOpacity>
-        </View>
+        
+          <BlurView tint="dark" intensity={80}  style={{backgroundColor: "#0f0", justifyContent: "center", alignContent: "center", width: width, height: height}}>
+            <View style={styleModal.modalView}>
+              <View>
+                <Button onPress={showDatepicker} title="Seleccionar Fecha" />
+              </View>
+              <View  style={{marginTop: 20}}>
+                <Button onPress={showTimepicker} title="Seleccionar Hora" />
+              </View>
+              <Text style={{fontSize: 17, fontWeight: "600", color: "#fff" }}>Fecha Limite: {date.toLocaleString()}</Text>
+              {show && (
+                <DateTimePicker
+                  testID="dateTimePicker"
+                  value={date}
+                  mode={mode}
+                  is24Hour={true}
+                  onChange={onChange}
+                />
+              )}
+            </View>
+
+          </BlurView>
+          
       );
-    }
   };
+
+
+  
+
+  const ModalDateTimePicker = ( {showDatePicker, setShowDatePicker} ) => {
+
+    return(
+      <>
+        <Modal
+            animationType="fade"
+            transparent={true}
+            visible={showDatePicker}
+            onRequestClose={() => {
+                setShowDatePicker(false)
+        }}>
+            <SelectDate setShowDatePicker={setShowDatePicker} />
+        </Modal>
+      </>
+    )
+  }
+
+  const AssignSection = () => {
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    console.log('render AssignSection');
+    if (task_name.length>0) return(
+      <>
+        {(showDatePicker) && <ModalDateTimePicker showDatePicker={showDatePicker} setShowDatePicker={setShowDatePicker} />}
+
+        <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", position: "absolute", bottom: 20 }}>
+
+          <View style={{ alignSelf: "center", flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+  
+          <AssignTaskButton />
+          
+          <View style={{marginHorizontal: 5}}>
+            <Button
+              title="Plazo"
+              color="#B0C4DE"
+              onPress={() => {setShowDatePicker(true)}}
+            />
+          </View>
+
+          <BtnSelectAll/>
+          
+          </View>
+
+          
+
+        </View>
+      </>
+
+    )
+  }
   const AssignTaskButton = () => {
     if (task_name.length > 0) {
       return (
@@ -523,21 +606,9 @@ const BtnSelectAll = () => {
         />
       </ScrollView>
 
-      <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", position: "absolute", bottom: 20 }}>
-
-        <View style={{ alignSelf: "center", flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
- 
-        <AssignTaskButton />
-        
-        {/* doesn't work on android emulator */}
-        <SelectDate />
-        <BtnSelectAll/>
-        
-        </View>
-
-         
-
-      </View>
+      
+      <AssignSection />
+      
     </SafeAreaView>
   );
 }

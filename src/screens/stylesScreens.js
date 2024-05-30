@@ -18,6 +18,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  centerAbsolute:{
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+  },
   viewRotation: {
     marginTop: 5,
     flexDirection: "row", 

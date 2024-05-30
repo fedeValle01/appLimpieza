@@ -58,7 +58,11 @@ export default function AddTasks ({navigation, route}){
         task_sector: sectorSelected,
         task_frec: task_frec,
         default_assigned: defaultAssigned
-      }).then(Alert.alert('Tarea Creada'));
+      }).then( () => {
+        Alert.alert('Tarea Creada')
+        setTask_description(null)
+        setTask_name(null)
+      });
      }  
     }
   

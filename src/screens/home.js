@@ -722,7 +722,7 @@ const HomeScreen = ({ navigation, route }) => {
                     <MenuOption onSelect={() => AreYouSureDeleteAllAssignedTasks()} >
                       <View style={{alignSelf: "center"}}>
                         <Text style={{color: 'red'}}>Eliminar tareas asignadas</Text>
-                      </View>
+                      </View> 
                     </MenuOption>
                   </MenuOptions>
                 </Menu>
