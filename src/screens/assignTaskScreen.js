@@ -17,14 +17,13 @@ import { getUsersUID } from "../helpers/getUsersUID";
 import { getUserList } from "../helpers/getUserList";
 import { BlurView } from "expo-blur";
 import styleModal from "./styleModal";
+import { formatDate } from "../helpers/formatDate";
+import stylesStock from "./stock/stylesStock";
 export default function AssignTaskScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   //datepicker
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState(null);
   const [sectors, setSectors] = useState([]);
   const [task_name, setTask_name] = useState([]);
   const [task_frec, setTask_frec] = useState(1);
@@ -171,15 +170,16 @@ const BtnSelectAll = () => {
   )
 }
 }
-  const SelectDate = ( {setShowDatePicker}) => {
+  const SelectDate = ( {setShowDatePicker, date, setDate}) => {
 
-    const [date, setDate] = useState(new Date(1598051730000));
+    const [newDate, setNewDate] = useState(date);
     const [mode, setMode] = useState('date');
     const [show, setShow] = useState(false);
 
     const onChange = (event, selectedDate) => {
       const currentDate = selectedDate;
       setShow(false);
+      setNewDate(currentDate);
       setDate(currentDate);
     };
   
@@ -196,26 +196,34 @@ const BtnSelectAll = () => {
       showMode('time');
     };
 
+    const formattedDate = formatDate(newDate)
+
       return (
         
           <BlurView tint="dark" intensity={80}  style={{backgroundColor: "#0f0", justifyContent: "center", alignContent: "center", width: width, height: height}}>
             <View style={styleModal.modalView}>
-              <View>
+              <View style={{marginBottom: 20}}>
                 <Button onPress={showDatepicker} title="Seleccionar Fecha" />
               </View>
-              <View  style={{marginTop: 20}}>
+              <View style={{marginBottom: 20}}>
                 <Button onPress={showTimepicker} title="Seleccionar Hora" />
               </View>
-              <Text style={{fontSize: 17, fontWeight: "600", color: "#fff" }}>Fecha Limite: {date.toLocaleString()}</Text>
+              <Text style={{fontSize: 17, fontWeight: "600", color: "#fff" }}>Fecha Limite: {formattedDate}</Text>
               {show && (
                 <DateTimePicker
                   testID="dateTimePicker"
-                  value={date}
+                  value={newDate}
                   mode={mode}
                   is24Hour={true}
                   onChange={onChange}
                 />
               )}
+
+              <TouchableOpacity
+                style={[stylesStock.button, stylesStock.buttonClose, { marginTop: 10, backgroundColor: '#31a84f' }]}
+                onPress={()=> setShowDatePicker(false)}>
+                <Text style={stylesStock.textStyle}>Aceptar</Text>
+              </TouchableOpacity>
             </View>
 
           </BlurView>
@@ -226,7 +234,7 @@ const BtnSelectAll = () => {
 
   
 
-  const ModalDateTimePicker = ( {showDatePicker, setShowDatePicker} ) => {
+  const ModalDateTimePicker = ( {showDatePicker, setShowDatePicker, date, setDate} ) => {
 
     return(
       <>
@@ -237,7 +245,7 @@ const BtnSelectAll = () => {
             onRequestClose={() => {
                 setShowDatePicker(false)
         }}>
-            <SelectDate setShowDatePicker={setShowDatePicker} />
+            <SelectDate setShowDatePicker={setShowDatePicker} date={date} setDate={setDate} />
         </Modal>
       </>
     )
@@ -245,16 +253,17 @@ const BtnSelectAll = () => {
 
   const AssignSection = () => {
     const [showDatePicker, setShowDatePicker] = useState(false);
+    const [date, setDate] = useState(new Date());
     console.log('render AssignSection');
     if (task_name.length>0) return(
       <>
-        {(showDatePicker) && <ModalDateTimePicker showDatePicker={showDatePicker} setShowDatePicker={setShowDatePicker} />}
+        {(showDatePicker) && <ModalDateTimePicker showDatePicker={showDatePicker} setShowDatePicker={setShowDatePicker} date={date} setDate={setDate} />}
 
         <View style={{ flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "center", position: "absolute", bottom: 20 }}>
 
           <View style={{ alignSelf: "center", flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
   
-          <AssignTaskButton />
+          <AssignTaskButton date={date} />
           
           <View style={{marginHorizontal: 5}}>
             <Button
@@ -275,14 +284,14 @@ const BtnSelectAll = () => {
 
     )
   }
-  const AssignTaskButton = () => {
+  const AssignTaskButton = ( {date} ) => {
     if (task_name.length > 0) {
       return (
         <View style={{ width: 160, opacity: 0.8 }}>
           <Button
             title="Asignar Tareas"
             color="#43c6ac"
-            onPress={handleCreateTask}
+            onPress={() => handleCreateTask(date)}
           />
         </View>
       );
@@ -325,7 +334,7 @@ const BtnSelectAll = () => {
     );
   };
 
-  const handleCreateTask = async () => {
+  const handleCreateTask = async (date) => {
     if (!task_name) {
       Alert.alert("No hay tareas en ese sector");
     } else if (selectedUser == null) {
@@ -372,7 +381,8 @@ const BtnSelectAll = () => {
         checkIndex = 0;
 
         // check if already exist assigned task for selectedUser
-
+        console.log("date");
+        console.log(date);
         const docRef = doc(db, "groups", route.params.groupCode, "assigned_tasks", selectedUser);
         const docSnap = await getDoc(docRef);
 
@@ -416,7 +426,6 @@ const BtnSelectAll = () => {
       });
     }
     let i = contador;
-    console.log("se renderiza con item " + item + " index: " + i);
 
     return (
       <View style={styles.viewSeccion}>
@@ -447,44 +456,6 @@ const BtnSelectAll = () => {
     );
   };
 
-
-  const renderChecklist = ({ item }) => {
-    console.log("se renderiza con item: " + item.key);
-    let task = item.key;
-
-    let j = 0;
-    //  si no hay checklist, la setea unchecked
-    if (checkList.length == 0) {
-      for (j = 0; j < task_name.length; j++) {
-        console.log("i: " + i);
-        checkList[j] = "unchecked";
-      }
-    }
-
-    console.log("tarea: " + task + " en la posicion: " + i);
-    return (
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.item}>{task}</Text>
-        </View>
-        <View style={{ flex: 1 }} />
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "center",
-          }}
-        >
-          <Checkbox
-            status={checkList[i]}
-            onPress={() => {
-              handleCheck(i);
-            }}
-          />
-        </View>
-      </View>
-    );
-  };
 
   const handleCheck = (i) => {
     let check = checkList;
