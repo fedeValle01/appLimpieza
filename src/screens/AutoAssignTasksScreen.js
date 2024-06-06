@@ -871,9 +871,9 @@ const deepCopy = (obj) => {
                 <Text style={{fontSize: 15}}>Guardar orden de rotación</Text>
               </View>
             </TouchableOpacity>
-            <TouchableOpacity onPress={AreYouSurePass} style={styles.btnUsuario}>
+            {/* <TouchableOpacity onPress={AreYouSurePass} style={styles.btnUsuario}>
                 <Text style={styles.txtUser}>Pasar de semana por estadística</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
           </View>
 
           <View style={{marginTop: 40}}/>

@@ -28,7 +28,7 @@ export default function AddSector({ navigation, route }) {
     console.log("Sector: " + sector);
     console.log("Sector description : " + description);
 
-    await addDoc(collection(db, "groups", "gP56l2GQhxeSC9VLDQhp", "sectors"), { //Terreneitor
+    await addDoc(collection(db, "groups", route.params.groupCode, "sectors"), { //Terreneitor
       sector_name: sector,
       sector_description: description,
     }).then(Alert.alert("Sector creado con exito"));

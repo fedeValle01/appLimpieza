@@ -2,19 +2,13 @@ import React, { memo, useCallback, useEffect, useState } from "react";
 import LoadingGif from '../components/Loading'
 import { Text, SafeAreaView, RefreshControl, TouchableOpacity, Alert, View, SectionList, Image, Button, ScrollView, Modal, Pressable } from "react-native";
 import {doc,getFirestore,collection,onSnapshot,query,where,serverTimestamp,updateDoc , deleteField, getDocs, getDoc,} from "firebase/firestore"; // Follow this pattern to import other Firebase services
-import { getAuth, signOut } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
-import { Tooltip } from '@rneui/themed';
-import * as Notifications from "expo-notifications";
-import * as Permissions from "expo-permissions";
-import { useForm, Controller } from 'react-hook-form';
 import { Menu, MenuOptions, MenuOption, MenuTrigger } from 'react-native-popup-menu';
 import { BlurView } from "expo-blur";
 import styleModal from "./styleModal";
-import stylesStock from "./stock/stylesStock";
-import TextInput from "../components/TextInput";
 import Task from './components/Task'
 import FormComment from "../components/FormComment"
 
@@ -27,12 +21,12 @@ const db = getFirestore(app);
 
 const HomeScreen = ({ navigation, route }) => {
   console.log('HomeSceeen');
-    const [groupCode, setGroupCode] = useState(route.params.groupCode);
+    const groupCodee = (route.params.groupCode ? route.params.groupCode : 'gP56l2GQhxeSC9VLDQhp')
+    const [groupCode, setGroupCode] = useState(groupCodee);
     const [chargedOrderedTasks, setChargedOrderedTasks] = useState(false);
     const [allDescTasks, setAllDescTasks] = useState([]);//contains all descriptions from tasks assigned
     const [orderedTasks, setOrderedTasks] = useState([]);//contains only tasks names of tasks assigned
     const [tasksInSectors, setTasksInSectors] = useState([]);//all tasks in assigned sector
-    const [sectors, setSectors] = useState([]);
     const [user, setUser] = useState([]);
     const [taskUser, setTaskUser] = useState(null);
     
@@ -42,16 +36,6 @@ const HomeScreen = ({ navigation, route }) => {
     const [hasAssignedTasks, setHasAssignedTasks] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [refresh, setRefresh] = useState(false);
-
-
-    const { control, handleSubmit, formState: { errors } } = useForm();
-    const [submittedData, setSubmittedData] = useState(null);
-
-    const onSubmit = (data) => {
-      // Simulate form submission
-      console.log('Submitted Data:', data);
-      setSubmittedData(data);
-    };
 
     const onRefresh = useCallback(() => {
       setRefreshing(true);
@@ -74,20 +58,6 @@ const HomeScreen = ({ navigation, route }) => {
     const [checked, setChecked] = useState([]);
     const [markAll, setMarkAll] = useState(false);
     const [checkControlAll, setCheckControlAll] = useState(false);
-
-
-    const getToken = async () => {
-      const { status } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
-
-      if (status !== "granted"){
-        return
-      }
-      const token = await Notifications.getExpoPushTokenAsync();
-    }
-
-    
-    
-    
 
     const logActiveTasks = () => {
       activeTasks.forEach((element) => {
@@ -354,12 +324,96 @@ const HomeScreen = ({ navigation, route }) => {
         const docOwnUser = await getDoc(docOwnUserRef);
         const ownUser = docOwnUser.data()
         console.log("u: " + ownUser.username); //username active session
-        setUser(ownUser.username);
-        setCanControl(ownUser.can_control);
+        setUser(prev => prev = ownUser.username);
+        setCanControl(prev => prev = ownUser.can_control);
+
+        
+      
         if (ownUser.name == 'Fede V') setCanControl(true);
         canControl2 = ownUser.can_control
         cControl = ownUser.can_control
 
+        //-----------NAVBAR------------------
+      navigation.setOptions({
+        headerRight: () => (
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2), groupCode: groupCode })
+              }
+            >
+              <View style={{ alignContent: "center" }}>
+                <UsersImg />
+              </View>
+            </TouchableOpacity>
+
+              <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("HistorialScreen", {
+                  uid: route.params.uid,
+                  uidTask: route.params.uidTask,
+                  taskUser: taskUser,
+                });
+              }}
+            >
+              <View style={{ marginLeft: 5}}>
+                <HistorialImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>{
+                if (canControl || cControl) {
+                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, canControl: true, groupCode: groupCode })
+              }else{
+                Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
+              }
+              }
+            }
+            >
+              <View style={{ alignContent: "center", marginLeft:5 }}>
+                <AgregarTareaImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() =>{
+                if (canControl || cControl) {
+                  navigation.navigate("Asignar Tareas", { uid: route.params.uid, groupCode: groupCode, canControl: canControl });
+                }else{
+                  Alert.alert('Lo siento', 'Solo admin puede asignar tareas',  [ {text: 'ok 😭'} ]);
+                }
+              }
+              }
+            >
+              <View style={{ marginLeft: 5 }}>
+                <AsigImg />
+              </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                  navigation.navigate("Admin", {
+                    uid: route.params.uid,
+                    uidTask: route.params.uidTask,
+                    canControl: canControl || cControl,
+                    groupCode: groupCode
+                  });
+                
+                
+              }}
+            >
+              <View style={{ marginLeft: 7}}>
+                <ConfigImg />
+              </View>
+            </TouchableOpacity>
+            
+          </View>
+        ),
+        headerLeft: () => <View></View>,
+      });
+      //-----------NAVBAR------------------
+      
         const docUserRef = doc(db, "user", route.params.uidTask);
         const docUser = await getDoc(docUserRef);
         const taskUser = docUser.data()
@@ -369,7 +423,8 @@ const HomeScreen = ({ navigation, route }) => {
         let tasks = []
         let sectorTasks = []
         let qAssigned_tasks = []
-
+        console.log('grupo: ');
+        console.log(groupCode);
         let q = query(collection(db, "groups", groupCode, "assigned_tasks"), where("uid", "==", route.params.uidTask));
         const querySnapshot = await getDocs(q);
         qAssigned_tasks = querySnapshot.docs.map((doc) => ({
@@ -473,85 +528,6 @@ const HomeScreen = ({ navigation, route }) => {
         return unsuscribe;
       });
 
-      //-----------NAVBAR------------------
-      navigation.setOptions({
-        headerRight: () => (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("Usuarios", { uid: route.params.uid, canControl: (canControl || canControl2), groupCode: groupCode })
-              }
-            >
-              <View style={{ alignContent: "center" }}>
-                <UsersImg />
-              </View>
-            </TouchableOpacity>
-
-              <TouchableOpacity
-              onPress={() => {
-                navigation.navigate("HistorialScreen", {
-                  uid: route.params.uid,
-                  uidTask: route.params.uidTask,
-                  taskUser: taskUser,
-                });
-              }}
-            >
-              <View style={{ marginLeft: 5}}>
-                <HistorialImg />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() =>{
-                if (canControl || cControl) {
-                  navigation.navigate("Agregar Tarea", { uid: route.params.uid, canControl: true, groupCode: groupCode })
-              }else{
-                Alert.alert('Lo siento', 'Solo admin puede crear tareas',  [ {text: 'ok 😭'} ]);
-              }
-              }
-            }
-            >
-              <View style={{ alignContent: "center", marginLeft:5 }}>
-                <AgregarTareaImg />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() =>{
-                if (canControl || cControl) {
-                  navigation.navigate("Asignar Tareas", { uid: route.params.uid, groupCode: groupCode });
-                }else{
-                  Alert.alert('Lo siento', 'Solo admin puede asignar tareas',  [ {text: 'ok 😭'} ]);
-                }
-              }
-              }
-            >
-              <View style={{ marginLeft: 5 }}>
-                <AsigImg />
-              </View>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              onPress={() => {
-                  navigation.navigate("Admin", {
-                    uid: route.params.uid,
-                    uidTask: route.params.uidTask,
-                    canControl: canControl
-                  });
-                
-                
-              }}
-            >
-              <View style={{ marginLeft: 7}}>
-                <ConfigImg />
-              </View>
-            </TouchableOpacity>
-            
-          </View>
-        ),
-        headerLeft: () => <View></View>,
-      });
-      //-----------NAVBAR------------------
 
     },
     [refresh, route.params.uidTask],

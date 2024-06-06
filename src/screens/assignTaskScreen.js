@@ -175,8 +175,12 @@ const BtnSelectAll = () => {
     const [newDate, setNewDate] = useState(date);
     const [mode, setMode] = useState('date');
     const [show, setShow] = useState(false);
-
+    const today = new Date()
     const onChange = (event, selectedDate) => {
+      if (selectedDate < today) {
+        Alert.alert('Como tiempo limite solo pueden ir fechas futuras')
+        return
+      }
       const currentDate = selectedDate;
       setShow(false);
       setNewDate(currentDate);

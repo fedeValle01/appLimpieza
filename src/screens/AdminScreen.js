@@ -296,7 +296,8 @@ export default function AdminScreen({ navigation, route }) {
       })
     }
 
-
+    console.log("colAssignedTasks");
+    console.log(colAssignedTasks);
     colAssignedTasks.forEach((element) => {
       let setHistory = [];
       let objHistory = {};
@@ -318,16 +319,16 @@ export default function AdminScreen({ navigation, route }) {
         objHistory.data = element.active_tasks;
         objHistory.control_marked_tasks = element.control_marked_tasks;
         objHistory.marked_tasks = element.marked_tasks;
-
+        objHistory.uid = element.uid;
         //just push actual assigned task and his data in history
         setHistory.push(objHistory);
         let history = setHistory;
         console.log('HISTORY REEMP');
         console.log(history);
-
-          
-        batch.update(doc(db, "assigned_tasks", element.uid), { history: history });
-
+        
+        if (objHistory) batch.set(addDoc(collection(db, "groups", route.params.groupCode, "records"), {
+          name: "jamon"
+        }))
 
       }
     });
@@ -340,7 +341,7 @@ export default function AdminScreen({ navigation, route }) {
     
     let q;
     let unsuscribe;
-    let collectionRef = collection(db, "sectors");
+    let collectionRef = collection(db, "groups", route.params.groupCode, "sectors");
     q = query(collectionRef, orderBy("sector_name", "asc"));
 
     unsuscribe = onSnapshot(q, (querySnapshot) => {
@@ -352,7 +353,7 @@ export default function AdminScreen({ navigation, route }) {
       );
     });
 
-    collectionRef = collection(db, "assigned_tasks");
+    collectionRef = collection(db, "groups", route.params.groupCode, "assigned_tasks");
     q = query(collectionRef);
 
     // get assigned_tasks
@@ -371,7 +372,7 @@ export default function AdminScreen({ navigation, route }) {
 
     //set username
     let u;
-    collectionRef = collection(db, "user");
+    collectionRef = collection(db, "groups", route.params.groupCode, "user");
     q = query(collectionRef, where("uid", "==", route.params.uid));
     unsuscribe = onSnapshot(q, (querySnapshot) => {
       u = querySnapshot.docs.map((doc) => ({
@@ -385,7 +386,7 @@ export default function AdminScreen({ navigation, route }) {
     });
 
     //set users
-    collectionRef = collection(db, "user");
+    collectionRef = collection(db, "groups", route.params.groupCode, "user");
     q = query(collectionRef);
     unsuscribe = onSnapshot(q, (querySnapshot) => {
       u = querySnapshot.docs.map((doc) => ({

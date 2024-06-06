@@ -9,6 +9,7 @@ import * as Notifications from 'expo-notifications';
 import { Dropdown } from 'react-native-element-dropdown';
 import { Checkbox } from "react-native-paper";
 import { getSectors } from '../helpers/getSectors';
+import { IconInfo } from '../components/icons/IconInfo';
 
 
 export default function AddTasks ({navigation, route}){
@@ -149,12 +150,30 @@ export default function AddTasks ({navigation, route}){
                   maxLength={200}
                 />
             </View>
+              <View style={{flexDirection: 'row', justifyContent: 'center', alignItems: 'center'}}>
+                    
                 <Pressable style={[styles.center, {marginTop: 5}]} onPress={() => {(checked == 'checked') ? setChecked('unchecked') : setChecked('checked')}}>
-                  <Text style = {{textAlign: 'center', maxWidth:200, fontSize: 13}} >{msgCheck}</Text>
+                  <Text style = {{textAlign: 'center', maxWidth:200, fontSize: 13}} >Activar por defecto</Text>
                   <Checkbox
                     status={checked}  
                   />
                 </Pressable>
+                <Pressable onPress={() => {
+                  Alert.alert(
+                    "Activar por defecto", // Título del alerta
+                    msgCheck,
+                    [
+                      {
+                        text: "OK",
+                        onPress: () => console.log("OK presionado")
+                      }
+                    ],
+                    { cancelable: false }
+                  );
+                }}>
+                    <IconInfo />
+                </Pressable>
+              </View>
             
 
           <View style = {{width: 200, marginTop: 25}}>

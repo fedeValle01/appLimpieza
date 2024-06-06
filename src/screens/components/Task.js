@@ -1,11 +1,13 @@
-import { TextInput, TouchableOpacity, Text, SafeAreaView, Image, StyleSheet, Alert, View, Pressable } from "react-native";
+import { TouchableOpacity, Text, Image, Alert, View } from "react-native";
 import { Tooltip } from '@rneui/themed';
 import { Checkbox } from "react-native-paper";
-import React, {memo, useEffect, useState} from 'react';
+import { memo, useState} from 'react';
 import { initializeApp } from "firebase/app";
 import { doc, getFirestore, serverTimestamp, updateDoc } from "firebase/firestore";
 import styles from "../stylesScreens";
 import firebaseConfig from "../../firebase-config";
+import { ControlledTooltip } from "./ControlledTooltip";
+import { IconInfo } from '../../components/icons/IconInfo';
 
 
 
@@ -32,15 +34,6 @@ const Task = ( {props} ) => {
     
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-
-    const IconInfo = memo(() => (
-        <Image
-          style={{ width: 17, height: 17 }}
-          source={require("../../assets/info-circle.png")}
-        />
-      )
-    );
 
     const AreYouSureDeleteTask = () => {
         return Alert.alert("Vas a eliminar la tarea: "+item+" De las tareas asignadas", "Estas seguro?", [
@@ -157,24 +150,6 @@ const Task = ( {props} ) => {
         return(h)
       }
 
-      const ControlledTooltip = (props) => {
-        const [open, setOpen] = React.useState(false);
-        return (
-              <Tooltip
-                visible={open}
-                onOpen={() => {
-                  setOpen(true);
-                }}
-                onClose={() => {
-                  setOpen(false);
-                }}
-                {...props}
-              />
-        );
-      }
-
-
-
     const Item = ({ title, i }) => { // RENDER ITEM TASK
         let haveDesc = false;
         let h = 0
@@ -201,7 +176,7 @@ const Task = ( {props} ) => {
                             <Text numberOfLines={2} style={[styles.titleSectionlist ]}>{title}</Text>
                         </View>
                         <View style={{marginLeft: 10}}>
-                            <IconInfo/>
+                            <IconInfo />
                         </View>
                         </View>
                         
@@ -210,7 +185,7 @@ const Task = ( {props} ) => {
                 }
                 {!haveDesc &&
                         <View style={{flexDirection: "row", alignItems: "center", justifyContent: 'space-between'}}>
-                        <Text numberOfLines={2} style={[styles.titleSectionlist]}>{title}</Text>
+                            <Text numberOfLines={2} style={[styles.titleSectionlist]}>{title}</Text>
                         </View>
                 }
             </View>

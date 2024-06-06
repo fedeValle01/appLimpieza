@@ -1,5 +1,5 @@
 import React, { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable, ScrollView } from "react-native";
+import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable, ScrollView, TextInput } from "react-native";
 import { initializeApp } from "firebase/app";
 import { getFirestore, writeBatch, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
 doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
@@ -13,33 +13,14 @@ export default function TasksScreen({ navigate, route }) {
   const db = getFirestore(app);
 
   //datepicker
-  const [date, setDate] = useState(new Date());
-  const [open, setOpen] = useState(false);
   const [sectors, setSectors] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [task_frec, setTask_frec] = useState(1);
-  const [user, setUser] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
   const [selected, setSelected] = useState([]);
   const [taskSelected, setTaskSelected] = useState([]);
   const [taskAvaiable, setTaskAvaiable] = useState([]);
-
-  const batch = writeBatch(db);
-
-  //efect on update checklist
-  const onUpdateCheck = useRef(true);
-  const [cond, setCond] = useState(false);
-  
   const [checkList, setCheckList] = useState([]);
-
-  
   const [markAll, setMarkAll] = useState(false);
-
-  const [checked, setChecked] = useState("unchecked");
-
-  
-
-  let contador = -1;
+  const batch = writeBatch(db);
 
   const verChecklist = () => {
     checkList.forEach((element, i) => {
@@ -146,10 +127,8 @@ export default function TasksScreen({ navigate, route }) {
       <Text style={styles.titleSectionlist}>{title}</Text>
     </View>
   );
-
   
   const cleanTasks = () => {
-    contador=-1;
     setCheckList([])
     setTaskAvaiable([])
     setTasks([])
@@ -252,6 +231,35 @@ export default function TasksScreen({ navigate, route }) {
     await updateDoc(ref, {default_assigned: !task.defaultAssigned})
     getIndexTask(task)
   }
+
+  const IconSearch = () => (
+    <View>
+      <Image
+        style={{width: 15, height: 15}}
+        source={require('../assets/lupa.png')}
+      />
+    </View>
+    
+  )
+
+  const TaskSearchInput = () => {
+  const [searchInput, setSearchInput] = useState(null);
+
+    return(
+      <View style = {{ flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 0.4 }}>
+        <View style={{backgroundColor: "#ddd", paddingLeft: 10, height: 35, justifyContent: "center", alignItems: "center" }}><IconSearch /></View>
+        <View>
+          <TextInput style={{width: 260, paddingHorizontal: 10, backgroundColor: "#ddd", height: 35}} 
+            placeholder="Tarea"
+            value={searchInput} 
+            onChangeText={(text) => setSearchInput(text)}
+          />
+        </View>
+        
+      </View>
+    )
+  }
+
   const ListTasks = ( {data} ) => {
     
     console.log('PASA LISTTASK');
@@ -266,7 +274,9 @@ export default function TasksScreen({ navigate, route }) {
   }
   return (
     <SafeAreaView style={styles.container}>
-
+      <View style={{ marginTop:15 }}>
+        <TaskSearchInput />
+      </View>
       <MultiSelect
         renderLeftIcon={() => <Image style={styles.icon} />}
         containerStyle={styles.shadow}

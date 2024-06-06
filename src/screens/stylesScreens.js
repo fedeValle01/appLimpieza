@@ -1,5 +1,6 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 
+  const { width, height } = Dimensions.get('window');
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -108,13 +109,15 @@ const styles = StyleSheet.create({
   },
   viewSeccion: {
     position: "relative",
+    minWidth: width-width*0.3,
+    maxWidth: width-width*0.15,
     marginTop: 3,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 2,
     borderRadius: 5,
-    borderColor: "#00fff6",
+    borderColor: "#dbdad7",
     marginBottom: 5,
     backgroundColor: "#fff",
   },
