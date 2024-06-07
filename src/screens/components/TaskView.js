@@ -16,9 +16,9 @@ const TaskView = ({ task }) => {
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     
-    useEffect(() =>{
-      console.log('TaskView');
-      console.log(id);
+    useEffect(() => {
+      // console.log('TaskView');
+      // console.log(id);
       
     }, [defaultAssigned])
 

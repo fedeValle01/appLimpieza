@@ -1,13 +1,14 @@
-import React, { memo, useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, SectionList, Pressable, ScrollView, TextInput } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Text, SafeAreaView, View, Image, Alert, TouchableOpacity, Button, Pressable, ScrollView } from "react-native";
 import { initializeApp } from "firebase/app";
-import { getFirestore, writeBatch, collection, query, querySnapshot, getDocs, orderBy, onSnapshot, QuerySnapshot, setDoc,
-doc, where, serverTimestamp, updateDoc, deleteDoc, getDoc } from "firebase/firestore";
+import { getFirestore, writeBatch, collection, query, getDocs, orderBy, onSnapshot, doc, where } from "firebase/firestore";
 
 import firebaseConfig from "../firebase-config";
 import styles from "../screens/stylesScreens";
 import { MultiSelect } from "react-native-element-dropdown";
 import TaskView from './components/TaskView'
+import { TaskSearchInput } from "./components/TaskSearchInput";
+import { getAllTasks, getTaskBySearch } from "../services/tasksServices";
 export default function TasksScreen({ navigate, route }) {
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
@@ -19,61 +20,20 @@ export default function TasksScreen({ navigate, route }) {
   const [taskSelected, setTaskSelected] = useState([]);
   const [taskAvaiable, setTaskAvaiable] = useState([]);
   const [checkList, setCheckList] = useState([]);
-  const [markAll, setMarkAll] = useState(false);
+  
   const batch = writeBatch(db);
-
-  const verChecklist = () => {
-    checkList.forEach((element, i) => {
-      console.log("tarea: " + i + ": " + element);
-    });
-  };
-  const verTaskSelected = () => {
-    let id = [];
-    console.log("paso n veces");
-    tasks.forEach((element) => {
-      console.log("paso b veces");
-
-      id = element.id;
-      id.forEach((d) => {
-        console.log("id: " + d);
-      });
-    });
-  };
-
-  const setAllChecked = () => {
-    let c = checkList;
-    console.log('marcar todas');
-      if (!markAll){
-        c.forEach((task, i) => {
-          c[i] = 'checked';
-        });
-        setMarkAll(true)
-      }else{
-        c.forEach((task, i) => {
-          c[i] = 'unchecked';
-        });
-        setMarkAll(false)
-      }
-    setCheckList(c)
-  }
   
   const ejecuteQuery = (item) => {
     console.log('HACE QUERY');
     console.log('HACE QUERY');
     console.log('HACE QUERY');
     let collectionRef = collection(db, "tasks");
-    let unsuscribe;
     let TaskQuery = [];
     let tasksAndSector = [];
-    let nid = 0;
-
     if (item) {
       item.forEach(async (element) => {
         let q = query(collectionRef, where("task_sector", "==", element));
-
         const querySnapshot = await getDocs(q);
-       
-
           TaskQuery = querySnapshot.docs.map((doc) => ({
             id: doc.id,
             taskName: doc.data().task_name,
@@ -82,26 +42,20 @@ export default function TasksScreen({ navigate, route }) {
           if (TaskQuery == "") {
             console.log("taskquery vacio");
           } else {
-            let Tasks = [];
 
+            let Tasks = [];
             TaskQuery.forEach((task) => {
               let objTask = {}
               objTask.taskName = task.taskName;
               objTask.defaultAssigned = task.defaultAssigned;
               objTask.id = task.id;
-              
               Tasks.push(objTask);
             });
-
+            
             let singleObj = {};
             singleObj["title"] = element;
             singleObj["data"] = Tasks;
-
             tasksAndSector.push(singleObj);
-
-            let firstTask = tasksAndSector[0]
-            firstTask = firstTask.data
-            firstTask = firstTask[0]
             setTaskAvaiable(tasksAndSector);
           }
       });
@@ -110,23 +64,6 @@ export default function TasksScreen({ navigate, route }) {
       setTasks([]);
     }
   };
-
-  const renderItem = ({ item }) => {
-    if (selected) {
-      console.log("selected: " + selected);
-
-      console.log("item renderItem: " + item.title);
-      return <Item title={item.title} />;
-    } else {
-      setTasks([]);
-    }
-  };
-  
-  const Item = ({ title }) => (
-    <View style={styles.itemSectionlist}>
-      <Text style={styles.titleSectionlist}>{title}</Text>
-    </View>
-  );
   
   const cleanTasks = () => {
     setCheckList([])
@@ -192,20 +129,6 @@ export default function TasksScreen({ navigate, route }) {
     return unsuscribe;
   }, []);
 
-
-  const getAllTasks = async () => {
-    const q = query(collection(db, "tasks"), where("task_name", "!=", null));
-    let tasks = []
-    const querySnapshot = await getDocs(q);
-
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      tasks.push(doc.data())
-    });
-    return tasks
-  }
-  
-
   const commitBatch = async () => {
     await batch.commit().then(() => {
       Alert.alert('Change successfully!')
@@ -225,44 +148,8 @@ export default function TasksScreen({ navigate, route }) {
       commitBatch();
 
   }
-  
-  const changeDefault = async (task) => {
-    const ref = doc(db, "tasks", task.taskName);
-    await updateDoc(ref, {default_assigned: !task.defaultAssigned})
-    getIndexTask(task)
-  }
-
-  const IconSearch = () => (
-    <View>
-      <Image
-        style={{width: 15, height: 15}}
-        source={require('../assets/lupa.png')}
-      />
-    </View>
-    
-  )
-
-  const TaskSearchInput = () => {
-  const [searchInput, setSearchInput] = useState(null);
-
-    return(
-      <View style = {{ flexDirection: "row", justifyContent: "center", alignItems: "center", borderRadius: 0.4 }}>
-        <View style={{backgroundColor: "#ddd", paddingLeft: 10, height: 35, justifyContent: "center", alignItems: "center" }}><IconSearch /></View>
-        <View>
-          <TextInput style={{width: 260, paddingHorizontal: 10, backgroundColor: "#ddd", height: 35}} 
-            placeholder="Tarea"
-            value={searchInput} 
-            onChangeText={(text) => setSearchInput(text)}
-          />
-        </View>
-        
-      </View>
-    )
-  }
 
   const ListTasks = ( {data} ) => {
-    
-    console.log('PASA LISTTASK');
     
     return (
       <View>
@@ -272,11 +159,87 @@ export default function TasksScreen({ navigate, route }) {
       </View>
     )
   }
+
+
+  const formatTasks = (filteredTasks) => {
+
+    console.log('formatt');
+    let objSectorWithTasks = {}
+    filteredTasks.forEach((task) => {
+      let objTask = {}
+      objTask.taskName = task.task_name;
+      objTask.defaultAssigned = task.default_assigned;
+      objTask.id = task.id;
+
+      if(!objSectorWithTasks[task.task_sector]) {
+        objSectorWithTasks[task.task_sector] = []
+      }
+      objSectorWithTasks[task.task_sector].push(objTask)
+    });
+    
+    let Tasks = []
+    for (const sector in objSectorWithTasks) {
+      if (Object.hasOwnProperty.call(objSectorWithTasks, sector)) {
+        const data = objSectorWithTasks[sector];
+        let newObj = {}
+        newObj.title = sector
+        newObj.data = data
+        Tasks.push(newObj)
+      }
+    }
+    return Tasks
+  }
+
+  const handleSubmit = async (search) => {
+    if(!taskAvaiable) return
+    if(!search){
+      setTasks(taskAvaiable)
+      return
+    }
+    if(search && taskAvaiable.length == 0){
+      let filteredTasks = await getTaskBySearch(search)
+      const formatedTasks = formatTasks(filteredTasks)
+      setTasks(formatedTasks)
+      return
+    }
+    let newTaskAvaiable = taskAvaiable
+    newTaskAvaiable.forEach(sector => {
+      sector.data = sector.data.filter(task => task.taskName.toLowerCase().includes(search.toLowerCase()))
+    });
+
+    haveData
+    newTaskAvaiable.forEach(sector => {
+      console.log(newTaskAvaiable);
+    });
+    if(!newTaskAvaiable) console.log('vacio');
+    setTasks(newTaskAvaiable)
+  }
+
+  const SubmitComp = () => {
+    const [search, getSearch] = useState(null);
+    
+    return(
+      <>
+        <View style={{ marginTop:15 }}>
+          <TaskSearchInput getSearch={getSearch} />
+        </View>
+          {(tasks.length == 0) && (
+            <View style={{ width: 200, marginTop: 15 }}>
+            <Button
+              title="Ver tareas disponibles"
+              color="#B0C4DE"
+              onPress={() => {
+                handleSubmit(search)
+              }}
+            />
+        </View>
+        )}
+      </>
+    )
+  }
   return (
     <SafeAreaView style={styles.container}>
-      <View style={{ marginTop:15 }}>
-        <TaskSearchInput />
-      </View>
+      
       <MultiSelect
         renderLeftIcon={() => <Image style={styles.icon} />}
         containerStyle={styles.shadow}
@@ -285,7 +248,7 @@ export default function TasksScreen({ navigate, route }) {
         labelField="label"
         valueField="value"
         label="Multi Select"
-        placeholder="En el sector"
+        placeholder="Todos los sectores"
         search
         searchPlaceholder="Buscar sector"
         value={selected}
@@ -297,15 +260,8 @@ export default function TasksScreen({ navigate, route }) {
         }}
         renderItem={(item) => _renderItem(item)}
       />
-      <View style={{ width: 200, marginTop: 15 }}>
-        <Button
-          title="Ver tareas disponibles"
-          color="#B0C4DE"
-          onPress={() => {
-            setTasks(taskAvaiable);
-          }}
-        />
-      </View>
+      <SubmitComp />
+      
       <View style={{ marginTop: 15 }} />
 
       <ScrollView>
@@ -321,20 +277,6 @@ export default function TasksScreen({ navigate, route }) {
             })
         }
       </ScrollView>
-
-      {/* <SectionList
-        style={{ height: "34%", maxWidth: "95%" }}
-        sections={tasks}
-        renderItem={renderSectionList}
-        renderSectionHeader={({ section: { title } }) => (
-          <Text style={styles.SectionHeader}>{title}</Text>
-        )}
-      /> */}
-      
-      {/* <Pressable onPress={putAllTasksDefaultActive}>
-        <Text>actualizar</Text>
-      </Pressable> */}
-    
     </SafeAreaView>
   );
 }
