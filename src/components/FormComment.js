@@ -5,7 +5,7 @@ import firebaseConfig from "../firebase-config";
 import { initializeApp } from "firebase/app";
 import { doc, getFirestore, updateDoc } from "firebase/firestore";
 
-const FormComment = ({uid, closeModal}) => {
+const FormComment = ({groupCode, uid, closeModal}) => {
 
     const [comment, setComment] = useState("");
     const app = initializeApp(firebaseConfig);
@@ -24,7 +24,7 @@ const FormComment = ({uid, closeModal}) => {
     }
 
     const handleLeaveComment = async() => {
-      let ref = doc(db, "assigned_tasks", uid);
+      let ref = doc(db, "groups", groupCode, "assigned_tasks", uid);
       await updateDoc(ref, {
         comment: comment,
       }).then(()=> {
@@ -34,12 +34,13 @@ const FormComment = ({uid, closeModal}) => {
 
     return (
       <SafeAreaView style={styles.container}>
-        <Text style = {{textAlign: 'center'}}>Observación</Text>
+        <Text style = {{textAlign: 'center', fontSize: 21, fontWeight: "700", color: "#6ae7f6",}}>Observación</Text>
         <TextInput
           style={styles.input}
           onChangeText={text => setComment(text)}
           placeholder="ej. Limpió tarde pero avisó con antelación"
           numberOfLines={6}
+          multiline={true}
           value={comment}
         />
         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', marginTop: 50, marginBottom: 50 }}>
@@ -62,15 +63,17 @@ const FormComment = ({uid, closeModal}) => {
 
   const styles = StyleSheet.create({
     input: {
-      height: 190,
+      height: 250,
       margin: 12,
+      flexWrap: "wrap",
       borderWidth: 2,
-      borderColor: "#eee",
+      borderColor: "#bbb",
       padding: 10,
+      fontWeight: "500",
+      fontSize: 16,
       width: 230,
       alignContent: 'flex-start',
       textAlignVertical: 'top',
-      numberOfLines: 6,
     },
     container: {
       alignItems: 'center',

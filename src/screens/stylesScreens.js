@@ -239,7 +239,13 @@ const styles = StyleSheet.create({
   titleMain: {
     color: '#3e3944',
     fontSize: 32,
-    fontWeight: '40',
+    fontWeight: '700',
+    textAlign: 'center'
+  },
+  subtitleMain: {
+    color: '#3e3944',
+    fontSize: 25,
+    fontWeight: '600',
     textAlign: 'center'
   },
   subtitleSection: {

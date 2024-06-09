@@ -206,8 +206,7 @@ export default function TasksScreen({ navigate, route }) {
     newTaskAvaiable.forEach(sector => {
       sector.data = sector.data.filter(task => task.taskName.toLowerCase().includes(search.toLowerCase()))
     });
-
-    haveData
+    
     newTaskAvaiable.forEach(sector => {
       console.log(newTaskAvaiable);
     });

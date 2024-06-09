@@ -11,6 +11,7 @@ import { BlurView } from "expo-blur";
 import styleModal from "./styleModal";
 import Task from './components/Task'
 import FormComment from "../components/FormComment"
+import { formatTime } from "../helpers/formatTime";
 
 
 
@@ -29,6 +30,8 @@ const HomeScreen = ({ navigation, route }) => {
     const [tasksInSectors, setTasksInSectors] = useState([]);//all tasks in assigned sector
     const [user, setUser] = useState([]);
     const [taskUser, setTaskUser] = useState(null);
+    const [timeLimit, setTimeLimit] = useState('');
+    const [comment, setComment] = useState('');
     
     const [loading, setLoading] = useState(false);
     const [modalLeaveComment, setModalLeaveComment] = useState(false);
@@ -93,7 +96,7 @@ const HomeScreen = ({ navigation, route }) => {
         });
         setMarkAll(false)
       }
-      await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      await updateDoc(doc(db, "groups", groupCode, "assigned_tasks", route.params.uidTask), {
         marked_tasks: checks,
         timestamp_control_marked_tasks: serverTimestamp(),
       });
@@ -113,7 +116,7 @@ const HomeScreen = ({ navigation, route }) => {
         });
         setCheckControlAll(false)
       }
-      await updateDoc(doc(db, "assigned_tasks", route.params.uidTask), {
+      await updateDoc(doc(db, "groups", groupCode, "assigned_tasks", route.params.uidTask), {
         control_marked_tasks: checkList,
         timestamp_control_marked_tasks: serverTimestamp(),
       });
@@ -187,7 +190,7 @@ const HomeScreen = ({ navigation, route }) => {
         <View style={styleModal.modalView}>
 
         <View style={{marginTop: 20}}>
-              <FormComment uid={route.params.uidTask} closeModal={closeModal}/>
+              <FormComment groupCode={groupCode} uid={route.params.uidTask} closeModal={closeModal}/>
         </View>
         </View>
       </BlurView>
@@ -430,9 +433,11 @@ const HomeScreen = ({ navigation, route }) => {
         qAssigned_tasks = querySnapshot.docs.map((doc) => ({
           timestamp: doc.data().timestamp,
           uid: doc.data().uid,
+          timeLimit: doc.data().time_limit,
           active_tasks: doc.data().active_tasks,
           markedTasks: doc.data().marked_tasks,
           controlMarkedTasks: doc.data().control_marked_tasks,
+          comment: doc.data().comment,
         }));
         console.log('termina qasig');
 
@@ -445,14 +450,12 @@ const HomeScreen = ({ navigation, route }) => {
           activeTasks = element.active_tasks;
           markedTasks = element.markedTasks;
           controlMarkedTasks = element.controlMarkedTasks;
-          if (markedTasks) {
-            // console.log("se encontraron tareas marcadas");
-            setCheckList(markedTasks);
-          }
-          if (controlMarkedTasks) {
-            // console.log("se encontraron tareas de control marcadas");
-            setControlCheckList(controlMarkedTasks);
-          }
+          let comment = element.comment;
+          const formatedTimeLimit = formatTime(element.timeLimit)
+          setTimeLimit(formatedTimeLimit)
+          if (markedTasks) setCheckList(markedTasks)
+          if (controlMarkedTasks) setControlCheckList(controlMarkedTasks)
+          if (comment) setComment(comment)
         });
         if (activeTasks.length > 0) {
           setHasAssignedTasks(true)
@@ -656,6 +659,40 @@ const HomeScreen = ({ navigation, route }) => {
     if (route.params.firstTime) return (
       <Tutorial />
     )
+
+
+    const NoteComp = () => {
+      const [pressed, setPressed] = useState(false)
+      return(
+        <View style={{ width: 320, justifyContent: "center", alignItems: "flex-start"}}>
+          <View style={{ flexDirection: "row", justifyContent:  "center", alignItems: "center" }}>
+                    <View><Text style={{ color: "#f11", fontSize: 14, fontWeight: "500"}}>Hay una observación: </Text></View>
+                    <View>
+                      <TouchableOpacity  onPress={() => {
+                        setPressed(true)
+                        return(
+                          Alert.alert(
+                            "Tienes una observación",
+                            comment
+                            )
+                        )
+                      }}>
+                        {(pressed) ? (<Image 
+                          style={{ width: 32, height: 32 }}
+                          source={require("../assets/nota.png")}
+                          />) : 
+                          (<Image 
+                            style={{ width: 32, height: 32 }}
+                            source={require("../assets/notaAlert.png")}
+                          />)}
+                      </TouchableOpacity>
+                    </View>
+
+                  </View>
+        </View>
+        
+      )
+    }
     return (
       <SafeAreaView style={styles.container}>
         
@@ -681,10 +718,10 @@ const HomeScreen = ({ navigation, route }) => {
            */}
           
           <View
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "center",  marginVertical: 12 }}
+            style={{ alignItems: "center", justifyContent: "center",  marginVertical: 12 }}
           >
             <Text style={styles.titleMain}>
-              Tareas de {taskUser} asignadas esta semana: {nTasks}{" "} 
+              Tareas de {taskUser}: {nTasks}{" "} 
               
               {canControl && 
                 <Menu>
@@ -703,13 +740,14 @@ const HomeScreen = ({ navigation, route }) => {
                   </MenuOptions>
                 </Menu>
               }
-              
             </Text>
-            
+            <Text style={styles.subtitleMain}>
+              Tiempo limite: {timeLimit}
+            </Text>
             {/* <TouchableOpacity onPress={logCheckList}>
               <Text>logCheckList</Text>
             </TouchableOpacity> */}
-            
+            {(comment) && (<NoteComp />)} 
           </View>
           </ScrollView>
             {hasAssignedTasks === false && <View style={{ position: "absolute", bottom: 230 }}><Text>No tiene tareas asignadas</Text></View>}
@@ -720,7 +758,6 @@ const HomeScreen = ({ navigation, route }) => {
                 ) : (
                     <View style={{ height: "80%"}}>
                       <SectionTasks/>
-                      
                     </View>
                 )}
               </>
