@@ -35,18 +35,11 @@ export default function TaskScreen({ navigation, route }) {
     console.log('useEffect');
 
     const getUsersAndSectors = async () => {
-    console.log('getUsersAndSectors');
-    console.log(route.params.groupCode);
-
     
       let assignedTasks = await getAssignedTasks(route.params.groupCode)
       let usersUID = await getUsersUID(route.params.groupCode)
-      console.log(usersUID);
 
       let u = await getUserList(usersUID)
-      console.log(u);
-
-      console.log('userFinal',u);
       
       u.forEach((user, i) => { //binding sectors to users
         let uid = user.uid
@@ -58,20 +51,18 @@ export default function TaskScreen({ navigation, route }) {
             let haveTasks = false
             if (uid == uidAssignedTask){
               let activeTasks = assignedTask.active_tasks
-              let control = assignedTask.control_marked_tasks
-              let marked = assignedTask.marked_tasks
+              let control = assignedTask.controlMarkedTasks
+              let marked = assignedTask.markedTasks
               if(activeTasks){
                 haveTasks = true
                 activeTasks.forEach(sector => {
                   sectors.push(sector.sector)
                 });
-                
                 let stateGet = getState(marked, control, haveTasks);
                 user.state = stateGet
                 user.sectors = sectors
               }
             }
-
           });
       });
 

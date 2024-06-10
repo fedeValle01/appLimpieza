@@ -25,7 +25,7 @@ export default function AddTasks ({navigation, route}){
     const [task_frec, setTask_frec] = useState(1);
     const [dropdown, setDropdown] = useState(null);
     const [sectorSelected, setSectorSelected] = useState(null);
-    const msgCheck = 'Activado por defecto (La tarea estara seleccionada por defecto cuando se asigne un sector a un usuario)'
+    const msgCheck = 'La tarea estara seleccionada por defecto cuando se asigne un sector a un usuario'
     
 
       //Add element to objet

@@ -5,6 +5,8 @@ import { getAuth, signOut } from "firebase/auth";
 import { initializeApp } from "firebase/app";
 import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
+import { saveAllHistory } from "../helpers/saveHistory";
+import { db } from "../helpers/getFirebase";
 
 // Get a new write batch
 
@@ -12,9 +14,7 @@ console.log("Refresh AutoAssignTaskScreen");
 
 export default function AdminScreen({ navigation, route }) {
   console.log("render AutoAssignTask");
-  const auth = getAuth(app);
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+
   const batch = writeBatch(db);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);
@@ -289,52 +289,7 @@ export default function AdminScreen({ navigation, route }) {
   }
 
   const saveAssignedTasks = () => {
-    
-    const commitBatch = async () => {
-      await batch.commit().then(() => {
-        Alert.alert('Historial guardado con exito!')
-      })
-    }
-
-    console.log("colAssignedTasks");
-    console.log(colAssignedTasks);
-    colAssignedTasks.forEach((element) => {
-      let setHistory = [];
-      let objHistory = {};
-      
-      console.log("col: ",element);
-
-      objHistory.timestamp = element.timestamp;
-
-      let hasEven = false;
-      if (element.history) {
-        setHistory = element.history;
-        hasEven = setHistory.some(
-          (h) => String(h.timestamp) == String(objHistory.timestamp)
-        );
-      }
-      //If the current assigned task has the same timestamp as one from the history, do nothing.
-      if (!hasEven && element.active_tasks) {
-        
-        objHistory.data = element.active_tasks;
-        objHistory.control_marked_tasks = element.control_marked_tasks;
-        objHistory.marked_tasks = element.marked_tasks;
-        objHistory.uid = element.uid;
-        //just push actual assigned task and his data in history
-        setHistory.push(objHistory);
-        let history = setHistory;
-        console.log('HISTORY REEMP');
-        console.log(history);
-        
-        if (objHistory) batch.set(addDoc(collection(db, "groups", route.params.groupCode, "records"), {
-          name: "jamon"
-        }))
-
-      }
-    });
-    commitBatch();
-    
-
+    saveAllHistory(route.params.groupCode, colAssignedTasks)
   };
 
   useEffect(() => {
@@ -364,8 +319,10 @@ export default function AdminScreen({ navigation, route }) {
           active_tasks: doc.data().active_tasks,
           control_marked_tasks: doc.data().control_marked_tasks,
           marked_tasks: doc.data().marked_tasks,
+          time_limit: doc.data().time_limit,
           timestamp: doc.data().timestamp,
-          history: doc.data().history,
+          timestamp_control_marked_tasks: doc.data().timestamp,
+          timestamp_marked_tasks: doc.data().timestamp,
         }))
       );
     });

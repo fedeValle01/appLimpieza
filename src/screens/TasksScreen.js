@@ -268,9 +268,9 @@ export default function TasksScreen({ navigate, route }) {
             let data = sector.data
 
             return(
-              <View>
+              <View key={sector.title} >
                 <Text style={styles.SectionHeader}>{sector.title}</Text>
-                <ListTasks key={sector.title} data={data} />
+                <ListTasks data={data} />
               </View>
               )
             })

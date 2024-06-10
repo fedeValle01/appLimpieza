@@ -12,6 +12,7 @@ import styleModal from "./styleModal";
 import Task from './components/Task'
 import FormComment from "../components/FormComment"
 import { formatTime } from "../helpers/formatTime";
+import { getAssignedTasks } from "../helpers/getAssignedTasks";
 
 
 
@@ -327,12 +328,11 @@ const HomeScreen = ({ navigation, route }) => {
         const docOwnUser = await getDoc(docOwnUserRef);
         const ownUser = docOwnUser.data()
         console.log("u: " + ownUser.username); //username active session
-        setUser(prev => prev = ownUser.username);
-        setCanControl(prev => prev = ownUser.can_control);
-
+        setUser((prev) => prev = ownUser.username);
+        setCanControl((prev) => prev = ownUser.can_control);
         
       
-        if (ownUser.name == 'Fede V') setCanControl(true);
+        if (ownUser.username == 'Fede V') setCanControl(true);
         canControl2 = ownUser.can_control
         cControl = ownUser.can_control
 
@@ -425,26 +425,10 @@ const HomeScreen = ({ navigation, route }) => {
       
         let tasks = []
         let sectorTasks = []
-        let qAssigned_tasks = []
-        console.log('grupo: ');
-        console.log(groupCode);
-        let q = query(collection(db, "groups", groupCode, "assigned_tasks"), where("uid", "==", route.params.uidTask));
-        const querySnapshot = await getDocs(q);
-        qAssigned_tasks = querySnapshot.docs.map((doc) => ({
-          timestamp: doc.data().timestamp,
-          uid: doc.data().uid,
-          timeLimit: doc.data().time_limit,
-          active_tasks: doc.data().active_tasks,
-          markedTasks: doc.data().marked_tasks,
-          controlMarkedTasks: doc.data().control_marked_tasks,
-          comment: doc.data().comment,
-        }));
-        console.log('termina qasig');
-
+        let qAssigned_tasks = await getAssignedTasks(groupCode)
         let controlMarkedTasks = [];
         let activeTasks = [];
-        let markedTasks = [];
-        
+        let markedTasks = [];        
 
         qAssigned_tasks.forEach((element) => {
           activeTasks = element.active_tasks;
@@ -490,27 +474,27 @@ const HomeScreen = ({ navigation, route }) => {
           }
           
           let collectionRef = collection(db, "groups", groupCode, "tasks");
-      let tasksInSectors = []
-      let taskInSector = []
-      //get tasks of the assigned sectors
-        
-      sectorTasks.forEach((sector, i) => {
-        q = query(collectionRef, where("task_sector", "==", sector));
-        
-        unsuscribe = onSnapshot(q, (querySnapshot) => {
-          taskInSector = querySnapshot.docs.map((doc) => ({
-            task_id: doc.id,
-            task_name: doc.data().task_name,
-            task_description: doc.data().task_description,
-            task_sector: doc.data().task_sector,
-          }));
-          
-          tasksInSectors.push(taskInSector);
-          if (i == sectorTasks.length-1){
-            setTasksInSectors(tasksInSectors)
-            setChargedOrderedTasks(false);
-          }
-        });
+          let tasksInSectors = []
+          let taskInSector = []
+          //get tasks of the assigned sectors
+            
+          sectorTasks.forEach((sector, i) => {
+            let q = query(collectionRef, where("task_sector", "==", sector));
+            
+            unsuscribe = onSnapshot(q, (querySnapshot) => {
+              taskInSector = querySnapshot.docs.map((doc) => ({
+                task_id: doc.id,
+                task_name: doc.data().task_name,
+                task_description: doc.data().task_description,
+                task_sector: doc.data().task_sector,
+              }));
+              
+              tasksInSectors.push(taskInSector);
+              if (i == sectorTasks.length-1){
+                setTasksInSectors(tasksInSectors)
+                setChargedOrderedTasks(false);
+              }
+            });
 
       
       });
@@ -693,6 +677,27 @@ const HomeScreen = ({ navigation, route }) => {
         
       )
     }
+
+    const EditMenu = () => (
+        <View>
+          <Menu>
+            <MenuTrigger>
+              <View style={{marginLeft:10, alignSelf: "center"}}>
+                <EditImg />
+              </View>
+              
+            </MenuTrigger>
+            <MenuOptions>
+              <MenuOption onSelect={() => AreYouSureDeleteAllAssignedTasks()} >
+                <View style={{alignSelf: "center"}}>
+                  <Text style={{color: 'red'}}>Eliminar tareas asignadas</Text>
+                </View> 
+              </MenuOption>
+            </MenuOptions>
+          </Menu>
+        </View>
+    )
+        
     return (
       <SafeAreaView style={styles.container}>
         
@@ -723,31 +728,17 @@ const HomeScreen = ({ navigation, route }) => {
             <Text style={styles.titleMain}>
               Tareas de {taskUser}: {nTasks}{" "} 
               
-              {canControl && 
-                <Menu>
-                  <MenuTrigger>
-                    <View style={{marginLeft:10, alignSelf: "center"}}>
-                      <EditImg />
-                    </View>
-                    
-                  </MenuTrigger>
-                  <MenuOptions>
-                    <MenuOption onSelect={() => AreYouSureDeleteAllAssignedTasks()} >
-                      <View style={{alignSelf: "center"}}>
-                        <Text style={{color: 'red'}}>Eliminar tareas asignadas</Text>
-                      </View> 
-                    </MenuOption>
-                  </MenuOptions>
-                </Menu>
-              }
+              
             </Text>
-            <Text style={styles.subtitleMain}>
-              Tiempo limite: {timeLimit}
-            </Text>
-            {/* <TouchableOpacity onPress={logCheckList}>
-              <Text>logCheckList</Text>
-            </TouchableOpacity> */}
-            {(comment) && (<NoteComp />)} 
+            <View>
+                <Text style={styles.subtitleMain}>
+                  Tiempo limite: {timeLimit}
+                </Text>
+              </View>
+            <View style={{ flexDirection: "row", justifyContent: "center", alignItems: "center"}}>
+              {canControl && (<View style={{marginRight: 10}}><EditMenu /></View> )}
+              {(comment) && (<NoteComp />)} 
+            </View>
           </View>
           </ScrollView>
             {hasAssignedTasks === false && <View style={{ position: "absolute", bottom: 230 }}><Text>No tiene tareas asignadas</Text></View>}

@@ -14,7 +14,7 @@ import * as TaskManager from 'expo-task-manager';
 import * as Notifications from 'expo-notifications';
 
 console.log("process.env.EXPO_PUBLIC_API_KEY");
-console.log(process.env.EXPO_PUBLIC_API_KEY);
+console.log(process.env.API_KEY);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const Stack = createNativeStackNavigator();
@@ -96,7 +96,10 @@ export default function App() {
           <Stack.Screen name="Lista de Productos" component={ProductsScreen} />
           <Stack.Screen name="Compras" component={StockBuysScreen} />
           <Stack.Screen name="Sectors" component={Sectors} />
-          <Stack.Screen name="AddSector" component={AddSector} />
+          <Stack.Screen name="AddSector" component={AddSector} 
+            options={({ navigation, route }) => ({
+              title: "Nuevo sector",
+            })} />
           <Stack.Screen name="TestScreen" component={TestScreen} />
           <Stack.Screen name="Tareas" component={TasksScreen} />
 
