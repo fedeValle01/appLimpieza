@@ -7,6 +7,7 @@ import firebaseConfig from "../firebase-config";
 import styles from "./stylesScreens";
 import { saveAllHistory } from "../helpers/saveHistory";
 import { db } from "../helpers/getFirebase";
+import { getDateLastWeek } from "../helpers/getDateLastWeek";
 
 // Get a new write batch
 
@@ -14,7 +15,7 @@ console.log("Refresh AutoAssignTaskScreen");
 
 export default function AdminScreen({ navigation, route }) {
   console.log("render AutoAssignTask");
-
+  getDateLastWeek()
   const batch = writeBatch(db);
   const [sectors, setSectors] = useState([]);
   const [user, setUser] = useState([]);

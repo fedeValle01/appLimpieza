@@ -1,8 +1,8 @@
-import { addDoc, collection, doc, getDocs, orderBy, query, writeBatch } from "firebase/firestore";
+import { addDoc, collection, doc, getDocs, orderBy, query, where, writeBatch } from "firebase/firestore";
 import { db } from "./getFirebase";
 import { Alert } from "react-native";
+import { getDateLastWeek } from "./getDateLastWeek";
 
-const batch = writeBatch(db);
 
 
 const hasSaveHistory = () => { //check if the last history is saved
@@ -55,17 +55,15 @@ const hasSaveHistory = () => { //check if the last history is saved
       ])
 
 
-      
-      
-
   }
   });
 }
 
 
-const getAllrecords = async (groupCode) => {
+const getLastWeekRecords = async (groupCode) => {
     const collectionRef = collection(db, 'groups', groupCode, 'records');
-    const q = query(collectionRef, orderBy('timestamp', 'asc'))
+    const lastWeek = getDateLastWeek()
+    const q = query(collectionRef, where("time_limit", ">=", lastWeek), orderBy('time_limit', 'asc'))
 
     let records = []
     const recordsQuery = await getDocs(q);
@@ -90,24 +88,38 @@ const getAllrecords = async (groupCode) => {
 export const saveAllHistory = async (groupCode, AssignedTasks) => {
   // bussiness rule: para guardar un historial, no tiene que haberse guardado esa semana
   // semana persona
-  const records = await getAllrecords(groupCode)
+  const batch = writeBatch(db);
+  const records = await getLastWeekRecords(groupCode)
   console.log(records);
+
   const commitBatch = async () => {
-        await batch.commit().then(() => {
-          Alert.alert('Historial guardado con exito!')
-        })
-    }
+    let response = ''
+    await batch.commit().then((res) => {
+      console.log(res);
+    })
+    return response
+  }
 
-    // const docRefs = AssignedTasks.map(() => doc(collection(db, "groups", groupCode, "records")))
+    const docRefs = AssignedTasks.map(() => doc(collection(db, "groups", groupCode, "records")))
 
-    // docRefs.forEach((docRef, index) => {
-    //   // console.log('clave');
-    //   // console.log(docRef);
-    //   // console.log('valor');
-    //   // console.log(AssignedTasks[index]);
-    //   batch.set(docRef, AssignedTasks[index]);
-    // });
-    // commitBatch()
+    docRefs.forEach((docRef, index) => {
+      // console.log('clave');
+      // console.log(docRef);
+      // console.log('valor');
+      const record = AssignedTasks[index]
+      const uid = record.uid
+      const sameHistory = records.filter(history => history.uid == uid)
+      if(sameHistory.length > 0) {
+        console.log(uid+' se encontro en');
+        console.log(sameHistory);
+      }else{
+        batch.set(docRef, AssignedTasks[index]);
+        console.log(uid+'es nuevo');
+      }
+      
+    });
+    const res = await commitBatch()
+    console.log(res);
 
 
     //   AssignedTasks.forEach((element) => {
